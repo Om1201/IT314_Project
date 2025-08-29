@@ -1,9 +1,9 @@
-const { dene, testing, getUsers} = require("../controllers/test");
+const { signUp, testing, getUsers} = require("../controllers/test");
 const router = require('express').Router()
 
 
 router.route('/hehe').get(testing)
-router.route('/dene').post(dene)
-router.route('/getAll').get(getUsers)
+router.route('/signUp').post(signUp)
+router.route('/getUsers').get(getUsers)
 
 module.exports = router

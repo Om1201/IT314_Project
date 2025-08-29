@@ -1,4 +1,5 @@
 const User = require('../models/users');
+const bcrypt = require('bcrypt');
 
 module.exports.testing = async (req, res) => {
     try {
@@ -8,15 +9,24 @@ module.exports.testing = async (req, res) => {
     }
 };
 
-module.exports.dene = async (req, res) => {
+module.exports.signUp = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { userName, email, password } = req.body;
+
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         // Save new user in DB
-        const newUser = new User({ username, email, password });
+        const newUser = new User({ userName, email, password: hashedPassword });
         await newUser.save();
 
-        res.status(201).json({ message: 'User saved successfully', user: newUser });
+        res.status(201).json({
+            message: 'User saved successfully',
+            user: {
+                id: newUser.id,
+                userName: newUser.userName,
+                email: newUser.email
+            }
+        });
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: 'Something went wrong' });
