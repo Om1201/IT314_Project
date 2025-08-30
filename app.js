@@ -3,7 +3,7 @@ const app = express()
 const cors = require("cors");
 const bodyParser = require('body-parser')
 
-const testRouter = require('./routes/test')
+const testRouter = require('./routes/userRoutes')
 
 app.use(cors({
     origin: '*',
