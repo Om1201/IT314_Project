@@ -13,12 +13,7 @@ We will organize collaborative sessions where learners can share and discuss ide
 Reason of Choice: Brainstorming is useful for generating creative and innovative ideas that might not come up in structured interviews. It encourages active participation and helps in thinking beyond conventional solutions
 
 
-4. Observation
-We will observe how students currently learn via existing coding platforms.  We will take notes of where they struggle, such as difficulty in getting proper structured resources for specific topics etc.
-Reason Of Choice: Observation provides real behavioral insights that users might not articulate during interviews or surveys. It helps in identifying usability issues and hidden requirements, leading to a more user-friendly learning experience.
-
-
-5. Prototyping
+4. Prototyping
 We will build wireframes, mockups, or low-fidelity prototypes of the platform’s interface (e.g., dashboards, coding environment, progress trackers etc) and share them with students and instructors for early feedback.
 Reason Of Choice: Prototyping allows stakeholders to visualize the system before it is fully developed. Users can point out missing features, confusing layouts, or improvements, which helps refine requirements early on.
 
