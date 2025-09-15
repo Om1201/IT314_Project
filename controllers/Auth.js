@@ -156,16 +156,16 @@ export const sendResetToken = async(req, res) =>{
         const resetToken = crypto.randomUUID();
         const update = await UserModel.updateOne({email}, {resetToken: resetToken, resetTokenExpireAt: Date.now()+1000*60*15});
 
-        const verifyUrl = `http://localhost:5173/verifyAccount?token=${resetToken}&email=${email}`;
+        const verifyUrl = `http://localhost:5173/verifyReset?token=${resetToken}&email=${email}`;
 
         const mailOptions ={
             from: process.env.SENDER_EMAIL,
             to: email,
-            subject: 'Password Rest OTP',
+            subject: 'Password Rest Link',
             text: `We received a request to reset your password for your account linked with email: ${email}.
-            Your One-Time Password (OTP) for resetting your password is: ${resetOtp}
-            This OTP will expire in 15 minutes. If you did not request this, please ignore this email.  
-            For security reasons, do not share this OTP with anyone.`
+            Your link for resetting your password is: ${verifyUrl}
+            This link will expire in 15 minutes. If you did not request this, please ignore this email.  
+            For security reasons, do not share this link with anyone.`
         }
         
         try {
@@ -195,7 +195,7 @@ export const verifyResetToken = async(req, res)=>{
             return res.json({success: false, message: "User not found."})
         }
         if(user.resetToken==='' || user.resetToken!==resetToken){
-            return res.json({success: false, message: "Invalid OTP."})
+            return res.json({success: false, message: "Invalid Link."})
         }
         if(user.resetTokenExpireAt < Date.now()){
             return res.json({success: false, message: "Link expired"})
