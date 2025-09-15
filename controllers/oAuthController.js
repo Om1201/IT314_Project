@@ -36,11 +36,26 @@ export const verifyToken = async(req,res)=> {
     //check it user exist
     const user = await UserModel.findOne({email});
     //generate token
-    const token = jwt.sign({email, name}, process.env.JWT_SECRET, {expiresIn: '1h'});
+    const token = jwt.sign({email, name}, process.env.JWT_SECRET, {expiresIn: '7d'});
    if(!user){
         //create user
-        const newUser = new UserModel({email, name, token, isAccountVerified: true, expiresIn: '1h'});
+        const newUser = new UserModel({email, name, isAccountVerified: true});
         await newUser.save();
-
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            maxAge: 7*24*60*60*1000
+        })
+        return res.return({success: true, message: 'User registered successfully'});
+   }else{
+        //user already exists
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            maxAge: 7*24*60*60*1000
+        })
+        return res.return({success: true, message: 'User logged in successfully'});
    }
 }
