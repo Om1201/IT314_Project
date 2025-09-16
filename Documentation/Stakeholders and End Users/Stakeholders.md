@@ -12,7 +12,7 @@
   * UI/UX Development and Design 
 * AI Companies
   * API Keys are used for various purposes such as Road Map Generation and AI Chatbot, so the usage affects the AI companies.
-* Government
+* Compliance with the Government and other Regulatory Bodies
   * This includes various data compliance authorities and compliance with local laws.
   * For India this includes :
     * Digital Personal Data Protection Act, 2023 (DPDP Act) : However as the rules have not been finalized/enforced, we also maintain compliance with previous laws.
