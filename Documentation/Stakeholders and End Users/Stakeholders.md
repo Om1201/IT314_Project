@@ -1,8 +1,10 @@
 ## StakeHolders
 * Users
-  * Student Users
+  * Beginner Users
      * Generally would be beginners
-  * Non-Student Users
+  * Experienced Users
+     * People who have experience with a previous language and want to upskill/learn a new language
+  >Changed on the basis of the interview.
 * Development Team
   * Front End
   * Back End
