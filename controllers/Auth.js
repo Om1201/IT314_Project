@@ -3,56 +3,56 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import transporter from "../config/mailer.js"
 import crypto from "crypto"
+import {passwordResetEmail, verificationEmail} from "../utils/emailTemplates.js";
+import {buildResetPasswordUrl, buildVerifyAccountUrl} from "../utils/urlHelpers.js";
 
-export const register = async(req, res)=>{
-    const {name, email, password} = req.body;
+export const register = async (req, res) => {
+    const { name, email, password } = req.body;
 
-    if(!name || !email || !password){
-        return res.json({success: false, message: 'Missing Details'});
+    if (!name || !email || !password) {
+        return res.json({ success: false, message: 'Missing Details' });
     }
-    try{
-        const existingUser = await UserModel.findOne({email})
-        if(existingUser){
-            return res.json({success: false, message: "User already exists"});
+
+    try {
+        const existingUser = await UserModel.findOne({ email });
+        if (existingUser) {
+            return res.json({ success: false, message: "User already exists" });
         }
+
         const hashedPass = await bcrypt.hash(password, 10);
         const verifyToken = crypto.randomUUID();
-        
-        const user = new UserModel({name, email, password: hashedPass, verifyToken, 
-            verifyTokenExpireAt:Date.now() + 1000*60*15,
+
+        const user = new UserModel({
+            name,
+            email,
+            password: hashedPass,
+            verifyToken,
+            verifyTokenExpireAt: Date.now() + 1000 * 60 * 15, // 15 min
         });
-        const verifyUrl = `http://localhost:5173/verifyAccount?token=${verifyToken}&email=${email}`;
+
+        const verifyUrl = buildVerifyAccountUrl(verifyToken, email);
         await user.save();
-        
-        const mailOptions ={
+
+        const { subject, text } = verificationEmail(email, verifyUrl);
+
+        const mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: email,
-            subject: 'Welcome to this website',
-            text: `Welcome to this website!  
-                    Your account has been created with email id: ${email}.  
+            subject,
+            text,
+        };
 
-                    Kindly click on the URL below to verify your account:${verifyUrl}  
-
-                    Please note: This link will expire in 15 minutes. If it expires, you'll need to request a new verification link.  
-`
-        }
-        
         try {
-            
             await transporter.sendMail(mailOptions);
-            
-            
         } catch (emailError) {
             console.error('Error sending email:', emailError);
         }
-        
-        
-        return res.json({success: true})
+
+        return res.json({ success: true });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
     }
-    catch(error){
-        res.json({success: false, message: error.message});
-    }
-}
+};
 
 export const verifyAccount = async(req, res)=> {
     const {token, email} = req.body;
@@ -65,7 +65,7 @@ export const verifyAccount = async(req, res)=> {
         if(!user){
             return res.json({ success: false, message: "User not found" });
         }
-        const matched = (user.verifyToken==token);
+        const matched = (user.verifyToken===token);
         if(!matched){
             return res.json({ success: false, message: "Link in not valid" });
         }
@@ -88,7 +88,7 @@ export const verifyAccount = async(req, res)=> {
     }
 }
 
-export const Signin = async(req, res)=>{
+export const signIn = async(req, res)=>{
     const {email, password} = req.body;
     if(!email || !password){
         return res.json({success: false, message:'Email and password are required'});
@@ -118,7 +118,7 @@ export const Signin = async(req, res)=>{
     }
 }
 
-export const Logout = async(req, res)=>{
+export const logout = async(req, res)=>{
     try{
         res.clearCookie('token', {
             httpOnly: true,
@@ -156,17 +156,16 @@ export const sendResetToken = async(req, res) =>{
         const resetToken = crypto.randomUUID();
         const update = await UserModel.updateOne({email}, {resetToken: resetToken, resetTokenExpireAt: Date.now()+1000*60*15});
 
-        const verifyUrl = `http://localhost:5173/verifyReset?token=${resetToken}&email=${email}`;
+        const resetUrl = buildResetPasswordUrl(resetToken, email);
 
-        const mailOptions ={
+        const { subject, text } = passwordResetEmail(email, resetUrl);
+
+        const mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: email,
-            subject: 'Password Rest Link',
-            text: `We received a request to reset your password for your account linked with email: ${email}.
-            Your link for resetting your password is: ${verifyUrl}
-            This link will expire in 15 minutes. If you did not request this, please ignore this email.  
-            For security reasons, do not share this link with anyone.`
-        }
+            subject,
+            text,
+        };
         
         try {
             
@@ -220,8 +219,7 @@ export const resetPassword = async(req, res)=>{
         if(!user){
             return res.json({success:false, message: "User not found."});  
         }
-        const hashedPass = await bcrypt.hash(newPassword, 10);
-        user.password = hashedPass
+        user.password = await bcrypt.hash(newPassword, 10)
         await user.save();
         return res.json({success:true, message: "Password has been reset successfully."});  
     }catch(error){
