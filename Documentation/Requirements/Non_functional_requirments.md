@@ -3,7 +3,7 @@
 ## 1. **Performance**
 - Page load time should be less than 4 seconds on a standard 10 Mbps internet connection for 95% of requests.
 - AI-generated responses (e.g., roadmap or error explanation) should be delivered within ≤ 1 minute under normal server load.
-- Code execution in the Integrated IDE should start within 1 second after the user clicks "Run" for programs ≤ 200 lines.
+- Code execution in the Integrated IDE should start within 1 second after the user clicks "Run".
 - API endpoints must respond within 2 seconds for 90% of requests under average load conditions.
 
 ## 2. **Availability**
