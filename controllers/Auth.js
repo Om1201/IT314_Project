@@ -132,3 +132,99 @@ export const Logout = async(req, res)=>{
         
     }
 }
+
+export const isAuthenticated = async(req, res)=>{
+    try{
+        return res.json({success:true}) 
+    }catch(error){
+        return res.json({success: false, message: error.message})
+    }
+}
+
+
+export const sendResetToken = async(req, res) =>{
+    const {email} = req.body;
+    
+    if(!email) {
+        return res.json({success: false, message: "Email required"});
+    }
+    try{
+        const user = await UserModel.findOne({email});
+        if(!user){
+            return res.json({success: false, message: "User not found"});
+        }
+        const resetToken = crypto.randomUUID();
+        const update = await UserModel.updateOne({email}, {resetToken: resetToken, resetTokenExpireAt: Date.now()+1000*60*15});
+
+        const verifyUrl = `http://localhost:5173/verifyReset?token=${resetToken}&email=${email}`;
+
+        const mailOptions ={
+            from: process.env.SENDER_EMAIL,
+            to: email,
+            subject: 'Password Rest Link',
+            text: `We received a request to reset your password for your account linked with email: ${email}.
+            Your link for resetting your password is: ${verifyUrl}
+            This link will expire in 15 minutes. If you did not request this, please ignore this email.  
+            For security reasons, do not share this link with anyone.`
+        }
+        
+        try {
+            
+            await transporter.sendMail(mailOptions);
+            
+            
+        } catch (emailError) {
+            console.error('Error sending email:', emailError);
+        }
+
+    }catch(error){
+        return res.json({ success: false, message: error.message });
+    }
+}
+
+
+export const verifyResetToken = async(req, res)=>{
+    const {email, resetToken} = req.body;
+
+    if(!email || !resetToken){
+        return res.json({success:false, message: "Missing Details."})
+    }
+    try{
+        const user = await UserModel.findOne({email});
+        if(!user){
+            return res.json({success: false, message: "User not found."})
+        }
+        if(user.resetToken==='' || user.resetToken!==resetToken){
+            return res.json({success: false, message: "Invalid Link."})
+        }
+        if(user.resetTokenExpireAt < Date.now()){
+            return res.json({success: false, message: "Link expired"})
+        }
+        user.resetToken = '';
+        user.resetTokenExpireAt = 0;
+        await user.save();
+        return res.json({success: true, message: "Enter new password"})
+    }
+    catch(error){
+        return res.json({success: false, message: error.message})
+    }
+}
+
+export const resetPassword = async(req, res)=>{
+    const {email, newPassword} = req.body;
+    if(!newPassword){
+        return res.json({success:false, message: "New password is required."});  
+    }
+    try{
+        const user = await UserModel.findOne({email});
+        if(!user){
+            return res.json({success:false, message: "User not found."});  
+        }
+        const hashedPass = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPass
+        await user.save();
+        return res.json({success:true, message: "Password has been reset successfully."});  
+    }catch(error){
+        return res.json({success:false, message: error.message});  
+    }
+}
