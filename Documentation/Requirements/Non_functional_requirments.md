@@ -1,4 +1,4 @@
-# **Non-Functional Requirements (NFRs) – Feasible and Measurable**
+# **Non-Functional Requirements (NFRs)**
 
 ## 1. **Performance**
 - Page load time should be less than 4 seconds on a standard 10 Mbps internet connection for 95% of requests.
