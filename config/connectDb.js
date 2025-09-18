@@ -1,10 +1,12 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 
-const connectDb = async()=>{
-    mongoose.connection.on('connected', ()=>{
-        console.log("Database Connected✅");
-    })
-    await mongoose.connect(`${process.env.MONGO_URI}/coding-leanring`)
-}
+const connectDb = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log("Connected to Database!");
+    } catch (err) {
+        console.error(" MongoDB connection error:", err.message);
+    }
+};
 
-export default connectDb
+export default connectDb;

@@ -7,7 +7,7 @@ import {verifyToken as googleVerifyToken} from "../controllers/oAuthController.j
 const authRouter = express.Router();
 
 authRouter.post('/register', register);
-authRouter.post('/account-verify', verifyAccount);
+authRouter.post('/verify', verifyAccount);
 authRouter.post('/singin', signIn);
 authRouter.post('/logout', logout);
 authRouter.post('/is-auth', userAuth, isAuthenticated);
