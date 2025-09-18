@@ -16,6 +16,9 @@ export const register = async (req, res) => {
     try {
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
+            if(existingUser.password===null){
+                return res.json({sucess: false, message: "User exists, No password found"});
+            }
             return res.json({ success: false, message: "User already exists" });
         }
 
@@ -97,6 +100,9 @@ export const signIn = async(req, res)=>{
         const user = await UserModel.findOne({email});
         if(!user){
             return res.json({success: false, message:'Invalid email'});
+        }
+        if(user.password===null){
+            return res.json({sucess: false, message: "User exists, No password found"});
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if(!isMatch){
