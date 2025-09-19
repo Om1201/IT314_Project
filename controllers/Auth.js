@@ -200,14 +200,12 @@ export const sendResetToken = async(req, res) =>{
         };
         
         try {
-            
             await transporter.sendMail(mailOptions);
-            
-            
         } catch (emailError) {
             console.error('Error sending email:', emailError);
         }
 
+        return res.json({success: true, message: "Reset token sent to your email"});
     }catch(error){
         return res.json({ success: false, message: error.message });
     }
@@ -229,9 +227,13 @@ export const verifyResetToken = async(req, res)=>{
             return res.json({success: false, message: "Invalid Link."})
         }
         if(user.resetTokenExpireAt < Date.now()){
+            user.resetToken = null;
+            user.resetTokenExpireAt = 0;
+            await user.save();
             return res.json({success: false, message: "Link expired"})
         }
-        user.resetToken = '';
+
+        user.resetToken = null;
         user.resetTokenExpireAt = 0;
         await user.save();
         return res.json({success: true, message: "Enter new password"})
@@ -251,9 +253,13 @@ export const resetPassword = async(req, res)=>{
         if(!user){
             return res.json({success:false, message: "User not found."});  
         }
-        user.password = await bcrypt.hash(newPassword, 10)
+        
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.resetToken = null;
+        user.resetTokenExpireAt = 0;
         await user.save();
-        return res.json({success:true, message: "Password has been reset successfully."});  
+        
+        return res.json({success:true, message: "Password has been reset successfully."});
     }catch(error){
         return res.json({success:false, message: error.message});  
     }
