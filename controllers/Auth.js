@@ -3,15 +3,47 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import transporter from "../config/mailer.js"
 import crypto from "crypto"
+import axios from "axios"
 import {passwordResetEmail, verificationEmail} from "../utils/emailTemplates.js";
 import {buildResetPasswordUrl, buildVerifyAccountUrl} from "../utils/urlHelpers.js";
 
+// Captcha verification function simply calls an google API to verify the token , you need to add recaptcha secret key in .env file
+const verifyRecaptcha = async (recaptchaToken) => {
+    try {
+        const response = await axios.post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`,
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }
+        );
+        return response.data.success;
+    } catch (error) {
+        console.error('reCAPTCHA verification error:', error);
+        return false;
+    }
+};
+
 export const register = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, recaptchaToken } = req.body;
 
     if (!name || !email || !password) {
         return res.json({ success: false, message: 'Missing Details' });
     }
+     // Verify reCAPTCHA  this will be skipped in development mode to run it we will have to set NODE_ENV to production in .env file
+    if (process.env.NODE_ENV !== 'development') {
+        if (!recaptchaToken) {
+            return res.json({success: false, message: 'Please complete the security verification'});
+        }
+        
+        const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+        if (!isRecaptchaValid) {
+            return res.json({success: false, message: 'Security verification failed. Please try again.'});
+        }
+    }
+
 
     try {
         const existingUser = await UserModel.findOne({ email });
@@ -168,14 +200,12 @@ export const sendResetToken = async(req, res) =>{
         };
         
         try {
-            
             await transporter.sendMail(mailOptions);
-            
-            
         } catch (emailError) {
             console.error('Error sending email:', emailError);
         }
 
+        return res.json({success: true, message: "Reset token sent to your email"});
     }catch(error){
         return res.json({ success: false, message: error.message });
     }
@@ -197,9 +227,13 @@ export const verifyResetToken = async(req, res)=>{
             return res.json({success: false, message: "Invalid Link."})
         }
         if(user.resetTokenExpireAt < Date.now()){
+            user.resetToken = null;
+            user.resetTokenExpireAt = 0;
+            await user.save();
             return res.json({success: false, message: "Link expired"})
         }
-        user.resetToken = '';
+
+        user.resetToken = null;
         user.resetTokenExpireAt = 0;
         await user.save();
         return res.json({success: true, message: "Enter new password"})
@@ -219,9 +253,13 @@ export const resetPassword = async(req, res)=>{
         if(!user){
             return res.json({success:false, message: "User not found."});  
         }
-        user.password = await bcrypt.hash(newPassword, 10)
+        
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.resetToken = null;
+        user.resetTokenExpireAt = 0;
         await user.save();
-        return res.json({success:true, message: "Password has been reset successfully."});  
+        
+        return res.json({success:true, message: "Password has been reset successfully."});
     }catch(error){
         return res.json({success:false, message: error.message});  
     }
