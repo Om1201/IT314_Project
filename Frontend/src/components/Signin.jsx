@@ -111,7 +111,7 @@ export default function Signin() {
 
             <div className="grid cursor-pointer grid-cols-1 gap-4">
               <button className="w-full px-6 py-3 border border-slate-600 text-slate-200 hover:bg-slate-800 bg-slate-800/50 hover:border-blue-400 transition-all duration-300 rounded-xl hover:shadow-md flex items-center justify-center font-medium group">
-                <img src="images/google.png" className="h-5 pr-2" alt="" />
+                <img src="images/google.png" className="h-5 pr-2" alt="google logo" />
                 Continue with Google
               </button>
             </div>
