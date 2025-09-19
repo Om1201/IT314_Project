@@ -15,7 +15,7 @@ What motivated you to learn coding (career, academics, personal interest, etc.)?
 
 **Answer:** 
 
-Mainly career reasons. I want to get into a well paying job, and I know coding skills are essential for internships and placements. But I also enjoy solving logical problems, so it’s a kind of both career and interset.
+Mainly career reasons. I want to get into a well paying job, and I know coding skills are essential for internships and placements. But I also enjoy solving logical problems, so it’s a kind of both career and interest.
 
 ---
 
@@ -25,7 +25,7 @@ What do you want to from  an online code learning platform?
 
 **Answer:** 
 
-I primarly want to learn programming from basics to advanced so that I can prepare for online assesments and coding interviews, and also learn how to work on real projects. For this i want to learn various tech stacks from begineer to advanced level.
+I primarly want to learn programming from basics to advanced so that I can prepare for online assesments and coding interviews, and also learn how to work on real projects. For this I want to learn various tech stacks from begineer to advanced level.
 
 ---
 
@@ -45,7 +45,7 @@ What difficulties do you usually face while learning coding online?
 
 **Answer:** 
 
-One problem is that too much of time is wasted on searching for resources, like when you are learning a particular topic, you need to search and navigate through videos on Youtube or GeeksforGeeks and for that particular topic there are many other prerequisites that again I have to search and overall the process becomes very time consumoing an inefficient.
+One problem is that too much of time is wasted on searching for resources, like when you are learning a particular topic, you need to search and navigate through videos on Youtube or GeeksforGeeks and for that particular topic there are many other prerequisites that again I have to search and overall the process becomes very time consuming an inefficient.
 
 ---
 
@@ -71,11 +71,11 @@ Generally I do coding on laptop, so I would prefer a desktop website. I dont thi
 
 **Question:** 
 
-What’s  one feature you wish existed in every coding learning platform?
+What’s one feature you wish existed in every coding learning platform?
 
 **Answer:** 
 
-I would prefer a doubt assistant — what happens is while coding I get stuck in some problem, so at that time if an AI assistant can give me hints to complete the problem or point out erros which I have made in my code, that would be very much helpful, especially for begineers or when I am learning a new tech stack from scratch.
+I would prefer a doubt assistant — what happens is while coding I get stuck in some problem, so at that time if an AI assistant can give me hints to complete the problem or point out erros which I have made in my code, that would be very much helpful, especially for begineers or when I am learning a new tech stack from scratch. I would also like to have a timer in the IDE to solve questions in time constraint.
 
 ---
 
