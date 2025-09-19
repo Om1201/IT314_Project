@@ -3,15 +3,47 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import transporter from "../config/mailer.js"
 import crypto from "crypto"
+import axios from "axios"
 import {passwordResetEmail, verificationEmail} from "../utils/emailTemplates.js";
 import {buildResetPasswordUrl, buildVerifyAccountUrl} from "../utils/urlHelpers.js";
 
+// Captcha verification function simply calls an google API to verify the token , you need to add recaptcha secret key in .env file
+const verifyRecaptcha = async (recaptchaToken) => {
+    try {
+        const response = await axios.post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`,
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }
+        );
+        return response.data.success;
+    } catch (error) {
+        console.error('reCAPTCHA verification error:', error);
+        return false;
+    }
+};
+
 export const register = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, recaptchaToken } = req.body;
 
     if (!name || !email || !password) {
         return res.json({ success: false, message: 'Missing Details' });
     }
+     // Verify reCAPTCHA  this will be skipped in development mode to run it we will have to set NODE_ENV to production in .env file
+    if (process.env.NODE_ENV !== 'development') {
+        if (!recaptchaToken) {
+            return res.json({success: false, message: 'Please complete the security verification'});
+        }
+        
+        const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+        if (!isRecaptchaValid) {
+            return res.json({success: false, message: 'Security verification failed. Please try again.'});
+        }
+    }
+
 
     try {
         const existingUser = await UserModel.findOne({ email });
