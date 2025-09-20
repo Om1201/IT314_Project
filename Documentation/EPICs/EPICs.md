@@ -1,6 +1,4 @@
-# EPICs
-
-## Epic 1: User Authentication 
+## Epic 1: User Authentication & Account Management
 
 **Goal:**
 Enable users to securely create and manage accounts.
@@ -77,5 +75,29 @@ Provide users with a roadmap and learning evaluation.
 #### Sprint 6
 - AI error analysis & suggestions
 - Automatic complexity calculation
+
+
+
+## Epic 4: System Reliability & Performance
+
+**Goal:** Ensure the platform performs reliably under load and is secure and is compliant with local laws.
+
+### Non-Functional Requirements Covered
+1. Performance: page load times, API response times
+2. Availability: minimum 99.8% uptime
+3. Scalability: support ≥500 concurrent users
+4. Maintainability: modular code, consistent style
+5. Compliance: GDPR, third-party licensing
+
+### Sprint Allocation
+
+#### Sprint 7
+- Performance tuning (load testing, API optimization)
+- Database failover & uptime monitoring
+- Security hardening
+- Compliance documentation
+
+
+
 
 
