@@ -2,18 +2,21 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Signin from './components/Signin';
 import Home from './components/Home';
 import Signup from './components/Signup';
+import VerifyAccount from './components/VerifyAccount';
 import Callback from './components/Callback';
 
-
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
     <>
+    <Toaster reverseOrder={false}/>
       <Router>
         <Routes>
           <Route path='/' element={<Home/>} />
           <Route path='/signin' element={<Signin/>} />
           <Route path='/signup' element={<Signup/>} />
+          <Route path='/verifyaccount' element={<VerifyAccount/>} />
           <Route path='/oauth/google/callback' element={<Callback/>}/>
         </Routes>
       </Router>

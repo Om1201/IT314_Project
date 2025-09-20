@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { Code, Eye, EyeOff } from "lucide-react"
 import { Link } from "react-router-dom"
-
+import axios from "axios"
+import toast from "react-hot-toast"
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false)
@@ -11,10 +12,27 @@ export default function Signup() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
 
-    const handleSubmit = (e) => {
-      e.preventDefault()
-      // pass
-    }
+    
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      if(password!==confirmPassword){
+        toast.error("Password do not match");
+        return;
+      }
+      const body = {
+        name,
+        email,
+        password,
+      };
+      try {
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register`, body);
+        toast.success("Verification link sent to your email")
+      } catch (err) {
+        // console.error(err.response.data.success);
+        toast.error(err.response.data.message)
+      }
+    };
+    
     const handleOauthGoogle = () => {
       window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/oauth/google/login`
     }
@@ -133,13 +151,13 @@ export default function Signup() {
                 <span className="w-full border-t border-slate-600" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-slate-900 px-3 text-slate-400 font-medium">Or continue with</span>
+                <span className="bg-slate-900 px-3 text-slate-400 font-medium">Or</span>
               </div>
             </div>
 
             <div className="grid cursor-pointer grid-cols-1 gap-4">
-              <button className="w-full px-6 py-3 border border-slate-600 text-slate-200 hover:bg-slate-800 bg-slate-800/50 hover:border-blue-400 transition-all duration-300 rounded-xl hover:shadow-md flex items-center justify-center font-medium group cursor-pointer">
-                <img src="images/google.png" alt="google logo" />
+              <button onClick={handleOauthGoogle} className="w-full px-6 py-3 border border-slate-600 text-slate-200 hover:bg-slate-800 bg-slate-800/50 hover:border-blue-400 transition-all duration-300 rounded-xl hover:shadow-md flex items-center justify-center font-medium group cursor-pointer">
+                <img src="images/google.png" className="h-5 pr-2" alt="google logo" />
                 Continue with Google
               </button>
             </div>
