@@ -48,7 +48,7 @@ export const resetPassSchema = z.object({
     .toLowerCase()
     .email("Invalid email address"),
   
-  password: z
+  newPassword: z
     .string()
     .min(1, "Password is required")
     .min(6, "Password must be at least 6 characters long")
@@ -67,7 +67,7 @@ export const tokenSchema = z.object({
     .min(1, "Email is required")
     .toLowerCase()
     .email("Invalid email format"),
-  resetToken: z
+  token: z
     .string()
     .min(1, "Token is required")
     .uuid("Invalid reset token format"),

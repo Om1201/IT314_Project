@@ -7,16 +7,12 @@ import {passwordResetEmail, verificationEmail} from "../utils/emailTemplates.js"
 import {buildResetPasswordUrl, buildVerifyAccountUrl} from "../utils/urlHelpers.js";
 
 export const register = async (req, res) => {
-    const { name, email, password } = req.body;
 
-    if (!name || !email || !password) {
-        return res.json({ success: false, message: 'Missing Details' });
-    }
-
+    const { name, email, password } = req.validatedData;
     try {
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
-            return res.json({ success: false, message: "User already exists" });
+            return res.status(409).json({ success: false, message: "User already exists" });
         }
 
         const hashedPass = await bcrypt.hash(password, 10);
@@ -48,29 +44,29 @@ export const register = async (req, res) => {
             console.error('Error sending email:', emailError);
         }
 
-        return res.json({ success: true });
+        return res.status(201).json({
+            success: true,
+            message: "User registered successfully. Please check your email to verify your account.",
+        }); 
     } catch (error) {
-        res.json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
 
 export const verifyAccount = async(req, res)=> {
-    const {token, email} = req.body;
+    const { email, token } = req.validatedData;
     
-    if(!token || !email){
-        return res.json({ success: false, message: "Missing details" })
-    }
     try{
         const user = await UserModel.findOne({email});
         if(!user){
-            return res.json({ success: false, message: "User not found" });
+            return res.status(404).json({ success: false, message: "User not found" });
         }
         const matched = (user.verifyToken===token);
         if(!matched){
-            return res.json({ success: false, message: "Link in not valid" });
+            return res.status(400).json({ success: false, message: "Link in not valid" });
         }
         if(user.verifyTokenExpireAt < Date.now()){
-            return res.json({ success: false, message: "Link is Expired" });
+            return res.status(400).json({ success: false, message: "Link is Expired" });
         }
         const update = await UserModel.updateOne({email}, {isAccountVerified: true, verifyToken: '', verifyTokenExpireAt: 0});
         
@@ -82,28 +78,25 @@ export const verifyAccount = async(req, res)=> {
             maxAge: 7*24*60*60*1000
         })
         
-        return res.json({ success: true, message: "Account verified" });
+        return res.status(200).json({ success: true, message: "Account verified" });
     }catch(error){
-        return res.json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
 
 export const signIn = async(req, res)=>{
-    const {email, password} = req.body;
-    if(!email || !password){
-        return res.json({success: false, message:'Email and password are required'});
-    }
+    const { email, password } = req.validatedData;
     try{
         const user = await UserModel.findOne({email});
         if(!user){
-            return res.json({success: false, message:'Invalid email'});
+            return res.status(404).json({success: false, message:'Invalid email'});
         }
         if(user.password===null){
-            return res.json({sucess: false, message: "User exists, No password found"});
+            return res.status(400).json({success: false, message: "User exists, No password found"});
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if(!isMatch){
-            return res.json({success: false, message:'Incorrect password'});
+            return res.status(400).json({success: false, message:'Incorrect password'});
         }
         const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
         res.cookie('token', token, {
@@ -113,11 +106,11 @@ export const signIn = async(req, res)=>{
             maxAge: 7*24*60*60*1000
         })
         
-        return res.json({success: true})
+        return res.status(200).json({success: true})
         
     }
     catch(error){
-        return res.json({success: false, message: error.message});
+        return res.status(500).json({success: false, message: error.message});
     }
 }
 
@@ -128,10 +121,10 @@ export const logout = async(req, res)=>{
             secure: true,
             sameSite: "None",
         })
-        return res.json({success: true, message: 'Logged out'})
+        return res.status(200).json({success: true, message: 'Logged out'})
     }
     catch(error){
-        return res.json({success: false, message: error.message});
+        return res.status(500).json({success: false, message: error.message});
         
     }
 }
@@ -146,7 +139,7 @@ export const isAuthenticated = async(req, res)=>{
 
 
 export const sendResetToken = async(req, res) =>{
-    const {email} = req.body;
+    const { email } = req.validatedData;
     
     if(!email) {
         return res.json({success: false, message: "Email required"});
@@ -154,7 +147,7 @@ export const sendResetToken = async(req, res) =>{
     try{
         const user = await UserModel.findOne({email});
         if(!user){
-            return res.json({success: false, message: "User not found"});
+            return res.status(404).json({success: false, message: "User not found"});
         }
         const resetToken = crypto.randomUUID();
         const update = await UserModel.updateOne({email}, {resetToken: resetToken, resetTokenExpireAt: Date.now()+1000*60*15});
@@ -171,61 +164,52 @@ export const sendResetToken = async(req, res) =>{
         };
         
         try {
-            
             await transporter.sendMail(mailOptions);
-            
-            
         } catch (emailError) {
             console.error('Error sending email:', emailError);
         }
-
+        return res.status(200).json({ success: true, message: "Password reset token sent. Please check your email."})
     }catch(error){
-        return res.json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
 
 
 export const verifyResetToken = async(req, res)=>{
-    const {email, resetToken} = req.body;
+    const { email, token: resetToken } = req.validatedData;
 
-    if(!email || !resetToken){
-        return res.json({success:false, message: "Missing Details."})
-    }
     try{
         const user = await UserModel.findOne({email});
         if(!user){
-            return res.json({success: false, message: "User not found."})
+            return res.status(404).json({success: false, message: "User not found."})
         }
         if(user.resetToken==='' || user.resetToken!==resetToken){
-            return res.json({success: false, message: "Invalid Link."})
+            return res.status(400).json({success: false, message: "Invalid Link."})
         }
         if(user.resetTokenExpireAt < Date.now()){
-            return res.json({success: false, message: "Link expired"})
+            return res.status(400).json({success: false, message: "Link expired"})
         }
         user.resetToken = '';
         user.resetTokenExpireAt = 0;
         await user.save();
-        return res.json({success: true, message: "Enter new password"})
+        return res.status(200).json({success: true, message: "Enter new password"})
     }
     catch(error){
-        return res.json({success: false, message: error.message})
+        return res.status(500).json({success: false, message: error.message})
     }
 }
 
 export const resetPassword = async(req, res)=>{
-    const {email, newPassword} = req.body;
-    if(!newPassword){
-        return res.json({success:false, message: "New password is required."});  
-    }
+    const {email, newPassword} = req.validatedData;
     try{
         const user = await UserModel.findOne({email});
         if(!user){
-            return res.json({success:false, message: "User not found."});  
+            return res.status(404).json({success:false, message: "User not found."});  
         }
         user.password = await bcrypt.hash(newPassword, 10)
         await user.save();
-        return res.json({success:true, message: "Password has been reset successfully."});  
+        return res.status(200).json({success:true, message: "Password has been reset successfully."});  
     }catch(error){
-        return res.json({success:false, message: error.message});  
+        return res.status(500).json({success:false, message: error.message});  
     }
 }
