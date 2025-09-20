@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Signin from './components/Signin';
 import Home from './components/Home';
 import Signup from './components/Signup';
+import Callback from './components/Callback';
+
 
 
 function App() {
@@ -12,6 +14,7 @@ function App() {
           <Route path='/' element={<Home/>} />
           <Route path='/signin' element={<Signin/>} />
           <Route path='/signup' element={<Signup/>} />
+          <Route path='/oauth/google/callback' element={<Callback/>}/>
         </Routes>
       </Router>
     </>

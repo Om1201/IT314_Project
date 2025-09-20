@@ -19,6 +19,6 @@ authRouter.post('/verify-reset-token', validate(tokenSchema), verifyResetToken);
 authRouter.post('/reset-password', validate(resetPassSchema), resetPassword);
 
 authRouter.get('/oauth/google/login', googleLogin);
-authRouter.get('/oauth/google/callback', googleVerifyToken);
+authRouter.post('/oauth/google/callback', googleVerifyToken);
 
 export default authRouter;

@@ -11,10 +11,13 @@ export default function Signup() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // pass
-  }
+    const handleSubmit = (e) => {
+      e.preventDefault()
+      // pass
+    }
+    const handleOauthGoogle = () => {
+      window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/oauth/google/login`
+    }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-black flex items-center justify-center p-4 relative overflow-hidden">
