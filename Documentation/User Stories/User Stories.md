@@ -88,3 +88,12 @@ As a learner, I want external sources (articles/videos) suggested for topics whi
 - User can bookmark/save them in notes.  
 
 ---
+## 9. Theme Selection 
+**Front:**  
+As a user, I want to switch between light and dark themes so that I can learn comfortably in any environment. 
+
+**Back:**    
+- User can toggle between light/dark mode.
+- Preference is saved in profile.
+
+---
