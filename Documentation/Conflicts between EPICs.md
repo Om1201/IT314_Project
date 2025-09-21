@@ -15,11 +15,5 @@
 
 ---
 
-## 3. Epic 3 (Coding Environment & AI) vs Epic 4 (GitHub Integration & Certifications)
-- **Project Submission:** GitHub integration (Epic 4, Sprint 7) depends on projects or exercises coded in the IDE (Epic 3).  
-- **Certificate Generation:** Certification may require evaluation results (Epic 2, Sprint 4)
 
-**Possible resolution:** Certification generation and Github Integration in Sprint 7 should only be done after evaluation completion (Sprint 4) and IDE setup (Sprint 5).
-
----
 
