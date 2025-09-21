@@ -9,7 +9,7 @@ Enable users to securely create and manage accounts.
 1. User Signup: Email/Password, Google Authentication  
 2. Reset Password  
 3. Account Verification  
-4. User Profile Management (Name, Previous Experience, Notifications/Reminders)
+4. User Profile Management
 
 ### Non-Functional Requirements Covered
 1. **Security:** Password hashing, HTTPS, OAuth 2.0 secure login  
@@ -53,7 +53,7 @@ Provide users with learning paths, progress tracking, and evaluation.
 
 #### Sprint 3
 - Roadmap generation (based on user profile & experience)  
-- Module creation (difficulty, pre-requisites, career-focus)  
+- Module creation (difficulty, pre-requisites)  
 - Multiple course support  
 
 #### Sprint 4
