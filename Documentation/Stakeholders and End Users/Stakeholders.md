@@ -1,4 +1,4 @@
-## StakeHolders
+## Stake Holders
 * Users
   * Beginner Users
      * Generally would be beginners
@@ -27,3 +27,6 @@
   * Website Owner
   * AI access API Billing
 
+## End Users
+* Users
+* Development Team
