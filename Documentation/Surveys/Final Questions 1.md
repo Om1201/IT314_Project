@@ -1,3 +1,5 @@
+# Anshuman
+
 ## **MCQs**
 1. How would you rate your current coding level?
    * Beginner (no prior coding)
@@ -99,8 +101,6 @@
 
   1 = Strongly disagree · 5 = Strongly agree
 
----
-
 5. I want mini-projects at the end of each module.
 
   1 = Not important · 5 = Extremely important
@@ -121,8 +121,6 @@
 
   1 = Not important · 5 = Extremely important
 
----
-
 10. I want example-based explanations with small snippets of runnable code.
 
   1 = Not at all likely · 5 = Extremely likely
@@ -134,7 +132,6 @@
 12. I would be okay with a free tier with core features, and pay for a premium version with more tokens and features.
    
   1 = Not at all likely · 5 = Extremely likely
-
 ---
 
 
