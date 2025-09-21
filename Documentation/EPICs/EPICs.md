@@ -87,22 +87,4 @@ Provide a hands-on coding environment with intelligent AI support.
 - AI error analysis & suggestions  
 - Automatic code optimization & explanation  
 
-## Epic 4: GitHub Integration & Certifications
 
-**Goal:**
-Enable project management and credential recognition.
-
-### Functional Requirements Covered
-1. GitHub Integration: Link account, push/pull code  
-2. Certifications: Industry-recognized certificates for course completion  
-
-### Non-Functional Requirements Covered
-1. **Performance:** GitHub sync fast and reliable  
-2. **Usability:** Simple linking & workflow  
-3. **Compliance:** Certificates follow industry standards  
-
-### Sprint Allocation
-
-#### Sprint 7
-- GitHub integration (linking + push/pull)  
-- Certification generation & download  
