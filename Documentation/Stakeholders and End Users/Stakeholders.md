@@ -6,10 +6,9 @@
      * People who have experience with a previous language and want to upskill/learn a new language
   >Changed on the basis of the interview.
 * Development Team
-  * Front End
+  * Front End ( includes UI/UX Development and Design )
   * Back End
-* Design Team
-  * UI/UX Development and Design 
+  >Changed on the basis of role assignment
 * AI Companies
   * API Keys are used for various purposes such as Road Map Generation and AI Chatbot, so the usage affects the AI companies.
 * Compliance with the Government and other Regulatory Bodies
