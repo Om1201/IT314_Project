@@ -60,6 +60,7 @@ Provide users with a roadmap and learning evaluation.
 1. Integrated IDE
 2. AI Assistance for Errors
 3. Automated Time and Space Complexity Calculations
+4. Theme Selection
 
 ### Non-Functional Requirements Covered
 1. Performance: code execution ≤1 second, AI responses ≤1 min
@@ -73,6 +74,7 @@ Provide users with a roadmap and learning evaluation.
 - Basic IDE setup (write, run, compile for multiple languages)
 - AI error analysis & suggestions
 - Automatic complexity calculation
+- Theme Selection (light/dark mode)
 
 
 
