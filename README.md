@@ -9,8 +9,10 @@ The goal of this Website is to save the time and effort of going through various
 It is a full-stack web application built to help students and aspiring developers master coding through structured learning modules, real-time coding in an integrated IDE, and AI-powered assistance. 
 It offers intelligent debugging support, automated time and space complexity analysis, and personalized guidance to enhance problem-solving skills efficiently.
 
-**Current Planned Features Include:**
+**Current Completed Features Include:**
 * Authentication
+  
+**Current Planned Features Include:**
 * Roadmap Generation
 * Progress Tracking
 * IDE integration
