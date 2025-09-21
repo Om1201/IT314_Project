@@ -9,6 +9,7 @@
 	2. Login with Google.
 	3. Login with GitHub.
 	4. Reset Password.
+    5. Account Verification
 2. **User Profile**
 	1. Name. 
 	2. Previous Experience.
