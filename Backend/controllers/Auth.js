@@ -73,8 +73,8 @@ export const verifyAccount = async(req, res)=> {
         const jwttoken = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
         res.cookie('token', jwttoken, {
             httpOnly: true,
-            secure: true,
-            sameSite: "None",
+            // secure: true,
+            // sameSite: "None",
             maxAge: 7*24*60*60*1000
         })
         
@@ -101,8 +101,8 @@ export const signIn = async(req, res)=>{
         const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
         res.cookie('token', token, {
             httpOnly: true,
-            secure: true,
-            sameSite: "None",
+            // secure: true,
+            // sameSite: "None",
             maxAge: 7*24*60*60*1000
         })
         
@@ -118,8 +118,8 @@ export const logout = async(req, res)=>{
     try{
         res.clearCookie('token', {
             httpOnly: true,
-            secure: true,
-            sameSite: "None",
+            // secure: true,
+            // sameSite: "None",
         })
         return res.status(200).json({success: true, message: 'Logged out'})
     }
@@ -131,9 +131,9 @@ export const logout = async(req, res)=>{
 
 export const isAuthenticated = async(req, res)=>{
     try{
-        return res.json({success:true}) 
+        return res.status(200).json({success:true}) 
     }catch(error){
-        return res.json({success: false, message: error.message})
+        return res.status(500).json({success: false, message: error.message})
     }
 }
 

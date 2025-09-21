@@ -12,7 +12,7 @@ authRouter.post('/register', validate(registerSchema), register);
 authRouter.post('/verify-account', validate(tokenSchema), verifyAccount);
 authRouter.post('/signin', validate(signinSchema), signIn);
 authRouter.post('/logout', logout);
-authRouter.post('/is-auth', userAuth, isAuthenticated);
+authRouter.get('/is-auth', userAuth, isAuthenticated);
 
 authRouter.post('/send-reset-token', validate(emailSchema), sendResetToken);
 authRouter.post('/verify-reset-token', validate(tokenSchema), verifyResetToken);
