@@ -132,6 +132,7 @@
 12. I would be okay with a free tier with core features, and pay for a premium version with more tokens and features.
    
   1 = Not at all likely · 5 = Extremely likely
+
 ---
 
 
