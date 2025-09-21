@@ -26,10 +26,22 @@ export default function Signup() {
       };
       try {
         const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register`, body);
-        toast.success("Verification link sent to your email")
+        if (response.data.success) {
+          toast.success("Registration successful! Please check your email to verify your account.");
+          // Clear form fields after successful registration
+          setName("");
+          setEmail("");
+          setPassword("");
+          setConfirmPassword("");
+        } else {
+          toast.error(response.data.message || "Registration failed. Please try again.");
+        }
       } catch (err) {
-        // console.error(err.response.data.success);
-        toast.error(err.response.data.message)
+        if(err.response?.data?.message){
+          toast.error(err.response.data.message);
+        } else {
+          toast.error("An error occurred during registration. Please try again.");
+        }
       }
     };
     
