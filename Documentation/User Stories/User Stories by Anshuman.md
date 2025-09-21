@@ -207,7 +207,7 @@
   * **Then** a module list is created
   * **And** it is displayed
   * **And** it is stored to my course
-  * **Given** my experience level is not set and I am on the Roadmap page
+* **Given** my experience level is not set and I am on the Roadmap page
   * **Then** I have to select my experience level 
   * **When** I choose `Beginner` or `Intermediate` or `Advanced` and Save
   * **When** I click `Generate Roadmap`
