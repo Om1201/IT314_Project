@@ -71,8 +71,6 @@ Provide users with a roadmap and learning evaluation.
 
 #### Sprint 5
 - Basic IDE setup (write, run, compile for multiple languages)
-
-#### Sprint 6
 - AI error analysis & suggestions
 - Automatic complexity calculation
 
@@ -91,7 +89,7 @@ Provide users with a roadmap and learning evaluation.
 
 ### Sprint Allocation
 
-#### Sprint 7
+#### Sprint 6
 - Performance tuning (load testing, API optimization)
 - Database failover & uptime monitoring
 - Security hardening
