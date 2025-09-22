@@ -135,4 +135,25 @@
 
 ---
 
+# Sanyam
+
+## Rating-Based Questions (1–5)
+
+**Scale:**  
+1 = Strongly Disagree  
+5 = Strongly Agree  
+
+1. Does having a structured roadmap help you stay consistent in learning?  
+2. Do you find it easy to navigate and use online learning platforms?  
+3. Is the availability of multiple programming languages important to you?  
+4. Would you find an AI assistant helpful if it explains what error you made in your code?  
+5. Would you like the platform to automatically suggest improvements or optimized solutions for your code?  
+6. Would you find it useful if the platform provided hints step-by-step instead of giving the full solution?  
+
+---
+
+## Open-Ended Text Questions
+
+1. What do you currently use to debug your code?  
+2. How do you usually prefer to learn coding (videos, text, interactive coding, projects, etc.)?  
 
