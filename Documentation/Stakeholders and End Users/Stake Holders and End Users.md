@@ -1,4 +1,4 @@
-## Stake Holders
+ ## Stake Holders
 * Users
   * Beginner Users
      * Generally would be beginners
@@ -29,4 +29,7 @@
 
 ## End Users
 * Users
-* Development Team
+  * Beginner Learners
+  * Intermediate Learners
+  * Advanced/Experienced Learners
+* Developers / Job Seekers

@@ -24,7 +24,7 @@ const Callback = () => {
       } catch (err) {
         console.error("Error during token exchange:", err);
         alert(err.response?.data?.message || "Failed to exchange code");
-        navigate("/signin"); // fallback redirect
+        navigate("/signin"); 
       }
     };
 

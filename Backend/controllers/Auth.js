@@ -7,9 +7,12 @@ import {passwordResetEmail, verificationEmail} from "../utils/emailTemplates.js"
 import {buildResetPasswordUrl, buildVerifyAccountUrl} from "../utils/urlHelpers.js";
 
 export const register = async (req, res) => {
-
-    const { name, email, password } = req.validatedData;
     try {
+        console.log('Registration request received:', req.body);
+        console.log('Validated data:', req.validatedData);
+        
+        const { name, email, password } = req.validatedData;
+        
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
             return res.status(409).json({ success: false, message: "User already exists" });
@@ -49,7 +52,13 @@ export const register = async (req, res) => {
             message: "User registered successfully. Please check your email to verify your account.",
         }); 
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        console.error('Registration error:', error);
+        console.error('Error stack:', error.stack);
+        return res.status(500).json({ 
+            success: false, 
+            message: "Internal server error",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined 
+        });
     }
 };
 
@@ -175,38 +184,55 @@ export const sendResetToken = async(req, res) =>{
 }
 
 
-export const verifyResetToken = async(req, res)=>{
-    const { email, token: resetToken } = req.validatedData;
+// export const verifyResetToken = async(req, res)=>{
+//     const { email, token: resetToken } = req.validatedData;
 
-    try{
-        const user = await UserModel.findOne({email});
-        if(!user){
-            return res.status(404).json({success: false, message: "User not found."})
-        }
-        if(user.resetToken==='' || user.resetToken!==resetToken){
-            return res.status(400).json({success: false, message: "Invalid Link."})
-        }
-        if(user.resetTokenExpireAt < Date.now()){
-            return res.status(400).json({success: false, message: "Link expired"})
-        }
-        user.resetToken = '';
-        user.resetTokenExpireAt = 0;
-        await user.save();
-        return res.status(200).json({success: true, message: "Enter new password"})
-    }
-    catch(error){
-        return res.status(500).json({success: false, message: error.message})
-    }
-}
+//     try{
+//         const user = await UserModel.findOne({email});
+//         if(!user){
+//             return res.status(404).json({success: false, message: "User not found."})
+//         }
+//         if(user.resetToken==='' || user.resetToken!==resetToken){
+//             return res.status(400).json({success: false, message: "Invalid Link."})
+//         }
+//         if(user.resetTokenExpireAt < Date.now()){
+//             user.resetToken = null;
+//             user.resetTokenExpireAt = 0;
+//             await user.save();
+//             return res.json({success: false, message: "Link expired"})
+//         }
+
+//         user.resetToken = null;
+//         user.resetTokenExpireAt = 0;
+//         await user.save();
+//         return res.status(200).json({success: true, message: "Enter new password"})
+//     }
+//     catch(error){
+//         return res.status(500).json({success: false, message: error.message})
+//     }
+// }
 
 export const resetPassword = async(req, res)=>{
-    const {email, newPassword} = req.validatedData;
+    const {email, newPassword, token: resetToken} = req.validatedData;
     try{
         const user = await UserModel.findOne({email});
         if(!user){
             return res.status(404).json({success:false, message: "User not found."});  
         }
-        user.password = await bcrypt.hash(newPassword, 10)
+
+        if(user.resetToken==='' || user.resetToken!==resetToken){
+            return res.status(400).json({success: false, message: "Invalid Link."})
+        }
+        if(user.resetTokenExpireAt < Date.now()){
+            user.resetToken = null;
+            user.resetTokenExpireAt = 0;
+            await user.save();
+            return res.json({success: false, message: "Link expired"})
+        }
+
+        user.resetToken = null;
+        user.resetTokenExpireAt = 0;
+        user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
         return res.status(200).json({success:true, message: "Password has been reset successfully."});  
     }catch(error){

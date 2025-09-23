@@ -157,8 +157,8 @@
  coding modules? Removed from Anshuman
  Extremely Important | Very Important | Moderately Important | Slightly Important | Not
  Important
-
-# Sanyam
+ 
+ # Sanyam
 
 ## Rating-Based Questions (1–5)
 
@@ -179,4 +179,5 @@
 
 1. What do you currently use to debug your code?  
 2. How do you usually prefer to learn coding (videos, text, interactive coding, projects, etc.)?  
+
 

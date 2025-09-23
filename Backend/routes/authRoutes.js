@@ -1,5 +1,5 @@
 import express from "express" 
-import {isAuthenticated, logout, register, resetPassword, sendResetToken, signIn, verifyAccount, verifyResetToken} from "../controllers/Auth.js";
+import {isAuthenticated, logout, register, resetPassword, sendResetToken, signIn, verifyAccount} from "../controllers/Auth.js";
 import userAuth from "../middlewares/userAuth.js"
 import {login as googleLogin} from "../controllers/oAuthController.js";
 import {verifyToken as googleVerifyToken} from "../controllers/oAuthController.js";
@@ -15,7 +15,7 @@ authRouter.post('/logout', logout);
 authRouter.get('/is-auth', userAuth, isAuthenticated);
 
 authRouter.post('/send-reset-token', validate(emailSchema), sendResetToken);
-authRouter.post('/verify-reset-token', validate(tokenSchema), verifyResetToken);
+// authRouter.post('/verify-reset-token', validate(tokenSchema), verifyResetToken);
 authRouter.post('/reset-password', validate(resetPassSchema), resetPassword);
 
 authRouter.get('/oauth/google/login', googleLogin);

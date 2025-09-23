@@ -3,8 +3,7 @@ import jwt from "jsonwebtoken";
 import axios from "axios";
 import {
     buildGoogleAuthUrl,
-    buildGoogleTokenUrl,
-    buildGoogleUserInfoUrl
+    buildGoogleTokenParams,
 } from "../utils/urlHelpers.js";
 
 export const login = async (req, res) => {
@@ -19,13 +18,7 @@ export const verifyToken = async (req, res) => {
   if (!code) return res.status(400).json({ success: false, message: "Code missing" });
 
   try {
-    console.log("Received the request");
-    const params = new URLSearchParams();
-    params.append("code", code);
-    params.append("client_id", process.env.GOOGLE_CLIENT_ID);
-    params.append("client_secret", process.env.GOOGLE_CLIENT_SECRET);
-    params.append("redirect_uri", process.env.GOOGLE_REDIRECT_URI); // must match Google console
-    params.append("grant_type", "authorization_code");
+    const params = buildGoogleTokenParams(code);
 
     const tokenResponse = await axios.post(
       "https://oauth2.googleapis.com/token",
@@ -34,7 +27,7 @@ export const verifyToken = async (req, res) => {
     );
 
     const { access_token } = tokenResponse.data;
-    console.log("Access token:", access_token);
+    if (!access_token) throw new Error("Failed to obtain access token");
 
     const userInfoUrl = "https://www.googleapis.com/oauth2/v2/userinfo";
     const userDataResponse = await axios.get(userInfoUrl, {
