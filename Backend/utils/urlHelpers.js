@@ -16,18 +16,13 @@ export const buildGoogleAuthUrl = () => {
     return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 };
 
-export const buildGoogleTokenUrl = (code) => {
-    const params = new URLSearchParams({
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-        code,
-        grant_type: 'authorization_code',
-    });
-    return `https://oauth2.googleapis.com/token?${params.toString()}`;
+export const buildGoogleTokenParams = (code) => {
+    const params = new URLSearchParams();
+    params.append("code", code);
+    params.append("client_id", process.env.GOOGLE_CLIENT_ID);
+    params.append("client_secret", process.env.GOOGLE_CLIENT_SECRET);
+    params.append("redirect_uri", process.env.GOOGLE_REDIRECT_URI);
+    params.append("grant_type", "authorization_code");
+    return params;
 };
 
-// Google User Info URL
-export const buildGoogleUserInfoUrl = (accessToken) => {
-    return `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${accessToken}`;
-};
