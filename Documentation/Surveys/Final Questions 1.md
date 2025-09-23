@@ -135,6 +135,29 @@
 
 ---
 
+# Rishit
+ 1. How much do you value having different learning paths (beginner, intermediate,
+ advanced) based on your skill level?
+ Very High Value | High Value | Moderate Value | Low Value | No Value
+
+ 2. How useful would scenario-based projects (like building apps/games) be for
+ applying coding concepts? Removed from Ayush
+ Extremely Useful | Very Useful | Moderately Useful | Slightly Useful | Not Useful
+ 
+ 3. How helpful would it be if problems included multiple solution approaches and
+ comparisons?
+ Extremely Helpful | Very Helpful | Moderately Helpful | Slightly Helpful | Not Helpful
+ 
+ 4. How important is having career-focused tracks (job interview prep, role-specific coding
+ like data science, web dev)?
+ Extremely Important | Very Important | Moderately Important | Slightly Important | Not
+ Importantl
+
+ 5. How important is certification (with industry recognition) for you after completing
+ coding modules? Removed from Anshuman
+ Extremely Important | Very Important | Moderately Important | Slightly Important | Not
+ Important
+
 # Sanyam
 
 ## Rating-Based Questions (1–5)
