@@ -56,6 +56,10 @@ export const resetPassSchema = z.object({
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[0-9]/, "Password must contain at least one number")
     .regex(/[\W_]/, "Password must contain at least one special character"),
+  token: z
+    .string()
+    .min(1, "Token is required")
+    .uuid("Invalid reset token format"),
   
 })
   
