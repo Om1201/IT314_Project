@@ -1,42 +1,43 @@
-# POC for Sprint 1
+# Proof of Concept (POC) – Sprint 1
 
 ## Objective
+To implement a secure and user-friendly authentication module for the platform, including:
 
-Validate the feasibility of implementing a secure and user-friendly authentication system with:
+- Email/password signup and login  
+- Google OAuth integration  
+- Input validation  
+- Reset password flow (email/OTP)  
+- Account verification  
+- Server-side validation  
 
-- **Basic Email/Password Signup**
-- **Google OAuth Login**
-- **Input Validation** to prevent invalid or insecure data entry
+## Tasks Completed
 
-## Scope
+### Requirement Gathering & Analysis
+- Identified functional requirements: email/password login, OAuth login, password hashing, input validation  
+- Documented non-functional requirements: security, minimal latency, basic UI usability  
+- Created user stories and acceptance criteria for authentication  
 
-- Build a minimal authentication module.
-- Store user credentials securely (hashed passwords).
-- Implement Google OAuth using a standard library (e.g., OAuth 2.0 APIs).
-- Add simple input validations (email format, password strength).
-- No full UI polish yet.
-- No complete error-handling/logging yet.
+### Backend Implementation
+- Initialized Node.js / Express project  
+- Implemented REST APIs for signup and login  
+- Integrated bcrypt for password hashing  
+- Added server-side input validation for email and password  
 
-## User Story
+### Google OAuth Integration
+- Configured Google OAuth 2.0 using a standard library  
+- Implemented login flow to fetch basic user profile information  
+- Linked OAuth users with internal user records  
 
-- As a user, I should be able to sign up with my email and password or log in using my Google account, and the system should validate my inputs, so I can securely access the platform.
+### Frontend Implementation
+- Developed UI pages for signup and login  
+- Connected frontend forms to backend APIs  
+- Added client-side input validation  
 
-## Acceptance Criteria
-- User can sign up with email and password.
-- Passwords stored using hashing (e.g., bcrypt).
-- User can log in with Google account (basic profile info fetched).
-- Input validation rejects weak passwords and invalid emails.
-- Document feasibility, libraries used, and challenges.
-
-## Timebox
-
-Total effort: 4 days.
-- Day 1: Setup basic signup flow with email/password.
-- Day 2: Add Google OAuth.
-- Day 3: Implement validation + testing.
-- Day 4: Documentation + demo prep.
+### Testing & Validation
+- Tested signup and login flows manually  
+- Verified secure password storage and proper OAuth login  
+- Validated rejection of weak passwords and invalid emails  
 
 ## Deliverables
-
-- Minimal working code (prototype).
-- Demo: Register with email/password & Google login.
+- Minimal working code for email/password and Google OAuth login  
+- Basic frontend pages for user registration and login  
