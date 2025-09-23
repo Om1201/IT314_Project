@@ -8,8 +8,6 @@ import {buildResetPasswordUrl, buildVerifyAccountUrl} from "../utils/urlHelpers.
 
 export const register = async (req, res) => {
     try {
-        console.log('Registration request received:', req.body);
-        console.log('Validated data:', req.validatedData);
         
         const { name, email, password } = req.validatedData;
         
@@ -98,7 +96,7 @@ export const signIn = async(req, res)=>{
     try{
         const user = await UserModel.findOne({email});
         if(!user){
-            return res.status(404).json({success: false, message:'Invalid email'});
+            return res.status(404).json({success: false, message:'User not found'});
         }
         if(user.password===null){
             return res.status(400).json({success: false, message: "User exists, No password found"});
@@ -184,33 +182,32 @@ export const sendResetToken = async(req, res) =>{
 }
 
 
-// export const verifyResetToken = async(req, res)=>{
-//     const { email, token: resetToken } = req.validatedData;
+export const verifyResetToken = async(req, res)=>{
+    const { email, token: resetToken } = req.validatedData;
 
-//     try{
-//         const user = await UserModel.findOne({email});
-//         if(!user){
-//             return res.status(404).json({success: false, message: "User not found."})
-//         }
-//         if(user.resetToken==='' || user.resetToken!==resetToken){
-//             return res.status(400).json({success: false, message: "Invalid Link."})
-//         }
-//         if(user.resetTokenExpireAt < Date.now()){
-//             user.resetToken = null;
-//             user.resetTokenExpireAt = 0;
-//             await user.save();
-//             return res.json({success: false, message: "Link expired"})
-//         }
+    // console.log(email);
+    try{
+        const user = await UserModel.findOne({email});
+        if(!user){
+            return res.status(404).json({success: false, message: "User not found."})
+        }
+        if(user.resetToken==='' || user.resetToken!==resetToken){
+            return res.status(400).json({success: false, message: "Invalid Link."})
+        }
+        if(user.resetTokenExpireAt < Date.now()){
+            user.resetToken = null;
+            user.resetTokenExpireAt = 0;
+            await user.save();
+            return res.json({success: false, message: "Link expired"})
+        }
 
-//         user.resetToken = null;
-//         user.resetTokenExpireAt = 0;
-//         await user.save();
-//         return res.status(200).json({success: true, message: "Enter new password"})
-//     }
-//     catch(error){
-//         return res.status(500).json({success: false, message: error.message})
-//     }
-// }
+        
+        return res.status(200).json({success: true, message: "Enter new password"})
+    }
+    catch(error){
+        return res.status(500).json({success: false, message: error.message})
+    }
+}
 
 export const resetPassword = async(req, res)=>{
     const {email, newPassword, token: resetToken} = req.validatedData;

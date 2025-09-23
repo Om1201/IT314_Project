@@ -36,6 +36,20 @@ export default function Signin() {
     }/api/auth/oauth/google/login`;
   };
 
+  const handleforgotpass = async(e)=>{
+    e.preventDefault();
+
+    try {
+      const result = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/send-reset-token`,
+        { email }
+      );
+      toast.success("Password reset link is sent to your main");
+    } catch (err) {
+      toast.error(err.response.data.message);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-black flex items-center justify-center p-4 relative overflow-hidden">
       <div className="w-full max-w-md relative z-10">
@@ -107,6 +121,7 @@ export default function Signin() {
               </div>
               <div className="flex items-center justify-between">
                 <button
+                  onClick={handleforgotpass}
                   type="button"
                   className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors"
                 >

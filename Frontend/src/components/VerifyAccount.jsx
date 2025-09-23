@@ -34,7 +34,6 @@ export default function VerifyAccount() {
           navigate('/', { replace: true })
         }, 2000);
       } catch (error) {
-        console.log("[v0] Verification error:", error.response.data.message);
         toast.error(error.response.data.message);
         setStatus("error");
         setMessage("Verification link is invalid or has expired.");

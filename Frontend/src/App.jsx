@@ -4,6 +4,7 @@ import Home from './components/Home';
 import Signup from './components/Signup';
 import VerifyAccount from './components/VerifyAccount';
 import Callback from './components/Callback';
+import ResetPassword from './components/ResetPassword';
 
 import { Toaster } from 'react-hot-toast';
 
@@ -17,6 +18,7 @@ function App() {
           <Route path='/signin' element={<Signin/>} />
           <Route path='/signup' element={<Signup/>} />
           <Route path='/verifyaccount' element={<VerifyAccount/>} />
+          <Route path='/paswordReset' element={<ResetPassword/>} />
           <Route path='/oauth/google/callback' element={<Callback/>}/>
         </Routes>
       </Router>
