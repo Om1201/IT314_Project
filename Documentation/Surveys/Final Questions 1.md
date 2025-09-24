@@ -141,7 +141,7 @@
  Very High Value | High Value | Moderate Value | Low Value | No Value
 
  2. How useful would scenario-based projects (like building apps/games) be for
- applying coding concepts? Removed from Ayush
+ applying coding concepts? 
  Extremely Useful | Very Useful | Moderately Useful | Slightly Useful | Not Useful
  
  3. How helpful would it be if problems included multiple solution approaches and
@@ -154,7 +154,7 @@
  Importantl
 
  5. How important is certification (with industry recognition) for you after completing
- coding modules? Removed from Anshuman
+ coding modules? 
  Extremely Important | Very Important | Moderately Important | Slightly Important | Not
  Important
  
