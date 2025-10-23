@@ -1,37 +1,40 @@
 import { useState } from "react";
-import axios from "axios";
 
 import { Code, Eye, EyeOff } from "lucide-react";
-import { Link, replace } from "react-router-dom";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { forgotPassword, signinUser } from "../features/userSlicer";
+
 
 export default function Signin() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const result = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/auth/signin`,
-        { email, password },
-        { withCredentials: true }
-      );
+      let response = await dispatch(signinUser({ email, password }));
+      response = response.payload;
+      if(response.message=="User exists, No password found"){
+        toast.error("Please configure your password with forgot password");
+        return;
+      }
+      if(!response.success){
+        toast.error(response.message || "Signin failed. Please try again.");
+        return;
+      }
       toast.success("Signin successful");
+
       await setTimeout(() => {
         navigate('/', { replace: true })
       }, 1000);
     } catch (error) {
-      if(error.response.data.message=="User exists, No password found"){
-          toast.error("Please configure your password with forgot password");
-        }
-        else{
-          toast.error(error.response.data.message);
-        }
+      toast.error(error.response.data.message);
     }
   };
 
@@ -45,11 +48,13 @@ export default function Signin() {
     e.preventDefault();
 
     try {
-      const result = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/auth/send-reset-token`,
-        { email }
-      );
-      toast.success("Password reset link is sent to your main");
+      let response = await dispatch(forgotPassword({ email }));
+      response = response.payload;
+      if(!response.success){
+        toast.error(response.message || "Error in sending reset link. Please try again.");
+        return;
+      }
+      toast.success("Password reset link is sent to your email");
     } catch (err) {
       toast.error(err.response.data.message);
     }

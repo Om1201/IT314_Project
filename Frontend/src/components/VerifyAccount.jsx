@@ -14,9 +14,9 @@ export default function VerifyAccount() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get("token");
-        const email = urlParams.get("email");
+        // const email = urlParams.get("email");
 
-        const body = { token: token, email: email };
+        const body = { token: token };
 
         const response = await axios.post(
           `${import.meta.env.VITE_BACKEND_URL}/api/auth/verify-account`,
@@ -31,7 +31,7 @@ export default function VerifyAccount() {
         toast.success("Account verified successfully");
 
         await setTimeout(() => {
-          navigate('/', { replace: true })
+          navigate('/signin', { replace: true })
         }, 2000);
       } catch (error) {
         toast.error(error.response.data.message);

@@ -2,10 +2,11 @@ import { Code, Zap, Target, Lightbulb, ArrowRight } from "lucide-react"
 import { Link } from "react-router-dom"
 import Footer from "./Footer"
 import Navbar from "./Navbar"
+import { useSelector } from "react-redux"
 
 export default function Home() {
+  
 
-  // checking github account
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-black text-white overflow-hidden">

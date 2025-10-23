@@ -1,8 +1,9 @@
 import { useState } from "react"
 import { Code, Eye, EyeOff } from "lucide-react"
 import { Link } from "react-router-dom"
-import axios from "axios"
+import { useDispatch } from "react-redux"
 import toast from "react-hot-toast"
+import { signupUser } from "../features/userSlicer"
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false)
@@ -11,7 +12,7 @@ export default function Signup() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-
+  const dispatch = useDispatch();
     
     const handleSubmit = async (e) => {
       e.preventDefault();
@@ -25,20 +26,22 @@ export default function Signup() {
         password,
       };
       try {
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register`, body);
-        if (response.data.success) {
-          toast.success(response.data.message);
+        // const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register`, body);
+        let response = await dispatch(signupUser(body));
+        response = response.payload;
+        if (response.success) {
+          toast.success(response.message);
           // Clear form fields after successful registration
           setName("");
           setEmail("");
           setPassword("");
           setConfirmPassword("");
         } else {
-          toast.error(response.data.message || "Registration failed. Please try again.");
+          toast.error(response.message || "Registration failed. Please try again.");
         }
       } catch (err) {
-        if(err.response?.data?.message){
-          toast.error(err.response.data.message);
+        if(err.response?.message){
+          toast.error(err.response.message);
         } else {
           toast.error("An error occurred during registration. Please try again.");
         }

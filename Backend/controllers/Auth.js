@@ -27,7 +27,7 @@ export const register = async (req, res) => {
             verifyTokenExpireAt: Date.now() + 1000 * 60 * 15, // 15 min
         });
 
-        const verifyUrl = buildVerifyAccountUrl(verifyToken, email);
+        const verifyUrl = buildVerifyAccountUrl(verifyToken);
         await user.save();
 
         const { subject, text } = verificationEmail(email, verifyUrl);
@@ -61,12 +61,12 @@ export const register = async (req, res) => {
 };
 
 export const verifyAccount = async(req, res)=> {
-    const { email, token } = req.validatedData;
+    const { token } = req.validatedData;
     
     try{
-        const user = await UserModel.findOne({email});
+        const user = await UserModel.findOne({verifyToken: token});
         if(!user){
-            return res.status(404).json({ success: false, message: "User not found" });
+            return res.status(404).json({ success: false, message: "Link is not valid" });
         }
         const matched = (user.verifyToken===token);
         if(!matched){
@@ -75,15 +75,15 @@ export const verifyAccount = async(req, res)=> {
         if(user.verifyTokenExpireAt < Date.now()){
             return res.status(400).json({ success: false, message: "Link is Expired" });
         }
-        const update = await UserModel.updateOne({email}, {isAccountVerified: true, verifyToken: '', verifyTokenExpireAt: 0});
+        const update = await UserModel.updateOne({verifyToken: token}, {isAccountVerified: true, verifyToken: '', verifyTokenExpireAt: 0});
         
-        const jwttoken = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
-        res.cookie('token', jwttoken, {
-            httpOnly: true,
-            // secure: true,
-            // sameSite: "None",
-            maxAge: 7*24*60*60*1000
-        })
+        // const jwttoken = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
+        // res.cookie('token', jwttoken, {
+        //     httpOnly: true,
+        //     // secure: true,
+        //     // sameSite: "None",
+        //     maxAge: 7*24*60*60*1000
+        // })
         
         return res.status(200).json({ success: true, message: "Account verified" });
     }catch(error){
@@ -113,7 +113,7 @@ export const signIn = async(req, res)=>{
             maxAge: 7*24*60*60*1000
         })
         
-        return res.status(200).json({success: true})
+        return res.status(200).json({success: true, message: "Signin successful", user: user});
         
     }
     catch(error){
@@ -138,7 +138,9 @@ export const logout = async(req, res)=>{
 
 export const isAuthenticated = async(req, res)=>{
     try{
-        return res.status(200).json({success:true}) 
+        const userId = req.userId;
+        const user = await UserModel.findById(userId).select('name email');
+        return res.status(200).json({success:true, user});
     }catch(error){
         return res.status(500).json({success: false, message: error.message})
     }
@@ -159,7 +161,7 @@ export const sendResetToken = async(req, res) =>{
         const resetToken = crypto.randomUUID();
         const update = await UserModel.updateOne({email}, {resetToken: resetToken, resetTokenExpireAt: Date.now()+1000*60*15});
 
-        const resetUrl = buildResetPasswordUrl(resetToken, email);
+        const resetUrl = buildResetPasswordUrl(resetToken);
 
         const { subject, text } = passwordResetEmail(email, resetUrl);
 
@@ -183,16 +185,16 @@ export const sendResetToken = async(req, res) =>{
 
 
 export const verifyResetToken = async(req, res)=>{
-    const { email, token: resetToken } = req.validatedData;
+    const { token: resetToken } = req.validatedData;
 
     // console.log(email);
     try{
-        const user = await UserModel.findOne({email});
+        const user = await UserModel.findOne({resetToken});
         if(!user){
-            return res.status(404).json({success: false, message: "User not found."})
+            return res.status(404).json({success: false, message: "Link is not valid"})
         }
         if(user.resetToken==='' || user.resetToken!==resetToken){
-            return res.status(400).json({success: false, message: "Invalid Link."})
+            return res.status(400).json({success: false, message: "Link is not valid"})
         }
         if(user.resetTokenExpireAt < Date.now()){
             user.resetToken = null;
@@ -202,7 +204,7 @@ export const verifyResetToken = async(req, res)=>{
         }
 
         
-        return res.status(200).json({success: true, message: "Enter new password"})
+        return res.status(200).json({success: true, message: "Enter new password", email: user.email})
     }
     catch(error){
         return res.status(500).json({success: false, message: error.message})

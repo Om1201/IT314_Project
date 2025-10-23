@@ -1,9 +1,9 @@
-export const buildVerifyAccountUrl = (token, email) => {
-    return `${process.env.FRONTEND_URL}/verifyAccount?token=${token}&email=${email}`;
+export const buildVerifyAccountUrl = (token) => {
+    return `${process.env.FRONTEND_URL}/verifyAccount?token=${token}`;
 };
 
-export const buildResetPasswordUrl = (token, email) => {
-    return `${process.env.FRONTEND_URL}/paswordReset?token=${token}&email=${email}`;
+export const buildResetPasswordUrl = (token) => {
+    return `${process.env.FRONTEND_URL}/paswordReset?token=${token}`;
 };
 
 export const buildGoogleAuthUrl = () => {

@@ -2,6 +2,11 @@ import React from 'react'
 import { Code, Menu, X } from "lucide-react"
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
+import { logoutUser } from '../features/userSlicer'
+import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 
 const navLinks = [
   { name: "Home", href: "/home" },
@@ -9,10 +14,28 @@ const navLinks = [
   { name: "Contact", href: "/contact" },
 ];
 
+// const handleLogout = () => {
+// }
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { username, email, isLoggedin } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
+  
+  const handleLogout = async () => {
+    try {
+      let response = await dispatch(logoutUser());
+      response = response.payload;
+      if (response.success) {
+        toast.success("Logout successful");
+        navigate('/', { replace: true })
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
   return (
     <nav className="fixed top-0 w-full z-50 backdrop-blur-xl bg-slate-900/80 shadow-xl border-b border-slate-700/60 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -40,19 +63,25 @@ const Navbar = () => {
               </Link>
             ))}
             
-            <Link
+            {!isLoggedin && <Link
               to="/signin"
               className="px-6 py-2 border border-blue-600 text-blue-400 rounded-xl hover:bg-blue-900/50 transition-all duration-300 font-medium text-md hover:scale-[1.03]"
             >
               Sign In
-            </Link>
+            </Link>}
 
-            <Link
+            {!isLoggedin && <Link
               to="/signup"
               className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:from-blue-600 hover:to-blue-800 transition-all duration-300 font-semibold text-md hover:scale-[1.03]"
             >
               Sign Up
-            </Link>
+            </Link>}
+            {isLoggedin && <button
+              className="px-6 py-2.5 cursor-pointer bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:from-blue-600 hover:to-blue-800 transition-all duration-300 font-semibold text-md hover:scale-[1.03]"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>}
           </div>
 
           <button
@@ -78,19 +107,25 @@ const Navbar = () => {
             ))}
             
             <div className="pt-4 border-t border-slate-800">
-              <Link
+              {!isLoggedin && <Link
               to="/signin"
               className="block w-full px-6 py-2.5 border text-center border-blue-600 text-blue-400 rounded-xl hover:bg-blue-900/50 transition-all duration-300 font-medium text-md hover:scale-[1.03]"
             >
               Sign In
-            </Link>
+            </Link>}
 
-            <Link
+            {!isLoggedin && <Link
               to="/signup"
               className="block w-full text-center mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:from-blue-600 hover:to-blue-800 transition-all duration-300 font-semibold text-md hover:scale-[1.03]"
             >
               Sign Up
-            </Link>
+            </Link>}
+            {isLoggedin && <button
+              className="block w-full text-center mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:from-blue-600 hover:to-blue-800 transition-all duration-300 font-semibold text-md hover:scale-[1.03]"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>}
             </div>
           </div>
         )}

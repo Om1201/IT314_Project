@@ -5,10 +5,19 @@ import Signup from './components/Signup';
 import VerifyAccount from './components/VerifyAccount';
 import Callback from './components/Callback';
 import ResetPassword from './components/ResetPassword';
+import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
+import { checkAuth } from './features/userSlicer';
 
 import { Toaster } from 'react-hot-toast';
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, [dispatch]);
+
   return (
     <>
     <Toaster reverseOrder={false}/>

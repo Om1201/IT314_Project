@@ -3,6 +3,10 @@ import { CheckCircle, XCircle, Loader2, Shield, Eye, EyeOff } from "lucide-react
 import axios from "axios"
 import toast from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
+import { useDispatch } from "react-redux"
+import { resetPassword } from "../features/userSlicer"
+import { useSelector } from "react-redux"
+import { setTempEmail } from "../features/userSlicer"
 
 export default function PasswordReset() {
   const [status, setStatus] = useState("loading") 
@@ -14,17 +18,19 @@ export default function PasswordReset() {
     confirmPassword: "",
   })
   const [token, setToken] = useState("")
-  const [email, setEmail] = useState("")
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const tempemail = useSelector((state) => state.user.tempemail);
+
 
   useEffect(() => {
     const verifyResetToken = async () => {
       try {
         const urlParams = new URLSearchParams(window.location.search)
         const tokenParam = urlParams.get("token")
-        const emailParam = urlParams.get("email")
+        // const emailParam = urlParams.get("email")
 
-        if (!tokenParam || !emailParam) {
+        if (!tokenParam) {
           setStatus("error")
           setMessage("Reset link is invalid.")
           toast.error("Reset link is invalid");
@@ -32,12 +38,13 @@ export default function PasswordReset() {
         }
 
         setToken(tokenParam)
-        setEmail(emailParam)
+        // setEmail(emailParam)
 
-        const body = { token: tokenParam, email: emailParam }
+        const body = { token: tokenParam }
 
         const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/verify-reset-token`, body)
 
+        await dispatch(setTempEmail({ tempemail: response.data.email }));
         setStatus("verified")
         setMessage("Link verified successfully. Please enter your new password.")
         toast.success("Verification completed. Please enter your new password")
@@ -64,15 +71,12 @@ export default function PasswordReset() {
     }
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/auth/reset-password`,
-        {
-          token,
-          email,
-          newPassword: formData.password,
-        }
-      )
-
+      let response = await dispatch(resetPassword({ email: tempemail, newPassword: formData.password, token }));
+      response = response.payload;
+      if(!response.success){
+        toast.error(response.message || "Password reset failed")
+        return;
+      }
       toast.success("Password reset successfully")
 
       setTimeout(() => {

@@ -65,12 +65,6 @@ export const resetPassSchema = z.object({
   
 
 export const tokenSchema = z.object({
-  email: z
-    .string({ required_error: "Email is required" })
-    .trim()
-    .min(1, "Email is required")
-    .toLowerCase()
-    .email("Invalid email format"),
   token: z
     .string()
     .min(1, "Token is required")
