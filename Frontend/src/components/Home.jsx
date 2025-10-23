@@ -5,11 +5,13 @@ import Navbar from "./Navbar"
 
 export default function Home() {
 
+  // checking github account
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-black text-white overflow-hidden">
       
       <Navbar />
-
+      
       <section className="pt-56 pb-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-8">
@@ -46,7 +48,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
       <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -61,7 +62,6 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Feature 1 */}
             <div className="group bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300 hover:-translate-y-1">
               <div className="relative mb-4">
                 <div className="h-12 w-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
@@ -74,7 +74,6 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Feature 2 */}
             <div className="group bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300 hover:-translate-y-1">
               <div className="relative mb-4">
                 <div className="h-12 w-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
@@ -85,7 +84,6 @@ export default function Home() {
               <p className="text-slate-400">Monitor your progress with detailed milestones and achievement tracking</p>
             </div>
 
-            {/* Feature 3 */}
             <div className="group bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300 hover:-translate-y-1">
               <div className="relative mb-4">
                 <div className="h-12 w-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
@@ -96,7 +94,6 @@ export default function Home() {
               <p className="text-slate-400">Get AI-powered recommendations to optimize your learning path</p>
             </div>
 
-            {/* Feature 4 */}
             <div className="group bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300 hover:-translate-y-1">
               <div className="relative mb-4">
                 <div className="h-12 w-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
@@ -110,7 +107,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works Section */}
       <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -122,7 +118,6 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Step 1 */}
             <div className="relative">
               <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 text-center">
                 <div className="h-16 w-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
@@ -134,7 +129,6 @@ export default function Home() {
               <div className="hidden md:block absolute top-1/2 -right-9 w-8 h-0.5 bg-gradient-to-r from-blue-500 to-transparent"></div>
             </div>
 
-            {/* Step 2 */}
             <div className="relative">
               <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 text-center">
                 <div className="h-16 w-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
@@ -146,7 +140,6 @@ export default function Home() {
               <div className="hidden md:block absolute top-1/2 -right-9 w-8 h-0.5 bg-gradient-to-r from-blue-500 to-transparent"></div>
             </div>
 
-            {/* Step 3 */}
             <div className="relative">
               <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 text-center">
                 <div className="h-16 w-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
@@ -160,7 +153,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-4xl mx-auto">
           <div className="bg-gradient-to-r from-blue-900/50 to-slate-900/50 backdrop-blur-xl border border-blue-500/30 rounded-3xl p-12 text-center">
@@ -178,7 +170,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
       <Footer />
       
     </div>
