@@ -25,8 +25,13 @@ export default function Signin() {
       await setTimeout(() => {
         navigate('/', { replace: true })
       }, 1000);
-    } catch (err) {
-      toast.error(err.response.data.message);
+    } catch (error) {
+      if(error.response.data.message=="User exists, No password found"){
+          toast.error("Please configure your password with forgot password");
+        }
+        else{
+          toast.error(error.response.data.message);
+        }
     }
   };
 

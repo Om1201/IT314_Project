@@ -27,7 +27,7 @@ export default function Signup() {
       try {
         const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register`, body);
         if (response.data.success) {
-          toast.success("Registration successful! Please check your email to verify your account.");
+          toast.success(response.data.message);
           // Clear form fields after successful registration
           setName("");
           setEmail("");

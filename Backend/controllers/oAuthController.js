@@ -39,6 +39,10 @@ export const verifyToken = async (req, res) => {
     const { email, name } = userDataResponse.data;
 
     let user = await UserModel.findOne({ email });
+    if(!user){
+      user = new UserModel({ email, name, isAccountVerified: true });
+      await user.save();
+    }
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
     res.cookie("token", token, {
@@ -48,13 +52,11 @@ export const verifyToken = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    if (!user) {
-      user = new UserModel({ email, name, isAccountVerified: true });
-      await user.save();
-      return res.json({ success: true, message: "User registered successfully" });
-    } else {
-      return res.json({ success: true, message: "User logged in successfully" });
-    }
+    // if (!user) {
+    //   return res.json({ success: true, message: "User registered successfully" });
+    // } else {
+    return res.json({ success: true, message: "User logged in successfully" });
+    // }
   } catch (error) {
     console.error(error.response?.data || error.message);
     return res.status(500).json({ success: false, message: error.message });
