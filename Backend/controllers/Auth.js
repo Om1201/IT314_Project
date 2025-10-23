@@ -19,12 +19,14 @@ export const register = async (req, res) => {
         const hashedPass = await bcrypt.hash(password, 10);
         const verifyToken = crypto.randomUUID();
 
+        const expireAt = new Date(Date.now() + 1000 * 60 * 1);
+
         const user = new UserModel({
             name,
             email,
             password: hashedPass,
             verifyToken,
-            verifyTokenExpireAt: Date.now() + 1000 * 60 * 15, // 15 min
+            verifyTokenExpireAt: expireAt,
         });
 
         const verifyUrl = buildVerifyAccountUrl(verifyToken);

@@ -8,6 +8,7 @@ import ResetPassword from './components/ResetPassword';
 import { useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 import { checkAuth } from './features/userSlicer';
+import GuestRoute from './components/GuestRoute';
 
 import { Toaster } from 'react-hot-toast';
 
@@ -24,8 +25,16 @@ function App() {
       <Router>
         <Routes>
           <Route path='/' element={<Home/>} />
-          <Route path='/signin' element={<Signin/>} />
-          <Route path='/signup' element={<Signup/>} />
+          <Route path='/signin' element={
+            <GuestRoute>
+            <Signin/>
+            </GuestRoute>
+            } />
+          <Route path='/signup' element={
+            <GuestRoute>
+            <Signup/>
+            </GuestRoute>
+          } />
           <Route path='/verifyaccount' element={<VerifyAccount/>} />
           <Route path='/paswordReset' element={<ResetPassword/>} />
           <Route path='/oauth/google/callback' element={<Callback/>}/>

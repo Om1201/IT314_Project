@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
         default: ''
     },
     verifyTokenExpireAt: {
-        type: Number,
+        type: Date,
         default: 0
     },
     isAccountVerified: {
@@ -35,6 +35,8 @@ const userSchema = new mongoose.Schema({
         default: 0    
     },
 })
+
+userSchema.index({ verifyTokenExpireAt: 1 }, { expireAfterSeconds: 0 });
 
 const UserModel = mongoose.models.user || mongoose.model('user', userSchema);
 

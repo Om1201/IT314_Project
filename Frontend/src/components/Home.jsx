@@ -6,6 +6,7 @@ import { useSelector } from "react-redux"
 
 export default function Home() {
   
+  const {isLoggedin} = useSelector((state) => state.user);
 
 
   return (
@@ -36,14 +37,16 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Link
-                href="/signin"
+                to={`${isLoggedin ? '/generator' : '/signin'}`}
                 className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold text-lg hover:shadow-lg hover:shadow-blue-500/25 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
               >
-                Get Started <ArrowRight className="h-5 w-5" />
+                {isLoggedin ? 'Get Started' : 'Sign In'} <ArrowRight className="h-5 w-5" />
               </Link>
-              <button className="px-8 py-4 border border-slate-600 rounded-xl hover:bg-slate-800 hover:border-blue-400 transition-all duration-300 font-semibold text-lg hover:shadow-md">
+              <Link
+              to ="/about"
+              className="px-8 py-4 border border-slate-600 rounded-xl hover:bg-slate-800 hover:border-blue-400 transition-all duration-300 font-semibold text-lg hover:shadow-md">
                 Learn More
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -162,7 +165,7 @@ export default function Home() {
               Join learners creating their perfect roadmaps with AI
             </p>
             <Link
-              href="/signin"
+              to={`${isLoggedin ? '/generator' : '/signin'}`}
               className="inline-block px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold text-lg hover:shadow-lg hover:shadow-blue-500/25 transform hover:scale-105 active:scale-95"
             >
               Get Started Now
