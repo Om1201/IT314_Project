@@ -55,7 +55,7 @@ export const verifyToken = async (req, res) => {
     // if (!user) {
     //   return res.json({ success: true, message: "User registered successfully" });
     // } else {
-    return res.json({ success: true, message: "User logged in successfully" });
+    return res.json({ success: true, message: "User logged in successfully", user: { email, name } });
     // }
   } catch (error) {
     console.error(error.response?.data || error.message);

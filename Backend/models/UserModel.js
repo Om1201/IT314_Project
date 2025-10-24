@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
     },
     verifyTokenExpireAt: {
         type: Date,
-        default: 0
+        default: new Date('9999-12-31')
     },
     isAccountVerified: {
         type: Boolean,

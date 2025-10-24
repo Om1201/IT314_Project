@@ -94,11 +94,28 @@ export const checkAuth = createAsyncThunk(
   }
 );
 
+export const googleAuth = createAsyncThunk(
+  "user/googleAuth",
+  async (code, { rejectWithValue }) => {
+    console.log("code is: ",code);
+    try {
+      const response = await axios.post(import.meta.env.VITE_BACKEND_URL + "/api/auth/oauth/google/callback",
+            { code },
+            { headers: { "Content-Type": "application/json" }, withCredentials: true }
+        );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const initialState = {
     username: "",
     email: "",
     tempemail: "",
     isLoggedin: false,
+    authLoading: true,
 }
 
 export const userSlice = createSlice({
@@ -125,11 +142,25 @@ export const userSlice = createSlice({
           state.username = "";
           state.email = "";
         })
+        .addCase(checkAuth.pending, (state) => {
+          state.authLoading = true;
+        })
         .addCase(checkAuth.fulfilled, (state, action) => {
+          state.authLoading = false;
           state.isLoggedin = true;
           state.username = action.payload.user.name;
           state.email = action.payload.user.email;
-        });
+        })
+        .addCase(checkAuth.rejected, (state) => {
+          state.authLoading = false;
+          state.isLoggedin = false;
+        })
+        .addCase(googleAuth.fulfilled, (state, action) => {
+          state.authLoading = false;
+          state.isLoggedin = true;  
+          state.username = action.payload.user.name;
+          state.email = action.payload.user.email;
+        })
     }
 });
 

@@ -3,7 +3,7 @@ export const buildVerifyAccountUrl = (token) => {
 };
 
 export const buildResetPasswordUrl = (token) => {
-    return `${process.env.FRONTEND_URL}/paswordReset?token=${token}`;
+    return `${process.env.FRONTEND_URL}/passwordReset?token=${token}`;
 };
 
 export const buildGoogleAuthUrl = () => {

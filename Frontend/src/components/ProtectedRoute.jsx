@@ -1,8 +1,11 @@
 import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import Loader from "./Loader";
 
 const ProtectedRoute = ({ children }) => {
-  const isLoggedin = useSelector((state) => state.user.isLoggedin);
+  const {isLoggedin, authLoading} = useSelector((state) => state.user);
+
+  if (authLoading) return <Loader />;
 
   return isLoggedin===true ? children : <Navigate to="/signin" replace />;
 };

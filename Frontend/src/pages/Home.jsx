@@ -1,7 +1,7 @@
 import { Code, Zap, Target, Lightbulb, ArrowRight } from "lucide-react"
 import { Link } from "react-router-dom"
-import Footer from "./Footer"
-import Navbar from "./Navbar"
+import Footer from "../components/Footer"
+import Navbar from "../components/Navbar"
 import { useSelector } from "react-redux"
 
 export default function Home() {
@@ -37,7 +37,7 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Link
-                to={`${isLoggedin ? '/generator' : '/signin'}`}
+                to={`${isLoggedin ? '/roadmap/generate' : '/signin'}`}
                 className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold text-lg hover:shadow-lg hover:shadow-blue-500/25 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
               >
                 {isLoggedin ? 'Get Started' : 'Sign In'} <ArrowRight className="h-5 w-5" />
@@ -165,7 +165,7 @@ export default function Home() {
               Join learners creating their perfect roadmaps with AI
             </p>
             <Link
-              to={`${isLoggedin ? '/generator' : '/signin'}`}
+              to={`${isLoggedin ? '/roadmap/generate' : '/signin'}`}
               className="inline-block px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold text-lg hover:shadow-lg hover:shadow-blue-500/25 transform hover:scale-105 active:scale-95"
             >
               Get Started Now

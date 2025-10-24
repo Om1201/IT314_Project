@@ -1,10 +1,15 @@
 import React, { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { googleAuth } from "../features/userSlicer";
+import toast from "react-hot-toast";
+import Loader from "./Loader";
 
 const Callback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const code = searchParams.get("code");
   const error = searchParams.get("error");
@@ -13,13 +18,9 @@ const Callback = () => {
     const exchangeCode = async () => {
       try {
         console.log("Inside try");
-        const res = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL}/api/auth/oauth/google/callback`,
-          { code },
-          { withCredentials: true }
-        );
+        const res = await dispatch(googleAuth(code));
         console.log(res);
-
+        toast.success("Logged in successfully!");
         navigate("/"); // redirect after success
       } catch (err) {
         console.error("Error during token exchange:", err);
@@ -39,7 +40,7 @@ const Callback = () => {
   }, [code, error, navigate]);
 
   if (error) return <h2>Permission denied from your end. Redirecting…</h2>;
-  if (code) return <h2>Logging you in… Please wait.</h2>;
+  if (code) return <Loader />;
   return <h2>Invalid request. Redirecting…</h2>;
 };
 
