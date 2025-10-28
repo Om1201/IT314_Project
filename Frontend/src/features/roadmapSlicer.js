@@ -22,6 +22,8 @@ export const fetchRoadmap = createAsyncThunk(
 
 const initialState = {
     currRoadmap: {},
+    isLoading: false,
+    error: false
 }
 
 export const roadmapSlice = createSlice({
@@ -37,6 +39,16 @@ export const roadmapSlice = createSlice({
         .addCase(fetchRoadmap.fulfilled, (state, action) => {
             const clean = action.payload.replace(/```json|```/g, "").trim();
             state.currRoadmap = JSON.parse(clean);
+            state.isLoading = false;
+            state.error = false;
+        })
+        .addCase(fetchRoadmap.pending, (state) => {
+            state.isLoading = true;
+            state.error = false;
+        })
+        .addCase(fetchRoadmap.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = true;
         })
     }
 })

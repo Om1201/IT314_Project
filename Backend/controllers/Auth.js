@@ -106,7 +106,7 @@ export const verifyAccount = async(req, res)=> {
         if(user.verifyTokenExpireAt < Date.now()){
             return res.status(400).json({ success: false, message: "Link is Expired" });
         }
-        const update = await UserModel.updateOne({verifyToken: token}, {isAccountVerified: true, verifyToken: '', verifyTokenExpireAt: 0});
+        const update = await UserModel.updateOne({verifyToken: token}, {isAccountVerified: true, verifyToken: '', verifyTokenExpireAt: new Date('9999-12-31')});
         
         // const jwttoken = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
         // res.cookie('token', jwttoken, {
@@ -135,6 +135,9 @@ export const signIn = async(req, res)=>{
         const isMatch = await bcrypt.compare(password, user.password);
         if(!isMatch){
             return res.status(400).json({success: false, message:'Incorrect password'});
+        }
+        if(user.isAccountVerified==false){
+            return res.status(401).json({success: false, message: "Account not verified. Please verify your account."});
         }
         const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
         res.cookie('token', token, {
