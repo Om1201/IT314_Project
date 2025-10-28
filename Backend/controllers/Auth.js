@@ -13,6 +13,35 @@ export const register = async (req, res) => {
         
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
+            console.log('Existing user found:', existingUser);
+            if(existingUser.isAccountVerified==false){
+                const hashedPass = await bcrypt.hash(password, 10);
+                existingUser.name = name;
+                existingUser.password = hashedPass;
+                const verifyToken = crypto.randomUUID();
+                const expireAt = new Date(Date.now() + 1000 * 60 * 15);
+                existingUser.verifyToken = verifyToken;
+                existingUser.verifyTokenExpireAt = expireAt;
+                const verifyUrl = buildVerifyAccountUrl(verifyToken);
+                await existingUser.save();
+
+                const { subject, text } = verificationEmail(email, verifyUrl);
+                const mailOptions = {
+                    from: process.env.SENDER_EMAIL,
+                    to: email,
+                    subject,
+                    text,
+                };
+                try {
+                    await transporter.sendMail(mailOptions);
+                } catch (emailError) {
+                    console.error('Error sending email:', emailError);
+                }
+                return res.status(200).json({
+                    success: true,
+                    message: "Please check your email to verify your account.",
+                });
+            }
             return res.status(409).json({ success: false, message: "User already exists" });
         }
 
