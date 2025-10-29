@@ -1,17 +1,42 @@
-import { ArrowRight, Sparkles, Zap } from "lucide-react"
-import { useState } from "react"
+import { ArrowRight, Sparkles, Zap , Loader2} from "lucide-react"
+import { useState, useEffect } from "react"
 import Navbar from "../components/Navbar"
-
+import { useDispatch, useSelector } from "react-redux"
+import { fetchRoadmap } from "../features/roadmapSlicer"
+import toast from "react-hot-toast"
+import { useNavigate } from "react-router-dom"
+import Loader from "../components/Loader"
 export default function Generator() {
   const [description, setDescription] = useState("")
   const [skillLevel, setSkillLevel] = useState("beginner")
 
-  const handleSubmit = (e) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { roadmap, isLoading, error } = useSelector((state) => state.roadmap);
+  const handleSubmit = async(e) => {
     e.preventDefault()
     // pass
-    
+
+    if (isLoading) return;
+    if (!description.trim()) {
+      toast.error("Please enter what you want to learn.");
+      return;
+    }
+    try{
+      let response = await dispatch(fetchRoadmap({ description, skillLevel }));
+      response = response.payload;
+      navigate(`/`, { replace: false });
+    }catch(err){
+      console.error("Error generating roadmap:", err);
+      toast.error("Failed to generate roadmap. Please try again.");
+    }
+
   }
 
+  if(isLoading){
+    return <Loader />
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-black text-white overflow-hidden relative">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -26,7 +51,7 @@ export default function Generator() {
         ></div>
       </div>
 
-      <Navbar/>
+      <Navbar />
 
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen flex items-center justify-center relative z-10">
         <div className="w-full max-w-4xl">
@@ -93,11 +118,10 @@ export default function Generator() {
                           key={level.value}
                           type="button"
                           onClick={() => setSkillLevel(level.value)}
-                          className={`p-4 rounded-xl border-2 transition-all duration-300 text-center ${
-                            skillLevel === level.value
+                          className={`p-4 rounded-xl border-2 transition-all duration-300 text-center ${skillLevel === level.value
                               ? "border-blue-400 bg-blue-500/20 shadow-lg shadow-blue-500/25"
                               : "border-blue-500/30 bg-slate-800/30 hover:border-blue-400/50"
-                          }`}
+                            }`}
                         >
                           <div className="font-bold text-white">{level.label}</div>
                           <div className="text-xs text-slate-400">{level.desc}</div>
@@ -108,15 +132,29 @@ export default function Generator() {
 
                   <button
                     type="submit"
-                    className="w-full cursor-pointer px-8 py-4 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-xl hover:from-blue-700 hover:via-purple-700 hover:to-blue-700 transition-all duration-300 font-bold text-lg hover:shadow-2xl hover:shadow-blue-500/40 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3 mt-8 text-white"
-                  >
-                    <Sparkles className="h-5 w-5" />
-                    Generate My Roadmap
-                    <ArrowRight className="h-5 w-5" />
+                    disabled={isLoading}
+                    className="w-full cursor-pointer px-8 py-4 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-xl hover:from-blue-700 hover:via-purple-700 hover:to-blue-700 transition-all duration-300 font-bold text-lg hover:shadow-2xl hover:shadow-blue-500/40 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3 mt-8 text-white
+                                  disabled:opacity-70 disabled:cursor-not-allowed" 
+                >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" /> {/* <-- Show loader */}
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-5 w-5" />
+                        Generate My Roadmap
+                        <ArrowRight className="h-5 w-5" />
+                      </>
+                    )}
                   </button>
 
                   <p className="text-center text-sm text-slate-400">
-                    ✨ Your personalized roadmap will be generated ASAP
+                    {isLoading
+                      ? "✨ Our AI is building your path... Please wait."
+                      : "✨ Your personalized roadmap will be generated ASAP"
+                    }
                   </p>
                 </form>
               </div>

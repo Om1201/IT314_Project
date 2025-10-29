@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import 'dotenv/config';
 
 import authRouter from "./routes/authRoutes.js";
+import roadmapRouter from "./routes/roadmapRoutes.js";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(cookieParser());
 app.use(cors({ origin: ['http://localhost:5173'], credentials: true }));
 
 app.use("/api/auth", authRouter);
+app.use("/api/roadmap", roadmapRouter);
 
 app.get('/', (req, res) => {
     res.send('Server is healthy');

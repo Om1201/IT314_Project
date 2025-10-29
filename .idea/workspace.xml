@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2971829d-6d00-4349-bf36-be925d743992" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Backend/controllers/Roadmap.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Backend/routes/roadmapRoutes.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Backend/utils/schemaHelpers.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Frontend/src/features/roadmapSlicer.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/controllers/Auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/controllers/Auth.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/app/store.js" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/app/store.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/pages/Generator.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/pages/Generator.jsx" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="32ltpjDH5B4gF7pPzluHnoizXqo" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "Merging kashish",
+    "last_opened_file_path": "D:/Software engineering/CodingLearningPlatform/IT_Project_demo",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "C:\\Users\\kashi\\AppData\\Local\\Programs\\WebStorm 2025.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-e03c56caf84a-JavaScript-WS-252.23892.411" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2971829d-6d00-4349-bf36-be925d743992" name="Changes" comment="" />
+      <created>1758007171337</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1758007171337</updated>
+      <workItem from="1758007172419" duration="10764000" />
+      <workItem from="1758092904692" duration="9704000" />
+      <workItem from="1758208337826" duration="2350000" />
+      <workItem from="1758447236836" duration="206000" />
+      <workItem from="1758447456805" duration="378000" />
+      <workItem from="1761563400405" duration="89000" />
+      <workItem from="1761563583166" duration="1992000" />
+      <workItem from="1761712168117" duration="2377000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
