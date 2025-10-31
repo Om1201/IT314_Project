@@ -1,5 +1,5 @@
 import { ArrowRight, Sparkles, Zap , Loader2} from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Navbar from "../components/Navbar"
 import { useDispatch, useSelector } from "react-redux"
 import { fetchRoadmap } from "../features/roadmapSlicer"
@@ -13,7 +13,7 @@ export default function Generator() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { roadmap, isLoading, error } = useSelector((state) => state.roadmap);
+  const {isLoading } = useSelector((state) => state.roadmap);
   const handleSubmit = async(e) => {
     e.preventDefault()
     // pass
@@ -24,9 +24,10 @@ export default function Generator() {
       return;
     }
     try{
-      let response = await dispatch(fetchRoadmap({ description, skillLevel }));
-      response = response.payload;
-      navigate(`/`, { replace: false });
+        let response = await dispatch(fetchRoadmap({ description, skillLevel }));
+        if (response.meta.requestStatus === "fulfilled") {
+            navigate("/roadmap/display");
+        }
     }catch(err){
       console.error("Error generating roadmap:", err);
       toast.error("Failed to generate roadmap. Please try again.");
