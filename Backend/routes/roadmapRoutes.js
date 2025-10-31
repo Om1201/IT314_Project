@@ -1,10 +1,11 @@
-import express from "express";
-import { generateRoadmap } from "../controllers/Roadmap.js";
+import express from 'express';
+import { generateRoadmap } from '../controllers/Roadmap.js';
+import userAuth from '../middlewares/userAuth.js';
+import { validate } from '../middlewares/validate.js';
+import { generationSchema } from '../validators/roadmapValidators.js';
 
 const router = express.Router();
 
-// Generate a roadmap based on user description and level
-// POST /api/roadmap/generate
-router.post('/generate', generateRoadmap);
+router.post('/generate', validate(generationSchema), userAuth, generateRoadmap);
 
 export default router;

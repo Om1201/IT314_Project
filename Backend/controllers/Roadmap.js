@@ -1,34 +1,33 @@
-    import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from '@google/genai';
+import RoadmapModel from '../models/RoadmapModel.js';
+import UserModel from '../models/UserModel.js';
 
-    const genAI = new GoogleGenAI({
-      apiKey: process.env.GOOGLE_GENAI_API_KEY,
-    });
+const genAI = new GoogleGenAI({
+    apiKey: process.env.GOOGLE_GENAI_API_KEY,
+});
 
-    export const geminiModel = genAI.models.generateContent.bind(genAI.models);
+export const geminiModel = genAI.models.generateContent.bind(genAI.models);
 
-    export async function generateWithGemini(
-      prompt,
-      model = "gemini-2.0-flash-001"
-    ) {
-      try {
+export async function generateWithGemini(prompt, model = 'gemini-2.0-flash-001') {
+    try {
         const response = await genAI.models.generateContent({
-          model,
-          contents: prompt,
+            model,
+            contents: prompt,
         });
 
-        console.log(response.text);
         return response.text;
-      } catch (error) {
-        console.error("Gemini API Error:", error);
-        throw new Error("Failed to generate content with Gemini");
-      }
+    } catch (error) {
+        console.error('Gemini API Error:', error);
+        throw new Error('Failed to generate content with Gemini');
     }
+}
 
-    export const generateRoadmap = async (req, res) => {
-      try {
-        const {userDescription, userLevel} = req.body;
+export const generateRoadmap = async (req, res) => {
+    try {
+        const { userDescription, userLevel } = req.validatedData;
+        const userId = req.userId;
 
-        console.log("Generating roadmap for userDescription:", userDescription);
+        console.log('Generating roadmap for userDescription:', userDescription);
         const prompt = `
     Create a comprehensive learning roadmap based on the user's description "${userDescription}" and their current level "${userLevel}". Return a JSON object with this exact structure:
     
@@ -48,6 +47,7 @@
               "id": 1,
               "title": "Subtopic Title",
               "description": "Brief description",
+              "detailedDescription": "<just an empty string>",
               "estimatedTime": "X minutes",
               "completed": false
             }
@@ -66,11 +66,35 @@
     - Focus on the most important concepts according to the user's description: ${userDescription}
     
     Return only valid JSON, no additional text.
-    `
+    `;
 
         const response = await generateWithGemini(prompt);
-        return res.status(200).json({ success: true, data: response });
-      } catch (error) {
+        let parsedResponse;
+        try {
+            parsedResponse = JSON.parse(response.replace(/```json|```/g, '').trim());
+        } catch (error) {
+            console.error('Failed to parse roadmap JSON:', error);
+            return res.status(500).json({ success: false, message: error.message });
+        }
+
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        const newRoadmap = new RoadmapModel({
+            email: user.email,
+            roadmapData: parsedResponse,
+        });
+        await newRoadmap.save();
+
+        return res
+            .status(200)
+            .json({
+                success: true,
+                data: parsedResponse,
+                message: 'Roadmap generated successfully',
+            });
+    } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
-      }
-    };
+    }
+};

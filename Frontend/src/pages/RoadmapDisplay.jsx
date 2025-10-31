@@ -3,7 +3,6 @@ import { useSelector } from "react-redux"
 
 export default function RoadmapDisplay() {
     const { currRoadmap, isLoading, error } = useSelector((state) => state.roadmap)
-    console.log(currRoadmap, error)
     if (isLoading) return <p className="text-white text-center mt-10">Generating roadmap...</p>
     if (error) return <p className="text-red-400 text-center mt-10">{error}</p>
     if (!currRoadmap) return null

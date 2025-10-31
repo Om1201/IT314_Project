@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer'
-import dotenv from 'dotenv'
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -11,11 +11,11 @@ const transporter = nodemailer.createTransport({
         pass: process.env.SMTP_PASSWORD,
     },
     tls: {
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
     },
     connectionTimeout: 20000,
     greetingTimeout: 20000,
-    socketTimeout: 20000
-})
+    socketTimeout: 20000,
+});
 
-export default transporter
+export default transporter;

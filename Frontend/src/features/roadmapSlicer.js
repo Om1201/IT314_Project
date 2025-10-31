@@ -15,8 +15,7 @@ export const fetchRoadmap = createAsyncThunk(
                 }
             );
 
-            console.log("Got response", response.data.data);
-            return response.data.data;
+            return response.data;
         } catch (error) {
             console.error("Error in fetchRoadmap:", error);
             return rejectWithValue(error.response?.data || { message: "Unknown error" });
@@ -53,20 +52,7 @@ export const roadmapSlice = createSlice({
             .addCase(fetchRoadmap.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.error = false;
-
-                try {
-                    const payload =
-                        typeof action.payload === "string"
-                            ? action.payload.replace(/```json|```/g, "").trim()
-                            : action.payload;
-
-                    state.currRoadmap =
-                        typeof payload === "string" ? JSON.parse(payload) : payload;
-                } catch (err) {
-                    console.error("Failed to parse roadmap JSON:", err);
-                    state.error = true;
-                    state.currRoadmap = {};
-                }
+                state.currRoadmap = action.payload.data;
             })
 
             .addCase(fetchRoadmap.rejected, (state, action) => {

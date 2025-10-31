@@ -24,8 +24,13 @@ export default function Generator() {
       return;
     }
     try{
-          let response = await dispatch(fetchRoadmap({ userDescription: description, userLevel: skillLevel }));
-        if (response.meta.requestStatus === "fulfilled") {
+        let response = await dispatch(fetchRoadmap({ userDescription: description, userLevel: skillLevel }));
+        response = response.payload;
+        if(!response.success){
+          toast.error(response.message || "Roadmap generation failed. Please try again.");
+          return; 
+        }
+        if (response.success === true) {
             navigate("/roadmap/display");
         }
     }catch(err){

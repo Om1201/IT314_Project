@@ -1,4 +1,3 @@
-
 export const verificationEmail = (email, verifyUrl) => {
     return {
         subject: 'Welcome to this website',
@@ -11,7 +10,7 @@ export const verificationEmail = (email, verifyUrl) => {
             
             Please note: This link will expire in 15 minutes. 
             If it expires, you'll need to request a new verification link.
-            `
+            `,
     };
 };
 
@@ -27,6 +26,6 @@ export const passwordResetEmail = (email, verifyUrl) => {
             If you did not request this, please ignore this email.  
             
             For security reasons, do not share this link with anyone.
-            `
+            `,
     };
 };

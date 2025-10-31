@@ -17,9 +17,7 @@ const Callback = () => {
   useEffect(() => {
     const exchangeCode = async () => {
       try {
-        console.log("Inside try");
         const res = await dispatch(googleAuth(code));
-        console.log(res);
         toast.success("Logged in successfully!");
         navigate("/"); // redirect after success
       } catch (err) {

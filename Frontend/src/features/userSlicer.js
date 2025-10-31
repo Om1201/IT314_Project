@@ -71,7 +71,6 @@ export const logoutUser = createAsyncThunk(
             {},
             { headers: { "Content-Type": "application/json" }, withCredentials: true }
         );
-        console.log("Logout response:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -86,7 +85,6 @@ export const checkAuth = createAsyncThunk(
       const response = await axios.get(import.meta.env.VITE_BACKEND_URL + "/api/auth/is-auth",
             { headers: { "Content-Type": "application/json" }, withCredentials: true }
         );
-        console.log("Fetch user data response:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -97,7 +95,6 @@ export const checkAuth = createAsyncThunk(
 export const googleAuth = createAsyncThunk(
   "user/googleAuth",
   async (code, { rejectWithValue }) => {
-    console.log("code is: ",code);
     try {
       const response = await axios.post(import.meta.env.VITE_BACKEND_URL + "/api/auth/oauth/google/callback",
             { code },

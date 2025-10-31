@@ -1,10 +1,25 @@
-import express from "express" 
-import {isAuthenticated, logout, register, resetPassword, sendResetToken, signIn, verifyAccount, verifyResetToken} from "../controllers/Auth.js";
-import userAuth from "../middlewares/userAuth.js"
-import {login as googleLogin} from "../controllers/oAuthController.js";
-import {verifyToken as googleVerifyToken} from "../controllers/oAuthController.js";
-import { validate } from "../middlewares/validate.js";
-import { emailSchema, registerSchema, resetPassSchema, signinSchema, tokenSchema } from "../validators/authValidators.js";
+import express from 'express';
+import {
+    isAuthenticated,
+    logout,
+    register,
+    resetPassword,
+    sendResetToken,
+    signIn,
+    verifyAccount,
+    verifyResetToken,
+} from '../controllers/Auth.js';
+import userAuth from '../middlewares/userAuth.js';
+import { login as googleLogin } from '../controllers/oAuthController.js';
+import { verifyToken as googleVerifyToken } from '../controllers/oAuthController.js';
+import { validate } from '../middlewares/validate.js';
+import {
+    emailSchema,
+    registerSchema,
+    resetPassSchema,
+    signinSchema,
+    tokenSchema,
+} from '../validators/authValidators.js';
 
 const authRouter = express.Router();
 
