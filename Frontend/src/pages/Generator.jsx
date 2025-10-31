@@ -24,7 +24,7 @@ export default function Generator() {
       return;
     }
     try{
-        let response = await dispatch(fetchRoadmap({ description, skillLevel }));
+          let response = await dispatch(fetchRoadmap({ userDescription: description, userLevel: skillLevel }));
         if (response.meta.requestStatus === "fulfilled") {
             navigate("/roadmap/display");
         }

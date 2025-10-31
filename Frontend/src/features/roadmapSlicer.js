@@ -3,12 +3,12 @@ import axios from "axios";
 
 export const fetchRoadmap = createAsyncThunk(
     "roadmap/fetchRoadmap",
-    async (topic, { rejectWithValue }) => {
+    async ({userDescription, userLevel}, { rejectWithValue }) => {
         try {
-            console.log("HELLO");
+            console.log("Generating roadmap for userDescription:", userDescription);
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/generate`,
-                { topic },
+                { userDescription, userLevel },
                 {
                     headers: { "Content-Type": "application/json" },
                     withCredentials: true,

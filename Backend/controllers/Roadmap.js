@@ -26,12 +26,14 @@
 
     export const generateRoadmap = async (req, res) => {
       try {
-        const topic = req.body.topic;
+        const {userDescription, userLevel} = req.body;
+
+        console.log("Generating roadmap for userDescription:", userDescription);
         const prompt = `
-    Create a comprehensive learning roadmap for "${topic}". Return a JSON object with this exact structure:
+    Create a comprehensive learning roadmap based on the user's description "${userDescription}" and their current level "${userLevel}". Return a JSON object with this exact structure:
     
     {
-      "title": "Learning ${topic}",
+      "title": "Learning <give very concise title accroding to the user description>",
       "description": "Brief description of what the learner will achieve",
       "estimatedDuration": "X weeks/months",
       "difficulty": "Beginner/Intermediate/Advanced",
@@ -61,7 +63,7 @@
     - Include practical, hands-on topics
     - Make titles clear and specific
     - Estimate realistic time requirements
-    - Focus on the most important concepts for ${topic}
+    - Focus on the most important concepts according to the user's description: ${userDescription}
     
     Return only valid JSON, no additional text.
     `
