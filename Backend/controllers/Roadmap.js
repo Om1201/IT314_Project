@@ -78,7 +78,7 @@ export const generateRoadmap = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            data: roadmapData,
+            data: newRoadmap,
             message: 'Roadmap generated successfully',
         });
     } catch (error) {

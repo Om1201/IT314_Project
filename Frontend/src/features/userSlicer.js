@@ -111,7 +111,7 @@ const initialState = {
     username: "",
     email: "",
     tempemail: "",
-    isLoggedin: true,
+    isLoggedin: false,
     authLoading: true,
 }
 
