@@ -11,6 +11,7 @@ const userAuth = async (req, res, next) => {
 
         if (tokenDecode.id) {
             req.userId = tokenDecode.id;
+            req.email = tokenDecode.email;
         } else {
             return res.status(401).json({ success: false, message: 'Not Authorized Login Again.' });
         }

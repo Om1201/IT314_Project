@@ -86,3 +86,56 @@ export const generateRoadmap = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const getUserRoadmaps = async (req, res) => {
+    try {
+        const { email } = req;
+        const roadmaps = await RoadmapModel.find({ email }).sort({ createdAt: -1 });
+
+        return res
+            .status(200)
+            .json({ success: true, data: roadmaps, message: 'Roadmaps fetched successfully' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+
+export const deleteRoadmap  = async (req, res) => {
+    try {
+        const { roadmapId } = req.body;
+        console.log("Deleting roadmap with ID:", roadmapId);
+
+        const roadmap = await RoadmapModel.findOne({ _id: roadmapId });
+
+        if (!roadmap) {
+            return res.status(404).json({ success: false, message: 'Roadmap not found' });
+        }
+
+        await RoadmapModel.deleteOne({ _id: roadmapId });
+
+        return res
+            .status(200)
+            .json({ success: true, message: 'Roadmap deleted successfully' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+export const getRoadmapById = async (req, res) => {
+    try {
+        const { roadmapId } = req.body;
+
+        const roadmap = await RoadmapModel.findOne({ _id: roadmapId });
+
+        if (!roadmap) {
+            return res.status(404).json({ success: false, message: 'Roadmap not found' });
+        }
+
+        return res
+            .status(200)
+            .json({ success: true, data: roadmap, message: 'Roadmap fetched successfully' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
