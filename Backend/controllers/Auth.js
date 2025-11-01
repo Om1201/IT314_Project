@@ -144,7 +144,7 @@ export const signIn = async (req, res) => {
                     message: 'Account not verified. Please verify your account.',
                 });
         }
-        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ id: user._id, email: user.email}, process.env.JWT_SECRET, { expiresIn: '7d' });
         res.cookie('token', token, {
             httpOnly: true,
             // secure: true,
