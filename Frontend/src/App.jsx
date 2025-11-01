@@ -15,15 +15,23 @@ import { Toaster } from 'react-hot-toast';
 import Generator from './pages/Generator';
 import Loader from './components/Loader';
 import { useSelector } from 'react-redux';
+import Roadmaps from './pages/Roadmaps';
+import { fetchUserRoadmaps } from './features/roadmapSlicer';
 
 function App() {
     const dispatch = useDispatch();
     const { authLoading } = useSelector((state) => state.user);
+    const { fetch_loading } = useSelector((state) => state.roadmap);
     useEffect(() => {
-        dispatch(checkAuth());
+        async function fetchData() {
+            await dispatch(checkAuth());
+            await dispatch(fetchUserRoadmaps());
+        };
+        fetchData();
+        
     }, [dispatch]);
 
-    if (authLoading) {
+    if (authLoading && fetch_loading) {
         return <Loader />;
     }
     return (
@@ -50,12 +58,16 @@ function App() {
                             <Generator/>
                         </ProtectedRoute>
                     } />
-                    <Route path='/roadmap/display' element={
+                    <Route path='/roadmap/:id' element={
                         <ProtectedRoute>
                             <RoadmapDisplay/>
                         </ProtectedRoute>
                     } />
-                    <Route path='/loader' element={<Loader />} />
+                    <Route path='/roadmaps' element={
+                        <ProtectedRoute>
+                        <Roadmaps />
+                        </ProtectedRoute>
+                        } />
                 </Routes>
             </Router>
         </>

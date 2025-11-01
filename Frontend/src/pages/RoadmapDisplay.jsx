@@ -1,11 +1,41 @@
-import { ArrowRight, CheckCircle2, Clock, Zap } from "lucide-react"
-import { useSelector } from "react-redux"
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock, Zap } from "lucide-react"
+import { useSelector, useDispatch } from "react-redux"
+import { useEffect, useState } from "react"
+import { useParams } from "react-router-dom";
+import { getUserRoadmapById } from "../features/roadmapSlicer";
+import Navbar from "../components/Navbar";
+import toast from "react-hot-toast";
+import Loader from "../components/Loader";
+import { Link } from "react-router-dom";
 
 export default function RoadmapDisplay() {
-    const { currRoadmap, isLoading, error } = useSelector((state) => state.roadmap)
-    if (isLoading) return <p className="text-white text-center mt-10">Generating roadmap...</p>
-    if (error) return <p className="text-red-400 text-center mt-10">{error}</p>
-    if (!currRoadmap) return null
+    const dispatch = useDispatch();
+    const [currRoadmap, setCurrRoadmap] = useState({});
+    const [isLoading, setisLoading] = useState(true);
+    const [notfound, setNotfound] = useState(false);
+    const { id } = useParams();
+
+    useEffect(() => {
+        async function fetchRoadmap() {
+            if(id===undefined) return; 
+            let response = await dispatch(getUserRoadmapById(id));
+            response = response.payload;
+            console.log(response);
+            if(!response.success){
+                setNotfound(true);
+                toast.error("Failed to fetch roadmap data");
+                setisLoading(false);
+                return;
+            }
+            console.log("Fetched single roadmap:", response.roadmapData);
+            setCurrRoadmap(response.data.roadmapData);
+            setisLoading(false);
+        }
+        fetchRoadmap();
+    }, [id]);
+
+
+    if (!currRoadmap) return null;
 
     const data = currRoadmap
     const progressCounts = (() => {
@@ -20,9 +50,42 @@ export default function RoadmapDisplay() {
         return { total, completed, ratio: total ? Math.round((completed / total) * 100) : 0 }
     })()
 
+
+    if(isLoading) return <Loader/>
+
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-black text-white overflow-hidden relative py-8 px-4 sm:px-6 lg:px-8">
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <>
+        <Navbar/>
+        <div className="min-h-screen pt-20 bg-gradient-to-br from-slate-950 via-blue-950 to-black text-white overflow-hidden relative py-8 px-4 sm:px-6 lg:px-8">
+            {notfound? (
+                <div className="flex flex-col items-center justify-center min-h-[70vh] text-center relative z-10">
+    {/* Glowing Icon */}
+    <div className="relative mb-6">
+      <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full animate-pulse"></div>
+      <div className="relative bg-slate-900/60 border border-slate-700/50 backdrop-blur-xl p-6 rounded-2xl">
+        <BookOpen className="h-12 w-12 text-blue-400 opacity-80" />
+      </div>
+    </div>
+
+    {/* Text */}
+    <h2 className="text-3xl font-semibold text-slate-200 mb-2">
+      Roadmap Not Found
+    </h2>
+    <p className="text-slate-400 max-w-md mb-8">
+      The roadmap you're looking for doesn't exist or may have been removed.
+    </p>
+
+    {/* Button to go back */}
+    <Link
+      to="/roadmaps"
+      className="px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl font-semibold text-white shadow-lg shadow-blue-900/30 transition-all duration-300 flex items-center gap-2"
+    >
+      <ArrowLeft className="h-5 w-5" />
+      Back to My roadmaps
+    </Link>
+  </div>
+            ) : (<><div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-20 left-10 w-72 h-72 bg-blue-600/20 rounded-full blur-3xl animate-pulse"></div>
                 <div
                     className="absolute bottom-20 right-10 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse"
@@ -142,7 +205,8 @@ export default function RoadmapDisplay() {
                         ))}
                     </main>
                 </div>
-            </div>
+            </div></>)}
         </div>
+        </>
     )
 }

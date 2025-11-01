@@ -2,36 +2,35 @@ import { ArrowRight, Sparkles, Zap , Loader2} from "lucide-react"
 import { useState } from "react"
 import Navbar from "../components/Navbar"
 import { useDispatch, useSelector } from "react-redux"
-import { fetchRoadmap } from "../features/roadmapSlicer"
+import { fetchUserRoadmaps, generateRoadmap } from "../features/roadmapSlicer"
 import toast from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
 import Loader from "../components/Loader"
 export default function Generator() {
   const [description, setDescription] = useState("")
   const [skillLevel, setSkillLevel] = useState("beginner")
+  const { generation_loading } = useSelector((state) => state.roadmap);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const {isLoading } = useSelector((state) => state.roadmap);
   const handleSubmit = async(e) => {
-    e.preventDefault()
+    e.preventDefault();
     // pass
 
-    if (isLoading) return;
     if (!description.trim()) {
       toast.error("Please enter what you want to learn.");
       return;
     }
     try{
-        let response = await dispatch(fetchRoadmap({ userDescription: description, userLevel: skillLevel }));
+        let response = await dispatch(generateRoadmap({ userDescription: description, userLevel: skillLevel }));
         response = response.payload;
         if(!response.success){
           toast.error(response.message || "Roadmap generation failed. Please try again.");
           return; 
         }
         if (response.success === true) {
-            navigate("/roadmap/display");
+            navigate(`/roadmap/${response.data._id}`);
         }
     }catch(err){
       console.error("Error generating roadmap:", err);
@@ -40,9 +39,6 @@ export default function Generator() {
 
   }
 
-  if(isLoading){
-    return <Loader />
-  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-black text-white overflow-hidden relative">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -97,6 +93,7 @@ export default function Generator() {
                     <textarea
                       id="description"
                       value={description}
+                      disabled={generation_loading}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="e.g., I want to master React and build production-ready web applications with TypeScript..."
                       className="w-full px-5 py-4 bg-slate-800/50 border border-blue-500/30 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 transition-all duration-300 resize-none font-medium"
@@ -138,11 +135,11 @@ export default function Generator() {
 
                   <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={generation_loading}
                     className="w-full cursor-pointer px-8 py-4 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-xl hover:from-blue-700 hover:via-purple-700 hover:to-blue-700 transition-all duration-300 font-bold text-lg hover:shadow-2xl hover:shadow-blue-500/40 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3 mt-8 text-white
                                   disabled:opacity-70 disabled:cursor-not-allowed" 
                 >
-                    {isLoading ? (
+                    {generation_loading ? (
                       <>
                         <Loader2 className="h-5 w-5 animate-spin" /> {/* <-- Show loader */}
                         Generating...
@@ -157,7 +154,7 @@ export default function Generator() {
                   </button>
 
                   <p className="text-center text-sm text-slate-400">
-                    {isLoading
+                    {generation_loading
                       ? "✨ Our AI is building your path... Please wait."
                       : "✨ Your personalized roadmap will be generated ASAP"
                     }

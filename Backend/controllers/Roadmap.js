@@ -1,6 +1,9 @@
 import { GoogleGenAI } from '@google/genai';
 import RoadmapModel from '../models/RoadmapModel.js';
 import UserModel from '../models/UserModel.js';
+import { getRoadmapPrompt } from '../utils/prompt.js';
+import { getArticles } from '../utils/search.js';
+import { getVideos } from '../utils/search.js';
 
 const genAI = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY,
@@ -27,74 +30,112 @@ export const generateRoadmap = async (req, res) => {
         const { userDescription, userLevel } = req.validatedData;
         const userId = req.userId;
 
-        console.log('Generating roadmap for userDescription:', userDescription);
-        const prompt = `
-    Create a comprehensive learning roadmap based on the user's description "${userDescription}" and their current level "${userLevel}". Return a JSON object with this exact structure:
-    
-    {
-      "title": "Learning <give very concise title accroding to the user description>",
-      "description": "Brief description of what the learner will achieve",
-      "estimatedDuration": "X weeks/months",
-      "difficulty": "Beginner/Intermediate/Advanced",
-      "chapters": [
-        {
-          "id": 1,
-          "title": "Chapter Title",
-          "description": "What this chapter covers",
-          "estimatedTime": "X hours",
-          "subtopics": [
-            {
-              "id": 1,
-              "title": "Subtopic Title",
-              "description": "Brief description",
-              "detailedDescription": "<just an empty string>",
-              "estimatedTime": "X minutes",
-              "completed": false
-            }
-          ]
-        }
-      ]
-    }
-    
-    Requirements:
-    - Create 4-6 chapters maximum
-    - Each chapter should have 3-5 subtopics
-    - Progress from basic to advanced concepts
-    - Include practical, hands-on topics
-    - Make titles clear and specific
-    - Estimate realistic time requirements
-    - Focus on the most important concepts according to the user's description: ${userDescription}
-    
-    Return only valid JSON, no additional text.
-    `;
+        const initTime = new Date().toLocaleString();
+        console.log(`Generating roadmap for userDescription: ${userDescription}, userLevel: ${userLevel} - ${initTime}`);
+        
+        // Use the utility function and incorporate userLevel into the prompt
+        const basePrompt = getRoadmapPrompt(userDescription);
+        const prompt = `${basePrompt}\n\nAdditionally, tailor the roadmap for a ${userLevel} level learner. Adjust the difficulty, depth, and pace accordingly.`;
+        
+        const responseText = await generateWithGemini(prompt);
+        console.log('Response size:', responseText.length);
 
-        const response = await generateWithGemini(prompt);
-        let parsedResponse;
+        // Parse the JSON response
+        let roadmapData;
         try {
-            parsedResponse = JSON.parse(response.replace(/```json|```/g, '').trim());
-        } catch (error) {
-            console.error('Failed to parse roadmap JSON:', error);
-            return res.status(500).json({ success: false, message: error.message });
+            const cleanedText = responseText.trim().replace(/^```json\s*|\s*```$/g, '').trim();
+            roadmapData = JSON.parse(cleanedText);
+        } catch (parseError) {
+            console.error('JSON Parse Error:', parseError);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to parse roadmap response. The AI response was not valid JSON.',
+            });
         }
 
+        console.log(`Fetching articles... ${new Date().toLocaleString()}`);
+        const articles = await getArticles(roadmapData);
+        roadmapData.articles = articles;
+
+        console.log(`Fetching videos... ${new Date().toLocaleString()}`);
+        const videos = await getVideos(roadmapData);
+        roadmapData.videos = videos;
+
+        // Save to database
         const user = await UserModel.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
         const newRoadmap = new RoadmapModel({
             email: user.email,
-            roadmapData: parsedResponse,
+            roadmapData: roadmapData,
         });
         await newRoadmap.save();
 
-        return res
-            .status(200)
-            .json({
-                success: true,
-                data: parsedResponse,
-                message: 'Roadmap generated successfully',
-            });
+        console.log('Roadmap generated successfully');
+        const endTime = new Date().toLocaleString();
+        console.log(`Total time: ${endTime} - ${initTime}`);
+
+        return res.status(200).json({
+            success: true,
+            data: roadmapData,
+            message: 'Roadmap generated successfully',
+        });
     } catch (error) {
+        console.error('Error in generateRoadmap:', error);
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const getUserRoadmaps = async (req, res) => {
+    try {
+        const { email } = req;
+        const roadmaps = await RoadmapModel.find({ email }).sort({ createdAt: -1 });
+
+        return res
+            .status(200)
+            .json({ success: true, data: roadmaps, message: 'Roadmaps fetched successfully' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+
+export const deleteRoadmap  = async (req, res) => {
+    try {
+        const { roadmapId } = req.body;
+        console.log("Deleting roadmap with ID:", roadmapId);
+
+        const roadmap = await RoadmapModel.findOne({ _id: roadmapId });
+
+        if (!roadmap) {
+            return res.status(404).json({ success: false, message: 'Roadmap not found' });
+        }
+
+        await RoadmapModel.deleteOne({ _id: roadmapId });
+
+        return res
+            .status(200)
+            .json({ success: true, message: 'Roadmap deleted successfully' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+export const getRoadmapById = async (req, res) => {
+    try {
+        const { roadmapId } = req.body;
+
+        const roadmap = await RoadmapModel.findOne({ _id: roadmapId });
+
+        if (!roadmap) {
+            return res.status(404).json({ success: false, message: 'Roadmap not found' });
+        }
+
+        return res
+            .status(200)
+            .json({ success: true, data: roadmap, message: 'Roadmap fetched successfully' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}

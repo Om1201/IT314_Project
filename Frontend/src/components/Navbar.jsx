@@ -9,13 +9,12 @@ import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
 const navLinks = [
-  { name: "Home", href: "/home" },
+  { name: "Home", href: "/" },
   { name: "About", href: "/about" },
   { name: "Contact", href: "/contact" },
+  { name: "Roadmaps", href: "/roadmaps" },
 ];
 
-// const handleLogout = () => {
-// }
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
