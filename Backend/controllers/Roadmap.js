@@ -4,6 +4,7 @@ import UserModel from '../models/UserModel.js';
 import { getRoadmapPrompt } from '../utils/prompt.js';
 import { getArticles } from '../utils/search.js';
 import { getVideos } from '../utils/search.js';
+import NoteModel from '../models/NoteModel.js';
 
 const genAI = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY,
@@ -31,19 +32,24 @@ export const generateRoadmap = async (req, res) => {
         const userId = req.userId;
 
         const initTime = new Date().toLocaleString();
-        console.log(`Generating roadmap for userDescription: ${userDescription}, userLevel: ${userLevel} - ${initTime}`);
-        
+        console.log(
+            `Generating roadmap for userDescription: ${userDescription}, userLevel: ${userLevel} - ${initTime}`
+        );
+
         // Use the utility function and incorporate userLevel into the prompt
         const basePrompt = getRoadmapPrompt(userDescription);
         const prompt = `${basePrompt}\n\nAdditionally, tailor the roadmap for a ${userLevel} level learner. Adjust the difficulty, depth, and pace accordingly.`;
-        
+
         const responseText = await generateWithGemini(prompt);
         console.log('Response size:', responseText.length);
 
         // Parse the JSON response
         let roadmapData;
         try {
-            const cleanedText = responseText.trim().replace(/^```json\s*|\s*```$/g, '').trim();
+            const cleanedText = responseText
+                .trim()
+                .replace(/^```json\s*|\s*```$/g, '')
+                .trim();
             roadmapData = JSON.parse(cleanedText);
         } catch (parseError) {
             console.error('JSON Parse Error:', parseError);
@@ -98,13 +104,12 @@ export const getUserRoadmaps = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
-}
+};
 
-
-export const deleteRoadmap  = async (req, res) => {
+export const deleteRoadmap = async (req, res) => {
     try {
         const { roadmapId } = req.body;
-        console.log("Deleting roadmap with ID:", roadmapId);
+        console.log('Deleting roadmap with ID:', roadmapId);
 
         const roadmap = await RoadmapModel.findOne({ _id: roadmapId });
 
@@ -114,13 +119,11 @@ export const deleteRoadmap  = async (req, res) => {
 
         await RoadmapModel.deleteOne({ _id: roadmapId });
 
-        return res
-            .status(200)
-            .json({ success: true, message: 'Roadmap deleted successfully' });
+        return res.status(200).json({ success: true, message: 'Roadmap deleted successfully' });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
-}
+};
 
 export const getRoadmapById = async (req, res) => {
     try {
@@ -138,4 +141,40 @@ export const getRoadmapById = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
-}
+};
+
+export const getNotesForRoadmap = async (req, res) => {
+    try {
+        const { roadmapId } = req.params;
+        const userId = req.userId;
+
+        const notes = await NoteModel.find({ userId, roadmapId });
+
+        const notesMap = notes.reduce((acc, note) => {
+            const key = `${note.contextType}:${note.contextId}`;
+            acc[key] = note.content;
+            return acc;
+        }, {});
+
+        return res.status(200).json({ success: true, data: notesMap });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const saveNote = async (req, res) => {
+    try {
+        const { roadmapId, contextId, contextType, content } = req.body;
+        const userId = req.userId;
+
+        const updatedNote = await NoteModel.findOneAndUpdate(
+            { userId, roadmapId, contextId, contextType },
+            { userId, roadmapId, contextId, contextType, content },
+            { new: true, upsert: true }
+        );
+
+        return res.status(200).json({ success: true, data: updatedNote, message: 'Note saved' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};

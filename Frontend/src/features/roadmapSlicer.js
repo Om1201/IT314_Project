@@ -1,87 +1,119 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import axios from 'axios';
 
 export const generateRoadmap = createAsyncThunk(
-    "roadmap/generateRoadmap",
-    async ({userDescription, userLevel}, { rejectWithValue }) => {
+    'roadmap/generateRoadmap',
+    async ({ userDescription, userLevel }, { rejectWithValue }) => {
         try {
-            console.log("Generating roadmap for userDescription:", userDescription);
+            console.log('Generating roadmap for userDescription:', userDescription);
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/generate`,
                 { userDescription, userLevel },
                 {
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 'Content-Type': 'application/json' },
                     withCredentials: true,
                 }
             );
 
             return response.data;
         } catch (error) {
-            console.error("Error in generateRoadmap:", error);
-            return rejectWithValue(error.response?.data || { message: "Unknown error" });
+            console.error('Error in generateRoadmap:', error);
+            return rejectWithValue(error.response?.data || { message: 'Unknown error' });
         }
     }
 );
 
 export const fetchUserRoadmaps = createAsyncThunk(
-    "roadmap/fetchUserRoadmaps",
+    'roadmap/fetchUserRoadmaps',
     async (_, { rejectWithValue }) => {
         try {
             const response = await axios.get(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/get-roadmaps`,
                 {
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 'Content-Type': 'application/json' },
                     withCredentials: true,
                 }
             );
-            console.log("Fetched user roadmaps:", response.data);
+            console.log('Fetched user roadmaps:', response.data);
             return response.data;
         } catch (error) {
-            console.error("Error in fetchUserRoadmaps:", error);
-            return rejectWithValue(error.response?.data || { message: "Unknown error" });
+            console.error('Error in fetchUserRoadmaps:', error);
+            return rejectWithValue(error.response?.data || { message: 'Unknown error' });
         }
     }
 );
 
 export const deleteUserRoadmap = createAsyncThunk(
-    "roadmap/deleteUserRoadmap",
+    'roadmap/deleteUserRoadmap',
     async (roadmapId, { rejectWithValue }) => {
         try {
-            console.log("Deleting roadmap with ID:", roadmapId);  
+            console.log('Deleting roadmap with ID:', roadmapId);
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/delete-roadmap`,
                 { roadmapId },
                 {
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 'Content-Type': 'application/json' },
                     withCredentials: true,
                 }
             );
-            console.log("Deleted roadmap response:", response);
+            console.log('Deleted roadmap response:', response);
             return response.data;
         } catch (error) {
-            console.error("Error in deleteUserRoadmap:", error);
-            return rejectWithValue(error.response?.data || { message: "Unknown error" });
+            console.error('Error in deleteUserRoadmap:', error);
+            return rejectWithValue(error.response?.data || { message: 'Unknown error' });
         }
     }
 );
 
 export const getUserRoadmapById = createAsyncThunk(
-    "roadmap/getUserRoadmapById",
+    'roadmap/getUserRoadmapById',
     async (roadmapId, { rejectWithValue }) => {
         try {
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/get-roadmap-by-id`,
                 { roadmapId },
-                {   
-                    headers: { "Content-Type": "application/json" },
+                {
+                    headers: { 'Content-Type': 'application/json' },
                     withCredentials: true,
-                }   
+                }
             );
             // console.log("Fetched roadmap response:", response);
             return response.data;
         } catch (error) {
-            console.error("Error in getUserRoadmapById:", error);
-            return rejectWithValue(error.response?.data || { message: "Unknown error" });
+            console.error('Error in getUserRoadmapById:', error);
+            return rejectWithValue(error.response?.data || { message: 'Unknown error' });
+        }
+    }
+);
+export const fetchNotes = createAsyncThunk(
+    'roadmap/fetchNotes',
+    async (roadmapId, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/notes/${roadmapId}`,
+                { withCredentials: true }
+            );
+            console.log('Fetched notes response:', response);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+    }
+);
+
+export const saveNote = createAsyncThunk(
+    'roadmap/saveNote',
+    async ({ roadmapId, contextId, contextType, content }, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/notes/save`,
+                { roadmapId, contextId, contextType, content },
+                { withCredentials: true }
+            );
+            console.log('Saved note response:', response);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
         }
     }
 );
@@ -93,27 +125,34 @@ const initialState = {
     fetch_loading: true,
     fetch_error: false,
     userRoadmaps: [],
+    notes: {},
+    notes_loading: false,
 };
 
 export const roadmapSlice = createSlice({
-    name: "roadmap",
+    name: 'roadmap',
     initialState,
     reducers: {
         setcurrRoadmap: (state, action) => {
             state.currRoadmap = action.payload;
         },
-        resetRoadmap: (state) => {
+        resetRoadmap: state => {
             state.currRoadmap = {};
             state.generation_loading = false;
             state.generation_error = false;
         },
         setUserRoadmaps: (state, action) => {
             state.userRoadmaps = action.payload;
-        }
+        },
+        updateNoteInState: (state, action) => {
+            const { contextId, contextType, content } = action.payload;
+            const key = `${contextType}:${contextId}`;
+            state.notes[key] = content;
+        },
     },
-    extraReducers: (builder) => {
+    extraReducers: builder => {
         builder
-            .addCase(generateRoadmap.pending, (state) => {
+            .addCase(generateRoadmap.pending, state => {
                 state.generation_loading = true;
                 state.generation_error = false;
             })
@@ -123,14 +162,13 @@ export const roadmapSlice = createSlice({
                 state.generation_error = false;
                 // state.currRoadmap = action.payload.data;
                 state.userRoadmaps.push(action.payload.data);
-            
             })
 
             .addCase(generateRoadmap.rejected, (state, action) => {
                 state.generation_loading = false;
                 state.generation_error = true;
             })
-            .addCase(fetchUserRoadmaps.pending, (state) => {
+            .addCase(fetchUserRoadmaps.pending, state => {
                 state.fetch_loading = true;
                 state.fetch_error = false;
             })
@@ -142,9 +180,29 @@ export const roadmapSlice = createSlice({
             .addCase(fetchUserRoadmaps.rejected, (state, action) => {
                 state.fetch_loading = false;
                 state.fetch_error = true;
+            })
+            .addCase(fetchNotes.pending, state => {
+                state.notes_loading = true;
+                state.notes = {};
+            })
+            .addCase(fetchNotes.fulfilled, (state, action) => {
+                state.notes_loading = false;
+                state.notes = action.payload.data;
+            })
+            .addCase(fetchNotes.rejected, state => {
+                state.notes_loading = false;
+            })
+            .addCase(saveNote.fulfilled, (state, action) => {
+                const payload = action.payload;
+                if (payload.success && payload.data) {
+                    const note = payload.data;
+                    const key = `${note.contextType}:${note.contextId}`;
+                    state.notes[key] = note.content;
+                }
             });
     },
 });
 
-export const { setcurrRoadmap, resetRoadmap, setUserRoadmaps } = roadmapSlice.actions;
+export const { setcurrRoadmap, resetRoadmap, setUserRoadmaps, updateNoteInState } =
+    roadmapSlice.actions;
 export const roadmapReducer = roadmapSlice.reducer;
