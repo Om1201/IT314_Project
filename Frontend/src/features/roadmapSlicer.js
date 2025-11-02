@@ -93,7 +93,7 @@ export const fetchNotes = createAsyncThunk(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/notes/${roadmapId}`,
                 { withCredentials: true }
             );
-            console.log('Fetched notes response:', response);
+            // console.log('Fetched notes response:', response);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data);
@@ -103,11 +103,11 @@ export const fetchNotes = createAsyncThunk(
 
 export const saveNote = createAsyncThunk(
     'roadmap/saveNote',
-    async ({ roadmapId, contextId, contextType, content }, { rejectWithValue }) => {
+    async ({ roadmapId, subtopicId, moduleId, content }, { rejectWithValue }) => {
         try {
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/notes/save`,
-                { roadmapId, contextId, contextType, content },
+                { roadmapId, subtopicId, moduleId, content },
                 { withCredentials: true }
             );
             console.log('Saved note response:', response);
@@ -145,8 +145,8 @@ export const roadmapSlice = createSlice({
             state.userRoadmaps = action.payload;
         },
         updateNoteInState: (state, action) => {
-            const { contextId, contextType, content } = action.payload;
-            const key = `${contextType}:${contextId}`;
+            const { subtopicId, contextType, content } = action.payload;
+            const key = `${contextType}:${subtopicId}`;
             state.notes[key] = content;
         },
     },
@@ -196,7 +196,7 @@ export const roadmapSlice = createSlice({
                 const payload = action.payload;
                 if (payload.success && payload.data) {
                     const note = payload.data;
-                    const key = `${note.contextType}:${note.contextId}`;
+                    const key = `${note.contextType}:${note.subtopicId}`;
                     state.notes[key] = note.content;
                 }
             });

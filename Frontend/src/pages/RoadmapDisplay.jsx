@@ -5,7 +5,7 @@ import LeftSidebar from '../components/LeftSidebar.jsx';
 import ModuleCard from '../components/ModuleCard.jsx';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { fetchNotes, getUserRoadmapById } from '../features/roadmapSlicer.js';
+import { fetchNotes, getUserRoadmapById, saveNote } from '../features/roadmapSlicer.js';
 import toast from 'react-hot-toast';
 import Loader from '../components/Loader.jsx';
 import Navbar from '../components/Navbar.jsx';
@@ -42,7 +42,11 @@ export default function RoadmapDisplay() {
             }
             console.log('Fetched single roadmap:', response.roadmapData);
             setCurrRoadmap(response.data.roadmapData);
+            let notesResponse = await dispatch(fetchNotes(id));
+            notesResponse = notesResponse.payload.data;
+            console.log('Fetched notes:', notesResponse);
             console.log(response.data.roadmapData);
+            setNotes(notesResponse);
 
             dispatch(fetchNotes(id));
             setisLoading(false);
@@ -81,11 +85,27 @@ export default function RoadmapDisplay() {
         setCompletedSubtopics(newCompleted);
     };
 
-    const saveNotes = (subtopicId, content) => {
-        setNotes(prev => ({
-            ...prev,
-            [subtopicId]: content,
-        }));
+    const saveNotes = async (moduleId, subtopicId, content) => {
+        try {
+            console.log('Saving note:', {
+                roadmapId: id,
+                subtopicId: subtopicId,
+                moduleId: moduleId,
+                content,
+            });
+            let response = await dispatch(
+                saveNote({ roadmapId: id, subtopicId: subtopicId, moduleId: moduleId, content })
+            );
+            response = response.payload;
+            console.log(response);
+            if (!response.success) {
+                toast.error('Failed to save note');
+                return;
+            }
+            toast.success('Note saved successfully');
+        } catch (error) {
+            toast.error(error.response.data.message);
+        }
     };
 
     const toggleModuleExpanded = moduleId => {

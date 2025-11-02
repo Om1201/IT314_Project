@@ -178,7 +178,7 @@ export const getNotesForRoadmap = async (req, res) => {
         const notes = await NoteModel.find({ userId, roadmapId });
 
         const notesMap = notes.reduce((acc, note) => {
-            const key = `${note.contextType}:${note.contextId}`;
+            const key = `${note.moduleId}:${note.subtopicId}`;
             acc[key] = note.content;
             return acc;
         }, {});
@@ -191,17 +191,18 @@ export const getNotesForRoadmap = async (req, res) => {
 
 export const saveNote = async (req, res) => {
     try {
-        const { roadmapId, contextId, contextType, content } = req.body;
+        const { roadmapId, subtopicId, moduleId, content } = req.body;
         const userId = req.userId;
 
         const updatedNote = await NoteModel.findOneAndUpdate(
-            { userId, roadmapId, contextId, contextType },
-            { userId, roadmapId, contextId, contextType, content },
+            { userId, roadmapId, subtopicId, moduleId },
+            { userId, roadmapId, subtopicId, moduleId, content },
             { new: true, upsert: true }
         );
 
         return res.status(200).json({ success: true, data: updatedNote, message: 'Note saved' });
     } catch (error) {
+        console.error('Error saving note:', error);
         return res.status(500).json({ success: false, message: error.message });
     }
 };

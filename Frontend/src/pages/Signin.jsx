@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { forgotPassword, signinUser } from '../features/userSlicer';
+import { fetchUserRoadmaps } from '../features/roadmapSlicer';
 
 export default function Signin() {
     const [showPassword, setShowPassword] = useState(false);
@@ -30,6 +31,7 @@ export default function Signin() {
             toast.success('Signin successful');
 
             await setTimeout(() => {
+                dispatch(fetchUserRoadmaps());
                 navigate('/', { replace: true });
             }, 1000);
         } catch (error) {

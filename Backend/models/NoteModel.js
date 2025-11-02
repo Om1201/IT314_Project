@@ -13,13 +13,12 @@ const noteSchema = new Schema(
             ref: 'Roadmap',
             required: true,
         },
-        contextId: {
+        subtopicId: {
             type: String,
             required: true,
         },
-        contextType: {
+        moduleId: {
             type: String,
-            enum: ['chapter', 'subtopic'],
             required: true,
         },
         content: {
@@ -30,7 +29,6 @@ const noteSchema = new Schema(
     { timestamps: true }
 );
 
-noteSchema.index({ userId: 1, roadmapId: 1, contextType: 1, contextId: 1 }, { unique: true });
 
 const NoteModel = mongoose.model('Note', noteSchema);
 export default NoteModel;

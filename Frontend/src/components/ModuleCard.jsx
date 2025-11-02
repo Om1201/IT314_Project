@@ -72,9 +72,10 @@ export default function ModuleCard({
                                     subtopic={subtopic}
                                     selectedTab={selectedTab}
                                     onTabChange={onTabChange}
-                                    noteContent={notes[`${module.id}-${subtopic.id}`] || ''}
+                                    noteContent={notes[`${module.id}:${subtopic.id}`] || ''}
                                     onSaveNote={content =>
-                                        onSaveNote(`${module.id}-${subtopic.id}`, content)
+                                        // console.log('Saving note for', module.id, subtopic.id)
+                                        onSaveNote(module.id, subtopic.id, content)
                                     }
                                 />
                             )}

@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 
 export default function NoteModal({
     roadmapId,
-    contextId,
+    subtopicId,
     contextType,
     title,
     initialContent,
@@ -18,7 +18,7 @@ export default function NoteModal({
 
     useEffect(() => {
         setContent(initialContent || '');
-    }, [initialContent, contextId]);
+    }, [initialContent, subtopicId]);
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -26,7 +26,7 @@ export default function NoteModal({
         const result = await dispatch(
             saveNote({
                 roadmapId,
-                contextId,
+                subtopicId,
                 contextType,
                 content,
             })
@@ -44,7 +44,7 @@ export default function NoteModal({
 
     const handleLocalChange = e => {
         setContent(e.target.value);
-        dispatch(updateNoteInState({ contextId, contextType, content: e.target.value }));
+        dispatch(updateNoteInState({ subtopicId, contextType, content: e.target.value }));
     };
 
     return (
