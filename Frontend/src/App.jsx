@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 import { checkAuth } from './features/userSlicer';
 import GuestRoute from './components/GuestRoute';
 import ProtectedRoute from './components/ProtectedRoute';
-import RoadmapDisplay from "./pages/RoadmapDisplay";
+import RoadmapDisplay from './pages/RoadmapDisplay';
 import { Toaster } from 'react-hot-toast';
 import Generator from './pages/Generator';
 import Loader from './components/Loader';
@@ -20,15 +20,14 @@ import { fetchUserRoadmaps } from './features/roadmapSlicer';
 
 function App() {
     const dispatch = useDispatch();
-    const { authLoading } = useSelector((state) => state.user);
-    const { fetch_loading } = useSelector((state) => state.roadmap);
+    const { authLoading } = useSelector(state => state.user);
+    const { fetch_loading } = useSelector(state => state.roadmap);
     useEffect(() => {
         async function fetchData() {
             await dispatch(checkAuth());
             await dispatch(fetchUserRoadmaps());
-        };
+        }
         fetchData();
-        
     }, [dispatch]);
 
     if (authLoading && fetch_loading) {
@@ -36,42 +35,57 @@ function App() {
     }
     return (
         <>
-            <Toaster reverseOrder={false}/>
+            <Toaster reverseOrder={false} />
             <Router>
                 <Routes>
-                    <Route path='/' element={<Home/>} />
-                    <Route path='/signin' element={
-                        <GuestRoute>
-                            <Signin/>
-                        </GuestRoute>
-                    } />
-                    <Route path='/signup' element={
-                        <GuestRoute>
-                            <Signup/>
-                        </GuestRoute>
-                    } />
-                    <Route path='/verifyaccount' element={<VerifyAccount/>} />
-                    <Route path='/passwordReset' element={<ResetPassword/>} />
-                    <Route path='/oauth/google/callback' element={<Callback/>}/>
-                    <Route path='/roadmap/generate' element={
-                        <ProtectedRoute>
-                            <Generator/>
-                        </ProtectedRoute>
-                    } />
-                    <Route path='/roadmap/:id' element={
-                        <ProtectedRoute>
-                            <RoadmapDisplay/>
-                        </ProtectedRoute>
-                    } />
-                    <Route path='/roadmaps' element={
-                        <ProtectedRoute>
-                        <Roadmaps />
-                        </ProtectedRoute>
-                        } />
+                    <Route path="/" element={<Home />} />
+                    <Route
+                        path="/signin"
+                        element={
+                            <GuestRoute>
+                                <Signin />
+                            </GuestRoute>
+                        }
+                    />
+                    <Route
+                        path="/signup"
+                        element={
+                            <GuestRoute>
+                                <Signup />
+                            </GuestRoute>
+                        }
+                    />
+                    <Route path="/verifyaccount" element={<VerifyAccount />} />
+                    <Route path="/passwordReset" element={<ResetPassword />} />
+                    <Route path="/oauth/google/callback" element={<Callback />} />
+                    <Route
+                        path="/roadmap/generate"
+                        element={
+                            <ProtectedRoute>
+                                <Generator />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/roadmap/:id"
+                        element={
+                            <ProtectedRoute>
+                                <RoadmapDisplay />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/roadmaps"
+                        element={
+                            <ProtectedRoute>
+                                <Roadmaps />
+                            </ProtectedRoute>
+                        }
+                    />
                 </Routes>
             </Router>
         </>
-    )
+    );
 }
 
-export default App
+export default App;
