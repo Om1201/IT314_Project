@@ -1,6 +1,6 @@
 import { Save, CheckCircle2, Circle } from 'lucide-react';
-import { useState } from 'react';
-
+import { useEffect, useState, useRef } from 'react';
+import MDEditor from '@uiw/react-md-editor';
 const tabs = [
     { id: 'explanation', label: 'Explanation' },
     { id: 'quiz', label: 'Quiz' },
@@ -8,6 +8,7 @@ const tabs = [
     { id: 'videos', label: 'Videos' },
     { id: 'articles', label: 'Articles' },
 ];
+
 export default function SubtopicPanel({
     subtopic,
     selectedTab,
@@ -15,13 +16,41 @@ export default function SubtopicPanel({
     noteContent,
     onSaveNote,
 }) {
-    const [editingNote, setEditingNote] = useState(noteContent);
+    const [editingNote, setEditingNote] = useState(noteContent || '');
     const [isSaving, setIsSaving] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
+    const editorRef = useRef(null);
+
+    useEffect(() => {
+        setEditingNote(noteContent || '');
+    }, [noteContent]);
+
+    useEffect(() => {
+        const onKey = e => {
+            if (e.ctrlKey && e.key.toLowerCase() === 's') {
+                if (isFocused) {
+                    e.preventDefault();
+                    handleSaveNote();
+                }
+            }
+            if (e.key === 'Escape') {
+                if (isFocused) {
+                    e.preventDefault();
+                    setIsFocused(false);
+                }
+            }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [isFocused, editingNote]);
 
     const handleSaveNote = async () => {
         setIsSaving(true);
-        await new Promise(resolve => setTimeout(resolve, 300));
-        onSaveNote(editingNote);
+        try {
+            await onSaveNote(editingNote);
+        } catch (err) {
+            console.error('Save note failed', err);
+        }
         setIsSaving(false);
     };
 
@@ -46,21 +75,60 @@ export default function SubtopicPanel({
                 );
             case 'notes':
                 return (
-                    <div className="space-y-4">
-                        <textarea
-                            value={editingNote}
-                            onChange={e => setEditingNote(e.target.value)}
-                            placeholder="Add your notes here..."
-                            className="w-full h-80 bg-slate-800/50 border border-blue-500/20 rounded-lg p-4 text-white placeholder-slate-500 focus:outline-none focus:border-blue-400/50 resize-none"
-                        />
-                        <button
-                            onClick={handleSaveNote}
-                            disabled={isSaving}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
-                        >
-                            <Save className="h-4 w-4" />
-                            {isSaving ? 'Saving...' : 'Save Notes'}
-                        </button>
+                    <div className="space-y-4" data-color-mode="dark">
+                        {isFocused ? (
+                            <div>
+                                <MDEditor
+                                    ref={editorRef}
+                                    value={editingNote}
+                                    onChange={val => setEditingNote(val ?? '')}
+                                    height={320}
+                                    preview={`${isFocused ? 'live' : 'preview'}`}
+                                    textareaProps={{
+                                        placeholder: 'Write your markdown notes here...',
+                                        onFocus: () => setIsFocused(true),
+                                    }}
+                                />
+
+                                <div className="flex gap-2 mt-3">
+                                    <button
+                                        onClick={handleSaveNote}
+                                        disabled={isSaving}
+                                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                                    >
+                                        <Save className="h-4 w-4" />
+                                        {isSaving ? 'Saving...' : 'Save Notes'}
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            setIsFocused(false);
+                                        }}
+                                        className="flex items-center gap-2 px-4 py-2 bg-slate-800/60 text-slate-200 rounded-lg hover:bg-slate-700/60"
+                                    >
+                                        Preview
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div
+                                className="prose prose-invert max-w-none bg-slate-900/50 rounded-xl border border-slate-500 overflow-hidden  cursor-text"
+                                onClick={() => setIsFocused(true)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        setIsFocused(true);
+                                    }
+                                }}
+                            >
+                                <MDEditor.Markdown
+                                    className="px-8 py-5"
+                                    source={editingNote || '_No notes yet — click to add._'}
+                                />
+                            </div>
+                        )}
                     </div>
                 );
             case 'videos':
@@ -117,7 +185,7 @@ export default function SubtopicPanel({
                 ))}
             </div>
 
-            <div className="bg-slate-800/20 rounded-lg p-6 border border-slate-700/30">
+            <div className="bg-slate-800/20 rounded-lg p-2 border border-slate-700/30">
                 {renderContent()}
             </div>
         </div>

@@ -102,6 +102,8 @@ export default function RoadmapDisplay() {
                 toast.error('Failed to save note');
                 return;
             }
+
+            await dispatch(fetchNotes(id));
             toast.success('Note saved successfully');
         } catch (error) {
             toast.error(error.response.data.message);
