@@ -209,12 +209,12 @@ export const saveNote = async (req, res) => {
 export const generateSubtopicSummary = async (req, res) => {
   try {
 
-    const { roadmapId, subtopic, chapterId } = req.body;
+    const { roadmapId, subtopicId, chapterId } = req.body;
 
-    if (!roadmapId || !subtopic || !chapterId) {
+    if (!roadmapId || !subtopicId || !chapterId) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide roadmapId, subtopic, and chapterId.',
+        message: 'Please provide roadmapId, subtopicId, and chapterId.',
       });
     }
 
@@ -224,18 +224,43 @@ export const generateSubtopicSummary = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Roadmap not found' });
     }
 
-    const roadmapTitle = roadmap.roadmapData.title || 'a learning roadmap';
+    const roadmapTitle = roadmap.roadmapData.title;
+    const chapterIdNum = parseInt(chapterId);
+    const subtopicIdNum = parseInt(subtopicId);
     
-    const chapter = roadmap.roadmapData.chapters.find(ch => ch.id === chapterId);
-    const chapterTitle = chapter ? chapter.title : 'Unknown Chapter';
+    console.log('Looking for chapter:', chapterIdNum, 'Available chapters:', roadmap.roadmapData.chapters.map(ch => ch.id));
+    
+    const chapter = roadmap.roadmapData.chapters.find(ch => ch.id === chapterIdNum);
+    
+    if (!chapter) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Chapter not found',
+        availableChapters: roadmap.roadmapData.chapters.map(ch => ({ id: ch.id, title: ch.title }))
+      });
+    }
+    
+    const chapterTitle = chapter.title;
+    const subtopic = chapter.subtopics.find(st => st.id === subtopicIdNum);
 
-    const prompt = getSubtopicSummaryPrompt(subtopic, roadmapTitle, chapterTitle);
+    if (!subtopic) {
+      return res.status(404).json({ success: false, message: 'Subtopic not found' });
+    }
+
+    const prompt = getSubtopicSummaryPrompt(subtopic.title, roadmapTitle, chapterTitle);
     const summaryText = await generateWithGemini(prompt);
+    subtopic.detailedExplanation = summaryText;
+    
+    roadmap.markModified('roadmapData');
+    await roadmap.save();
 
     return res.status(200).json({
       success: true,
-      summary: summaryText, 
-      message: 'Subtopic summary generated successfully',
+      summary: summaryText,
+      roadmapId: roadmapId,
+      chapterId: chapterId,
+      subtopicId: subtopicId,
+      message: 'Subtopic summary generated and saved successfully',
     });
 
   } catch (error) {

@@ -24,7 +24,8 @@ Create a comprehensive learning roadmap for "${topic}". Return a JSON object wit
             "top-site1.org",
             "top-site2.com",
             "top-site3.dev"
-          ]
+          ],
+          "detailedExplanation": "<remain this field empty string>"
         }
       ]
     }
