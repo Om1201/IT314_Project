@@ -2,9 +2,11 @@ import { GoogleGenAI } from '@google/genai';
 import RoadmapModel from '../models/RoadmapModel.js';
 import UserModel from '../models/UserModel.js';
 import { getRoadmapPrompt } from '../utils/prompt.js';
+import {quizPrompt} from '../utils/prompt.js';
 import { getArticles } from '../utils/search.js';
 import { getVideos } from '../utils/search.js';
 import NoteModel from '../models/NoteModel.js';
+import { getSubtopicSummaryPrompt } from '../utils/prompt.js';
 
 const genAI = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY,
@@ -93,6 +95,31 @@ export const generateRoadmap = async (req, res) => {
     }
 };
 
+export const generateQuiz = async (req, res) => {
+    try {
+        const {roadMapId, chapterId, subtopicId=null } = req.body;
+
+        if(!roadMapId ||  !chapterId){
+            res.status(400).json({ success: false, message: "Invalid request" });
+        }
+        const roadMap = await RoadmapModel.findById(roadMapId);
+        if(!roadMap) {
+            return res.status(404).json({ success: false, message: "Roadmap not found" });
+        }
+        
+        const prompt = quizPrompt(roadMap, chapterId, subtopicId);
+        const quiz = await generateWithGemini(prompt);
+        const quizJson = JSON.parse(quiz);
+        console.log("Quiz generated: ", quizJson); //remove the log later
+
+        return res.status(200).json({ success: true, data: quizJson, message: "Quiz generated successfully" });
+
+    }catch(error) {
+        console.log("Error while generating quiz: ", error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
+
 export const getUserRoadmaps = async (req, res) => {
     try {
         const { email } = req;
@@ -177,4 +204,67 @@ export const saveNote = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
+};
+
+export const generateSubtopicSummary = async (req, res) => {
+  try {
+
+    const { roadmapId, subtopicId, chapterId } = req.body;
+
+    if (!roadmapId || !subtopicId || !chapterId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide roadmapId, subtopicId, and chapterId.',
+      });
+    }
+
+    const roadmap = await RoadmapModel.findById(roadmapId);
+
+    if (!roadmap) {
+      return res.status(404).json({ success: false, message: 'Roadmap not found' });
+    }
+
+    const roadmapTitle = roadmap.roadmapData.title;
+    const chapterIdNum = parseInt(chapterId);
+    const subtopicIdNum = parseInt(subtopicId);
+    
+    console.log('Looking for chapter:', chapterIdNum, 'Available chapters:', roadmap.roadmapData.chapters.map(ch => ch.id));
+    
+    const chapter = roadmap.roadmapData.chapters.find(ch => ch.id === chapterIdNum);
+    
+    if (!chapter) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Chapter not found',
+        availableChapters: roadmap.roadmapData.chapters.map(ch => ({ id: ch.id, title: ch.title }))
+      });
+    }
+    
+    const chapterTitle = chapter.title;
+    const subtopic = chapter.subtopics.find(st => st.id === subtopicIdNum);
+
+    if (!subtopic) {
+      return res.status(404).json({ success: false, message: 'Subtopic not found' });
+    }
+
+    const prompt = getSubtopicSummaryPrompt(subtopic.title, roadmapTitle, chapterTitle);
+    const summaryText = await generateWithGemini(prompt);
+    subtopic.detailedExplanation = summaryText;
+    
+    roadmap.markModified('roadmapData');
+    await roadmap.save();
+
+    return res.status(200).json({
+      success: true,
+      summary: summaryText,
+      roadmapId: roadmapId,
+      chapterId: chapterId,
+      subtopicId: subtopicId,
+      message: 'Subtopic summary generated and saved successfully',
+    });
+
+  } catch (error) {
+    console.error('Error in generateSubtopicSummary:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
