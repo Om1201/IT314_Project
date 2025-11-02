@@ -2,6 +2,7 @@ import { GoogleGenAI } from '@google/genai';
 import RoadmapModel from '../models/RoadmapModel.js';
 import UserModel from '../models/UserModel.js';
 import { getRoadmapPrompt } from '../utils/prompt.js';
+import {quizPrompt} from '../utils/prompt.js';
 import { getArticles } from '../utils/search.js';
 import { getVideos } from '../utils/search.js';
 import NoteModel from '../models/NoteModel.js';
@@ -92,6 +93,31 @@ export const generateRoadmap = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const generateQuiz = async (req, res) => {
+    try {
+        const {roadMapId, chapterId, subtopicId=null } = req.body;
+
+        if(!roadMapId ||  !chapterId){
+            res.status(400).json({ success: false, message: "Invalid request" });
+        }
+        const roadMap = await RoadmapModel.findById(roadMapId);
+        if(!roadMap) {
+            return res.status(404).json({ success: false, message: "Roadmap not found" });
+        }
+        
+        const prompt = quizPrompt(roadMap, chapterId, subtopicId);
+        const quiz = await generateWithGemini(prompt);
+        const quizJson = JSON.parse(quiz);
+        console.log("Quiz generated: ", quizJson); //remove the log later
+
+        return res.status(200).json({ success: true, data: quizJson, message: "Quiz generated successfully" });
+
+    }catch(error) {
+        console.log("Error while generating quiz: ", error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
 
 export const getUserRoadmaps = async (req, res) => {
     try {
