@@ -1,0 +1,67 @@
+:root{
+  --sb-thumb: rgba(255,255,255,0.08);   /* thumb base (light on dark) */
+  --sb-thumb-hover: rgba(255,255,255,0.14);
+  --sb-thumb-active: rgba(255,255,255,0.22);
+  --sb-track: rgba(0,0,0,0.25);         /* track behind thumb */
+  --sb-glow: 0 4px 14px rgba(0,0,0,0.6);/* subtle shadow */
+  --sb-size: 10px;                      /* thickness */
+  --sb-radius: 999px;
+}
+
+html, body {
+  height: 100%;
+}
+
+*::-webkit-scrollbar {
+  width: var(--sb-size);
+  height: var(--sb-size);
+}
+
+*::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.18));
+  background-color: var(--sb-track);
+  border-radius: var(--sb-radius);
+  backdrop-filter: blur(6px);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), var(--sb-thumb));
+  border-radius: var(--sb-radius);
+  box-shadow: var(--sb-glow);
+  border: 2px solid transparent; /* space between thumb and track */
+  background-clip: padding-box;
+  min-height: 24px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--sb-thumb-hover);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: var(--sb-thumb-active);
+  transform: translateZ(0); /* reduces jitter on some platforms */
+}
+
+@media (max-width: 600px) {
+  *::-webkit-scrollbar { display: none; }
+}
+
+html {
+  scrollbar-width: thin; /* auto | thin | none */
+  scrollbar-color: var(--sb-thumb) var(--sb-track); /* thumb track */
+}
+
+.scrollable {
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
+}
+
+.demo {
+  height: 240px;
+  overflow: auto;
+  padding: 1rem;
+  background: rgba(255,255,255,0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
