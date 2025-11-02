@@ -140,3 +140,27 @@ export const quizPrompt = (roadMap, chapterId, subtopicId) => {
 
   }
 }
+
+export const getSubtopicSummaryPrompt = (subtopic, roadmapTitle, chapterTitle) => {
+
+  return `You are an expert tutor and technical writer. Your task is to generate a detailed summary for a specific technical subtopic.
+
+---
+**Context:**
+* **Roadmap Title:** "${roadmapTitle}"
+* **Chapter Title:** "${chapterTitle}"
+* **Subtopic to Summarize:** "${subtopic}"
+---
+
+**Strict Instructions:**
+1.  **Format:** The *entire* response MUST be in well-structured Markdown (MD) format.
+2.  **Structure:** Use headings, subheadings, and bullet points to make the information clear and easy to read.
+3.  **Content:** Explain the key concepts, core definitions, and the practical importance of this subtopic.
+4.  **Tone:** Write in a clear, concise, and educational tone, as if explaining it to a curious student.
+5.  **Constraints:**
+    * Do NOT include any external links, advertisements, or recommendations for videos or articles.
+    * Do NOT write a conversational intro or outro (e.g., "Certainly! Here is...", "I hope this helps!"). Start directly with the Markdown-formatted summary.
+    * Keep the summary focused and ideally upto 1500 words.
+
+Begin the summary now.`;
+};

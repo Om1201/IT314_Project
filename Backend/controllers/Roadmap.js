@@ -6,6 +6,7 @@ import {quizPrompt} from '../utils/prompt.js';
 import { getArticles } from '../utils/search.js';
 import { getVideos } from '../utils/search.js';
 import NoteModel from '../models/NoteModel.js';
+import { getSubtopicSummaryPrompt } from '../utils/prompt.js';
 
 const genAI = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY,
@@ -203,4 +204,42 @@ export const saveNote = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
+};
+
+export const generateSubtopicSummary = async (req, res) => {
+  try {
+
+    const { roadmapId, subtopic, chapterId } = req.body;
+
+    if (!roadmapId || !subtopic || !chapterId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide roadmapId, subtopic, and chapterId.',
+      });
+    }
+
+    const roadmap = await RoadmapModel.findById(roadmapId);
+
+    if (!roadmap) {
+      return res.status(404).json({ success: false, message: 'Roadmap not found' });
+    }
+
+    const roadmapTitle = roadmap.roadmapData.title || 'a learning roadmap';
+    
+    const chapter = roadmap.roadmapData.chapters.find(ch => ch.id === chapterId);
+    const chapterTitle = chapter ? chapter.title : 'Unknown Chapter';
+
+    const prompt = getSubtopicSummaryPrompt(subtopic, roadmapTitle, chapterTitle);
+    const summaryText = await generateWithGemini(prompt);
+
+    return res.status(200).json({
+      success: true,
+      summary: summaryText, 
+      message: 'Subtopic summary generated successfully',
+    });
+
+  } catch (error) {
+    console.error('Error in generateSubtopicSummary:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
