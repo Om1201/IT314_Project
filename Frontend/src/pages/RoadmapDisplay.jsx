@@ -215,6 +215,8 @@ export default function RoadmapDisplay() {
                                     onSaveNote={saveNotes}
                                     selectedTab={selectedTab}
                                     onTabChange={setSelectedTab}
+                                    allArticles={currRoadmap.articles}
+                                    allVideos={currRoadmap.videos}
                                 />
                             </div>
                         ))}

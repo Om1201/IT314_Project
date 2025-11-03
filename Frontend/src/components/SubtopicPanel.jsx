@@ -1,6 +1,7 @@
 import { Save, CheckCircle2, Circle } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import MDEditor from '@uiw/react-md-editor';
+
 const tabs = [
     { id: 'explanation', label: 'Explanation' },
     { id: 'quiz', label: 'Quiz' },
@@ -11,6 +12,9 @@ const tabs = [
 
 export default function SubtopicPanel({
     subtopic,
+    chapterId, // <-- ADDED: Need this to find the correct data
+    allArticles, // <-- ADDED: The full array from roadmapData.articles
+    allVideos, // <-- ADDED: The full array from roadmapData.videos
     selectedTab,
     onTabChange,
     noteContent,
@@ -55,6 +59,26 @@ export default function SubtopicPanel({
     };
 
     const renderContent = () => {
+        // --- Find the correct articles and videos for *this* subtopic ---
+        console.log('Looking for articles/videos:', { chapterId, subtopicId: subtopic.id });
+        console.log('Available articles:', allArticles);
+        console.log('Available videos:', allVideos);
+        
+        const articleSet = allArticles?.find(
+            a => a.chapterId === chapterId && a.subtopicId === subtopic.id
+        );
+        const articles = articleSet ? articleSet.articles : [];
+
+        const videoSet = allVideos?.find(
+            v => v.chapterId === chapterId && v.subtopicId === subtopic.id
+        );
+        const videos = videoSet ? videoSet.videos : [];
+        
+        console.log('Found articles:', articles);
+        console.log('Found videos:', videos);
+        // -----------------------------------------------------------------
+
+
         switch (selectedTab) {
             case 'explanation':
                 return (
@@ -131,25 +155,63 @@ export default function SubtopicPanel({
                         )}
                     </div>
                 );
+            
+            // --- UPDATED VIDEO CASE ---
             case 'videos':
                 return (
                     <div className="space-y-4">
                         <p className="text-slate-300">Video resources for: {subtopic.title}</p>
                         <div className="bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
-                            <p className="text-sm text-slate-400">
-                                Related videos would be displayed here
-                            </p>
+                            {videos.length > 0 ? (
+                                <ul className="list-disc list-inside space-y-2">
+                                    {videos.map((videoUrl, index) => (
+                                        <li key={index}>
+                                            <a
+                                                href={videoUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-400 hover:text-blue-300 hover:underline"
+                                            >
+                                                {videoUrl}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-sm text-slate-400">
+                                    No video resources found for this subtopic.
+                                </p>
+                            )}
                         </div>
                     </div>
                 );
+            
+            // --- UPDATED ARTICLE CASE ---
             case 'articles':
                 return (
                     <div className="space-y-4">
                         <p className="text-slate-300">Article resources for: {subtopic.title}</p>
                         <div className="bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
-                            <p className="text-sm text-slate-400">
-                                Related articles would be displayed here
-                            </p>
+                            {articles.length > 0 ? (
+                                <ul className="list-disc list-inside space-y-2">
+                                    {articles.map((articleUrl, index) => (
+                                        <li key={index}>
+                                            <a
+                                                href={articleUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-400 hover:text-blue-300 hover:underline"
+                                            >
+                                                {articleUrl}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-sm text-slate-400">
+                                    No articles found for this subtopic.
+                                </p>
+                            )}
                         </div>
                     </div>
                 );

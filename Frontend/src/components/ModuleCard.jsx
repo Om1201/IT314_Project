@@ -15,6 +15,8 @@ export default function ModuleCard({
     onSaveNote,
     selectedTab,
     onTabChange,
+    allArticles,
+    allVideos,
 }) {
     return (
         <div className="bg-gradient-to-br from-slate-900/40 to-blue-900/20 backdrop-blur-xl border border-blue-500/30 rounded-2xl overflow-hidden hover:border-blue-400/50 transition-all duration-300">
@@ -70,6 +72,9 @@ export default function ModuleCard({
                             {expandedSubtopics.has(`${module.id}-${subtopic.id}`) && (
                                 <SubtopicPanel
                                     subtopic={subtopic}
+                                    chapterId={module.id}
+                                    allArticles={allArticles}
+                                    allVideos={allVideos}
                                     selectedTab={selectedTab}
                                     onTabChange={onTabChange}
                                     noteContent={notes[`${module.id}:${subtopic.id}`] || ''}
