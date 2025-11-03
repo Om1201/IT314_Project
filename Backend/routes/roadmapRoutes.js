@@ -7,7 +7,8 @@ import {
     getNotesForRoadmap,
     saveNote,
     generateQuiz,
-    generateSubtopicSummary
+    generateSubtopicSummary,
+    saveProgress
 } from '../controllers/Roadmap.js';
 import userAuth from '../middlewares/userAuth.js';
 import { validate } from '../middlewares/validate.js';
@@ -23,6 +24,7 @@ router.post('/get-roadmap-by-id', userAuth, getRoadmapById);
 router.get('/notes/:roadmapId', userAuth, getNotesForRoadmap);
 router.post('/notes/save', userAuth, saveNote);
 router.post('/generate-quiz', userAuth, generateQuiz);
+router.post('/save-progress', userAuth, saveProgress);
 
-router.post('/generate-subtopic-summary', generateSubtopicSummary);
+router.post('/generate-subtopic-summary', userAuth, generateSubtopicSummary);
 export default router;

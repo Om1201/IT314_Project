@@ -269,3 +269,29 @@ export const generateSubtopicSummary = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const saveProgress = async (req, res) => {
+    try {
+        const { roadmapId, chapterId, subtopicId } = req.body;
+
+        const roadmap = await RoadmapModel.findOne({ _id: roadmapId })
+        const roadmapData = roadmap.roadmapData;
+        const no_of_chapters = roadmapData.chapters.length;
+        if(no_of_chapters < chapterId){
+            return res.status(400).json({ success: false, message: 'Invalid chapterId' });
+        }
+        const no_of_subtopics = roadmapData.chapters[chapterId - 1].subtopics.length;
+        if(no_of_subtopics < subtopicId){
+            return res.status(400).json({ success: false, message: 'Invalid subtopicId' });
+        }
+        console.log("Current completion status:", roadmapData.chapters[chapterId - 1].subtopics[subtopicId - 1].completed)
+        roadmapData.chapters[chapterId - 1].subtopics[subtopicId - 1].completed = true;
+        roadmap.markModified('roadmapData');
+        await roadmap.save();
+
+        return res.status(200).json({ success: true, data: roadmap, message: 'Progress saved successfully' });
+    } catch (error) {
+        console.error('Error saving progress:', error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
