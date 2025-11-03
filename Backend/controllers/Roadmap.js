@@ -110,7 +110,7 @@ export const generateQuiz = async (req, res) => {
         const prompt = quizPrompt(roadMap, chapterId, subtopicId);
         const quiz = await generateWithGemini(prompt);
         const quizJson = JSON.parse(quiz);
-        console.log("Quiz generated: ", quizJson); //remove the log later
+        console.log("Quiz generated: ", quizJson); 
 
         return res.status(200).json({ success: true, data: quizJson, message: "Quiz generated successfully" });
 
@@ -285,13 +285,34 @@ export const saveProgress = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid subtopicId' });
         }
         console.log("Current completion status:", roadmapData.chapters[chapterId - 1].subtopics[subtopicId - 1].completed)
-        roadmapData.chapters[chapterId - 1].subtopics[subtopicId - 1].completed = true;
+        const current = roadmapData.chapters[chapterId - 1].subtopics[subtopicId - 1].completed;
+        roadmapData.chapters[chapterId - 1].subtopics[subtopicId - 1].completed = !current;
         roadmap.markModified('roadmapData');
         await roadmap.save();
 
         return res.status(200).json({ success: true, data: roadmap, message: 'Progress saved successfully' });
     } catch (error) {
         console.error('Error saving progress:', error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+export const fetchProgress = async (req, res) => {
+    try {
+        const { roadmapId } = req.body;
+
+        const roadmap = await RoadmapModel.findOne({ _id: roadmapId });
+        const progressData = new Set();
+        for (const chapter of roadmap.roadmapData.chapters) {
+            for (const subtopic of chapter.subtopics) {
+                if (subtopic.completed) {
+                    progressData.add(`${chapter.id}:${subtopic.id}`);
+                }
+            }
+        }
+        console.log("Fetched progress data:", progressData);
+        return res.status(200).json({ success: true, data: Array.from(progressData) });
+    } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
 }

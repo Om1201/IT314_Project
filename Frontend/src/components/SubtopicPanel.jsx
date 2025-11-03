@@ -12,9 +12,9 @@ const tabs = [
 
 export default function SubtopicPanel({
     subtopic,
-    chapterId, // <-- ADDED: Need this to find the correct data
-    allArticles, // <-- ADDED: The full array from roadmapData.articles
-    allVideos, // <-- ADDED: The full array from roadmapData.videos
+    chapterId, 
+    allArticles, 
+    allVideos,
     selectedTab,
     onTabChange,
     noteContent,
@@ -59,7 +59,6 @@ export default function SubtopicPanel({
     };
 
     const renderContent = () => {
-        // --- Find the correct articles and videos for *this* subtopic ---
         console.log('Looking for articles/videos:', { chapterId, subtopicId: subtopic.id });
         console.log('Available articles:', allArticles);
         console.log('Available videos:', allVideos);
@@ -76,8 +75,7 @@ export default function SubtopicPanel({
         
         console.log('Found articles:', articles);
         console.log('Found videos:', videos);
-        // -----------------------------------------------------------------
-
+        
 
         switch (selectedTab) {
             case 'explanation':
@@ -155,8 +153,7 @@ export default function SubtopicPanel({
                         )}
                     </div>
                 );
-            
-            // --- UPDATED VIDEO CASE ---
+
             case 'videos':
                 return (
                     <div className="space-y-4">
@@ -186,7 +183,6 @@ export default function SubtopicPanel({
                     </div>
                 );
             
-            // --- UPDATED ARTICLE CASE ---
             case 'articles':
                 return (
                     <div className="space-y-4">

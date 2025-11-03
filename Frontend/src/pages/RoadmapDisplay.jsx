@@ -5,7 +5,7 @@ import LeftSidebar from '../components/LeftSidebar.jsx';
 import ModuleCard from '../components/ModuleCard.jsx';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { fetchNotes, getUserRoadmapById, saveNote } from '../features/roadmapSlicer.js';
+import { fetchNotes, fetchProgress, getUserRoadmapById, saveNote, saveProgress } from '../features/roadmapSlicer.js';
 import toast from 'react-hot-toast';
 import Loader from '../components/Loader.jsx';
 import Navbar from '../components/Navbar.jsx';
@@ -18,7 +18,7 @@ export default function RoadmapDisplay() {
     const [isLoading, setisLoading] = useState(true);
     const [notfound, setNotfound] = useState(false);
     const { id } = useParams();
-    const [completedSubtopics, setCompletedSubtopics] = useState(new Set());
+    const [completedSubtopics, setCompletedSubtopics] = useState(new Map());
 
     const [selectedTab, setSelectedTab] = useState('explanation');
     const [notes, setNotes] = useState({});
@@ -48,7 +48,11 @@ export default function RoadmapDisplay() {
             console.log(response.data.roadmapData);
             setNotes(notesResponse);
 
-            dispatch(fetchNotes(id));
+            let progressResponse = await dispatch(fetchProgress({roadmapId: id}));
+            progressResponse = new Set(progressResponse.payload.data);
+            console.log('Fetched progress:', progressResponse);
+            
+            setCompletedSubtopics(progressResponse);
             setisLoading(false);
         }
         fetchRoadmap();
@@ -57,7 +61,7 @@ export default function RoadmapDisplay() {
     const moduleProgress = useMemo(() => {
         return currRoadmap?.chapters?.map(module => {
             const completedCount = module.subtopics.filter(s =>
-                completedSubtopics.has(`${module.id}-${s.id}`)
+                completedSubtopics.has(`${module.id}:${s.id}`)
             ).length;
             return {
                 moduleId: module.id,
@@ -74,14 +78,15 @@ export default function RoadmapDisplay() {
         const completed = completedSubtopics.size;
         return Math.round((completed / total) * 100);
     }, [currRoadmap, completedSubtopics]);
-    const toggleSubtopicComplete = (moduleId, subtopicId) => {
+    const toggleSubtopicComplete = async (moduleId, subtopicId) => {
         const newCompleted = new Set(completedSubtopics);
-        if (newCompleted.has(`${moduleId}-${subtopicId}`)) {
-            newCompleted.delete(`${moduleId}-${subtopicId}`);
+        if (newCompleted.has(`${moduleId}:${subtopicId}`)) {
+            newCompleted.delete(`${moduleId}:${subtopicId}`);
         } else {
-            newCompleted.add(`${moduleId}-${subtopicId}`);
+            newCompleted.add(`${moduleId}:${subtopicId}`);
         }
-        // console.log(module);
+
+        const response = await dispatch(saveProgress({roadmapId: id, chapterId: moduleId, subtopicId}));
         setCompletedSubtopics(newCompleted);
     };
 

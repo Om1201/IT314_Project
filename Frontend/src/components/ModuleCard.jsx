@@ -60,16 +60,16 @@ export default function ModuleCard({
             {isExpanded && (
                 <div className="px-6 pb-6 space-y-3 bg-slate-800/20">
                     {module.subtopics.map(subtopic => (
-                        <div key={`${module.id}-${subtopic.id}`}>
+                        <div key={`${module.id}:${subtopic.id}`}>
                             <SubtopicCard
                                 subtopic={subtopic}
-                                isCompleted={completedSubtopics.has(`${module.id}-${subtopic.id}`)}
-                                isExpanded={expandedSubtopics.has(`${module.id}-${subtopic.id}`)}
-                                onExpand={() => onSubtopicClick(`${module.id}-${subtopic.id}`)}
+                                isCompleted={completedSubtopics.has(`${module.id}:${subtopic.id}`)}
+                                isExpanded={expandedSubtopics.has(`${module.id}:${subtopic.id}`)}
+                                onExpand={() => onSubtopicClick(`${module.id}:${subtopic.id}`)}
                                 onToggleComplete={() => onToggleComplete(module.id, subtopic.id)}
                             />
 
-                            {expandedSubtopics.has(`${module.id}-${subtopic.id}`) && (
+                            {expandedSubtopics.has(`${module.id}:${subtopic.id}`) && (
                                 <SubtopicPanel
                                     subtopic={subtopic}
                                     chapterId={module.id}

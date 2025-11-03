@@ -118,6 +118,41 @@ export const saveNote = createAsyncThunk(
     }
 );
 
+export const saveProgress = createAsyncThunk(
+    'roadmap/saveProgress',
+     async({ roadmapId, chapterId, subtopicId}, {rejectWithValue})=> {
+        try {
+            const response = await axios.post( 
+                `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/save-progress`,
+                { roadmapId, chapterId, subtopicId},
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                    withCredentials: true,
+                }
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+     }
+);
+
+export const fetchProgress = createAsyncThunk(
+    'roadmap/fetchProgress',
+     async({ roadmapId}, {rejectWithValue})=> {
+        try {
+            const response = await axios.post( 
+                `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/fetch-progress`,
+                { roadmapId },
+                { withCredentials: true }
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+     }
+);
+
 const initialState = {
     currRoadmap: {},
     generation_loading: false,

@@ -129,6 +129,7 @@ export const signIn = async (req, res) => {
     const { email, password } = req.validatedData;
     try {
         const user = await UserModel.findOne({ email });
+        console.log(user);
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
