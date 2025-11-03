@@ -37,7 +37,7 @@ export const verifyToken = async (req, res) => {
             user = new UserModel({ email, name, isAccountVerified: true });
             await user.save();
         }
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('token', token, {
             httpOnly: true,

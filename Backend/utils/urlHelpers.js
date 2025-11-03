@@ -25,3 +25,7 @@ export const buildGoogleTokenParams = code => {
     params.append('grant_type', 'authorization_code');
     return params;
 };
+
+export const buildEmailVerifyUrl = email => {
+    return `https://api.emailvalidation.io/v1/info?apikey=${process.env.EMAIL_VERIFICATION_KEY}&email=${email}`;
+}

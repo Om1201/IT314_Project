@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { googleAuth } from '../features/userSlicer';
 import toast from 'react-hot-toast';
 import Loader from './Loader';
+import { fetchUserRoadmaps } from '../features/roadmapSlicer';
 
 const Callback = () => {
     const [searchParams] = useSearchParams();
@@ -19,6 +20,8 @@ const Callback = () => {
             try {
                 const res = await dispatch(googleAuth(code));
                 toast.success('Logged in successfully!');
+                await dispatch(fetchUserRoadmaps());
+                
                 navigate('/'); // redirect after success
             } catch (err) {
                 console.error('Error during token exchange:', err);
