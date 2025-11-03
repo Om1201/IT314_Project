@@ -1,0 +1,18 @@
+# Dependencies and builds
+node_modules
+dist
+build
+
+# Environment variables
+.env
+
+# Package management files
+package-lock.json
+package.json
+
+# Optional: ignore config and metadata files
+coverage
+*.log
+.DS_Store
+.vscode
+.idea

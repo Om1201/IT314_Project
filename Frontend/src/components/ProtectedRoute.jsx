@@ -1,17 +1,16 @@
-import { Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import Loader from "./Loader";
+import { Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import Loader from './Loader';
 
 const ProtectedRoute = ({ children }) => {
-  const {isLoggedin, authLoading} = useSelector((state) => state.user);
+    const { isLoggedin, authLoading } = useSelector(state => state.user);
 
-  if (authLoading) return <Loader />;
+    if (authLoading) return <Loader />;
 
-  return isLoggedin===true ? children : <Navigate to="/signin" replace />;
+    return isLoggedin === true ? children : <Navigate to="/signin" replace />;
 };
 
 export default ProtectedRoute;
-
 
 // Suggestions / notes for this ProtectedRoute component:
 //
@@ -25,7 +24,7 @@ export default ProtectedRoute;
 //    Use useLocation and pass state to Navigate so the sign-in page can redirect back:
 //      const location = useLocation();
 //      return isLoggedin ? children : <Navigate to="/signin" replace state={{ from: location }} />;
- 
+
 // 3) Consider extracting auth logic to a hook:
 //    A small useAuth() hook can encapsulate selectors and derived checks (token expiry, roles).
 //      const { isLoggedin, isLoading, user } = useAuth();

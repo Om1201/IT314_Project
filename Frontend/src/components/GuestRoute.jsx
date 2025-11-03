@@ -1,13 +1,13 @@
-import { Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import Loader from "./Loader";
+import { Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import Loader from './Loader';
 
 const GuestRoute = ({ children }) => {
-  const {isLoggedin, authLoading} = useSelector((state) => state.user);
+    const { isLoggedin, authLoading } = useSelector(state => state.user);
 
-  if (authLoading) return <Loader />;
+    if (authLoading) return <Loader />;
 
-  return isLoggedin===false ? children : <Navigate to="/" replace />;
+    return isLoggedin === false ? children : <Navigate to="/" replace />;
 };
 
 export default GuestRoute;

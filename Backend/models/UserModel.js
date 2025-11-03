@@ -1,14 +1,14 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
     email: {
-        type: String, 
+        type: String,
         unique: true,
-        required: true
+        required: true,
     },
     name: {
         type: String,
-        required: true
+        required: true,
     },
     password: {
         type: String,
@@ -16,28 +16,28 @@ const userSchema = new mongoose.Schema({
     },
     verifyToken: {
         type: String,
-        default: ''
+        default: '',
     },
     verifyTokenExpireAt: {
         type: Date,
-        default: new Date('9999-12-31')
+        default: new Date('9999-12-31'),
     },
     isAccountVerified: {
         type: Boolean,
-        default: false
+        default: false,
     },
     resetToken: {
         type: String,
-        default: ''
+        default: '',
     },
     resetTokenExpireAt: {
         type: Number,
-        default: 0    
+        default: 0,
     },
-})
+});
 
 userSchema.index({ verifyTokenExpireAt: 1 }, { expireAfterSeconds: 0 });
 
 const UserModel = mongoose.models.user || mongoose.model('user', userSchema);
 
-export default UserModel
+export default UserModel;
