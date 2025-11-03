@@ -5,11 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2971829d-6d00-4349-bf36-be925d743992" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Frontend/src/pages/RoadmapDisplay.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/App.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/features/roadmapSlicer.js" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/features/roadmapSlicer.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/pages/Generator.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/pages/Generator.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,7 +74,8 @@
       <workItem from="1761563400405" duration="89000" />
       <workItem from="1761563583166" duration="1992000" />
       <workItem from="1761712168117" duration="14489000" />
-      <workItem from="1761911704575" duration="3016000" />
+      <workItem from="1761911704575" duration="3747000" />
+      <workItem from="1762146992334" duration="301000" />
     </task>
     <servers />
   </component>
