@@ -230,27 +230,19 @@ export const generateSubtopicSummary = async (req, res) => {
     const subtopicIdNum = parseInt(subtopicId);
     
     console.log('Looking for chapter:', chapterIdNum, 'Available chapters:', roadmap.roadmapData.chapters.map(ch => ch.id));
-    
-    const chapter = roadmap.roadmapData.chapters.find(ch => ch.id === chapterIdNum);
-    
-    if (!chapter) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Chapter not found',
-        availableChapters: roadmap.roadmapData.chapters.map(ch => ({ id: ch.id, title: ch.title }))
-      });
+    if(chapterIdNum > roadmap.roadmapData.chapters.length){
+        return res.status(404).json({ success: false, message: 'Chapter not found' });
+    }
+    if(subtopicIdNum > roadmap.roadmapData.chapters[chapterIdNum - 1].subtopics.length){
+        return res.status(404).json({ success: false, message: 'Subtopic not found' });
     }
     
-    const chapterTitle = chapter.title;
-    const subtopic = chapter.subtopics.find(st => st.id === subtopicIdNum);
-
-    if (!subtopic) {
-      return res.status(404).json({ success: false, message: 'Subtopic not found' });
-    }
-
-    const prompt = getSubtopicSummaryPrompt(subtopic.title, roadmapTitle, chapterTitle);
+    const chapterTitle = roadmap.roadmapData.chapters[chapterIdNum - 1].title;
+    const subtopicTitle = roadmap.roadmapData.chapters[chapterIdNum - 1].subtopics[subtopicIdNum - 1].title;
+    const prompt = getSubtopicSummaryPrompt(subtopicTitle, roadmapTitle, chapterTitle);
     const summaryText = await generateWithGemini(prompt);
-    subtopic.detailedExplanation = summaryText;
+    
+    roadmap.roadmapData.chapters[chapterIdNum - 1].subtopics[subtopicIdNum - 1].detailedExplanation = summaryText;
     
     roadmap.markModified('roadmapData');
     await roadmap.save();
@@ -258,9 +250,6 @@ export const generateSubtopicSummary = async (req, res) => {
     return res.status(200).json({
       success: true,
       summary: summaryText,
-      roadmapId: roadmapId,
-      chapterId: chapterId,
-      subtopicId: subtopicId,
       message: 'Subtopic summary generated and saved successfully',
     });
 
@@ -312,6 +301,25 @@ export const fetchProgress = async (req, res) => {
         }
         console.log("Fetched progress data:", progressData);
         return res.status(200).json({ success: true, data: Array.from(progressData) });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+export const fetchSubtopicExplanation = async (req, res) => {
+    try {
+        const { roadmapId } = req.body;
+        console.log('Fetching explanations for roadmapId:', roadmapId);
+
+        const roadmap = await RoadmapModel.findOne({ _id: roadmapId });
+        
+        const subtopicExplanation = {};
+        for (const chapter of roadmap.roadmapData.chapters) {
+            for (const subtopic of chapter.subtopics) {
+                subtopicExplanation[`${chapter.id}:${subtopic.id}`] = subtopic.detailedExplanation || '';
+            }  
+        }
+        return res.status(200).json({ success: true, data: subtopicExplanation });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }

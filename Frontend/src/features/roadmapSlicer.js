@@ -120,11 +120,11 @@ export const saveNote = createAsyncThunk(
 
 export const saveProgress = createAsyncThunk(
     'roadmap/saveProgress',
-     async({ roadmapId, chapterId, subtopicId}, {rejectWithValue})=> {
+    async ({ roadmapId, chapterId, subtopicId }, { rejectWithValue }) => {
         try {
-            const response = await axios.post( 
+            const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/save-progress`,
-                { roadmapId, chapterId, subtopicId},
+                { roadmapId, chapterId, subtopicId },
                 {
                     headers: { 'Content-Type': 'application/json' },
                     withCredentials: true,
@@ -134,14 +134,14 @@ export const saveProgress = createAsyncThunk(
         } catch (error) {
             return rejectWithValue(error.response?.data);
         }
-     }
+    }
 );
 
 export const fetchProgress = createAsyncThunk(
     'roadmap/fetchProgress',
-     async({ roadmapId}, {rejectWithValue})=> {
+    async ({ roadmapId }, { rejectWithValue }) => {
         try {
-            const response = await axios.post( 
+            const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/fetch-progress`,
                 { roadmapId },
                 { withCredentials: true }
@@ -150,7 +150,45 @@ export const fetchProgress = createAsyncThunk(
         } catch (error) {
             return rejectWithValue(error.response?.data);
         }
-     }
+    }
+);
+
+export const generateSubtopicSummary = createAsyncThunk(
+    'roadmap/generateSubtopicSummary',
+    async ({ roadmapId, moduleId, subtopicId }, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/generate-subtopic-summary`,
+                { roadmapId, chapterId: moduleId, subtopicId },
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                    withCredentials: true,
+                }
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || { message: 'Unknown error' });
+        }
+    }
+);
+
+export const fetchSubtopicExplanation = createAsyncThunk(
+    'roadmap/fetchSubtopicExplanation',
+    async ({ roadmapId }, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/fetch-subtopic-summary`,
+                { roadmapId },
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                    withCredentials: true,
+                }
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || { message: 'Unknown error' });
+        }
+    }
 );
 
 const initialState = {

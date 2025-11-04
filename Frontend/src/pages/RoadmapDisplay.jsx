@@ -5,7 +5,15 @@ import LeftSidebar from '../components/LeftSidebar.jsx';
 import ModuleCard from '../components/ModuleCard.jsx';
 import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { fetchNotes, fetchProgress, getUserRoadmapById, saveNote, saveProgress } from '../features/roadmapSlicer.js';
+import {
+    fetchNotes,
+    fetchProgress,
+    fetchSubtopicExplanation,
+    generateSubtopicSummary,
+    getUserRoadmapById,
+    saveNote,
+    saveProgress,
+} from '../features/roadmapSlicer.js';
 import toast from 'react-hot-toast';
 import Loader from '../components/Loader.jsx';
 import Navbar from '../components/Navbar.jsx';
@@ -22,6 +30,7 @@ export default function RoadmapDisplay() {
 
     const [selectedTab, setSelectedTab] = useState('explanation');
     const [notes, setNotes] = useState({});
+    const [explanation, setExplanation] = useState({});
     const [expandedModules, setExpandedModules] = useState(new Set());
     const [expandedSubtopics, setExpandedSubtopics] = useState(new Map());
 
@@ -48,11 +57,16 @@ export default function RoadmapDisplay() {
             console.log(response.data.roadmapData);
             setNotes(notesResponse);
 
-            let progressResponse = await dispatch(fetchProgress({roadmapId: id}));
+            let progressResponse = await dispatch(fetchProgress({ roadmapId: id }));
             progressResponse = new Set(progressResponse.payload.data);
             console.log('Fetched progress:', progressResponse);
-            
+
             setCompletedSubtopics(progressResponse);
+
+            let explanationResponse = await dispatch(fetchSubtopicExplanation({ roadmapId: id }));
+            console.log('Fetched explanations:', explanationResponse);
+            explanationResponse = explanationResponse.payload.data;
+            setExplanation(explanationResponse);
             setisLoading(false);
         }
         fetchRoadmap();
@@ -86,18 +100,14 @@ export default function RoadmapDisplay() {
             newCompleted.add(`${moduleId}:${subtopicId}`);
         }
 
-        const response = await dispatch(saveProgress({roadmapId: id, chapterId: moduleId, subtopicId}));
+        const response = await dispatch(
+            saveProgress({ roadmapId: id, chapterId: moduleId, subtopicId })
+        );
         setCompletedSubtopics(newCompleted);
     };
 
     const saveNotes = async (moduleId, subtopicId, content) => {
         try {
-            console.log('Saving note:', {
-                roadmapId: id,
-                subtopicId: subtopicId,
-                moduleId: moduleId,
-                content,
-            });
             let response = await dispatch(
                 saveNote({ roadmapId: id, subtopicId: subtopicId, moduleId: moduleId, content })
             );
@@ -112,6 +122,27 @@ export default function RoadmapDisplay() {
             toast.success('Note saved successfully');
         } catch (error) {
             toast.error(error.response.data.message);
+        }
+    };
+
+    const onRequestExplanation = async (moduleId, subtopicId) => {
+        try {
+            let response = await dispatch(
+                generateSubtopicSummary({ roadmapId: id, moduleId, subtopicId })
+            );
+            response = response.payload;
+            console.log('Generated explanation:', response);
+            if (!response.success) {
+                toast.error('Failed to generate explanation');
+                return;
+            }
+            setExplanation(prev => ({
+                ...prev,
+                [`${moduleId}:${subtopicId}`]: response.summary,
+            }));
+            toast.success('Explanation generated successfully');
+        } catch (error) {
+            toast.error('Failed to generate explanation');
         }
     };
 
@@ -217,11 +248,13 @@ export default function RoadmapDisplay() {
                                     }
                                     onToggleComplete={toggleSubtopicComplete}
                                     notes={notes}
+                                    explanation={explanation}
                                     onSaveNote={saveNotes}
                                     selectedTab={selectedTab}
                                     onTabChange={setSelectedTab}
                                     allArticles={currRoadmap.articles}
                                     allVideos={currRoadmap.videos}
+                                    onRequestExplanation={onRequestExplanation}
                                 />
                             </div>
                         ))}

@@ -21,7 +21,7 @@ const Callback = () => {
                 const res = await dispatch(googleAuth(code));
                 toast.success('Logged in successfully!');
                 await dispatch(fetchUserRoadmaps());
-                
+
                 navigate('/'); // redirect after success
             } catch (err) {
                 console.error('Error during token exchange:', err);

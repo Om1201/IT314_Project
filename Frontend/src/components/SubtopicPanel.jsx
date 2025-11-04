@@ -1,6 +1,7 @@
 import { Save, CheckCircle2, Circle } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import MDEditor from '@uiw/react-md-editor';
+import MarkdownRenderer from './MarkdownRenderer';
 
 const tabs = [
     { id: 'explanation', label: 'Explanation' },
@@ -12,13 +13,15 @@ const tabs = [
 
 export default function SubtopicPanel({
     subtopic,
-    chapterId, 
-    allArticles, 
+    chapterId,
+    allArticles,
     allVideos,
     selectedTab,
     onTabChange,
     noteContent,
+    explanationContent,
     onSaveNote,
+    onRequestExplanation,
 }) {
     const [editingNote, setEditingNote] = useState(noteContent || '');
     const [isSaving, setIsSaving] = useState(false);
@@ -62,7 +65,7 @@ export default function SubtopicPanel({
         console.log('Looking for articles/videos:', { chapterId, subtopicId: subtopic.id });
         console.log('Available articles:', allArticles);
         console.log('Available videos:', allVideos);
-        
+
         const articleSet = allArticles?.find(
             a => a.chapterId === chapterId && a.subtopicId === subtopic.id
         );
@@ -72,16 +75,31 @@ export default function SubtopicPanel({
             v => v.chapterId === chapterId && v.subtopicId === subtopic.id
         );
         const videos = videoSet ? videoSet.videos : [];
-        
+
         console.log('Found articles:', articles);
         console.log('Found videos:', videos);
-        
 
         switch (selectedTab) {
             case 'explanation':
                 return (
                     <div className="text-slate-300 leading-relaxed">
-                        {subtopic.detailedExplanation}
+                        {explanationContent != '' && (
+                            <MDEditor.Markdown
+                                className="px-8 py-5"
+                                source={
+                                    `${explanationContent.slice(6, -3)}` ||
+                                    '_No explanation available yet._'
+                                }
+                            />
+                        )}
+                        {explanationContent == '' && (
+                            <button
+                                className="mt- px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                                onClick={onRequestExplanation}
+                            >
+                                request Explanation
+                            </button>
+                        )}
                     </div>
                 );
             case 'quiz':
@@ -182,7 +200,7 @@ export default function SubtopicPanel({
                         </div>
                     </div>
                 );
-            
+
             case 'articles':
                 return (
                     <div className="space-y-4">
