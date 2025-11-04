@@ -200,6 +200,7 @@ const initialState = {
     userRoadmaps: [],
     notes: {},
     notes_loading: false,
+    explanation_loading: [],
 };
 
 export const roadmapSlice = createSlice({
@@ -272,6 +273,22 @@ export const roadmapSlice = createSlice({
                     const key = `${note.contextType}:${note.subtopicId}`;
                     state.notes[key] = note.content;
                 }
+            })
+            .addCase(generateSubtopicSummary.pending, (state, action) => {
+                const args = action.meta.arg;
+                state.explanation_loading.push(`${args.moduleId}:${args.subtopicId}`);
+            })
+            .addCase(generateSubtopicSummary.fulfilled, (state, action) => {
+                const args = action.meta.arg;
+                state.explanation_loading = state.explanation_loading.filter(
+                    id => id !== `${args.moduleId}:${args.subtopicId}`
+                );
+            })
+            .addCase(generateSubtopicSummary.rejected, (state, action) => {
+                const args = action.meta.arg;
+                state.explanation_loading = state.explanation_loading.filter(
+                    id => id !== `${args.moduleId}:${args.subtopicId}`
+                );
             });
     },
 });

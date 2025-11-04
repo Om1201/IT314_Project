@@ -77,8 +77,12 @@ export default function ModuleCard({
                                     chapterId={module.id}
                                     allArticles={allArticles}
                                     allVideos={allVideos}
-                                    selectedTab={selectedTab}
-                                    onTabChange={onTabChange}
+                                    selectedTab={
+                                        selectedTab[`${module.id}:${subtopic.id}`] || 'explanation'
+                                    }
+                                    onTabChange={tabId =>
+                                        onTabChange(module.id, subtopic.id, tabId)
+                                    }
                                     noteContent={notes[`${module.id}:${subtopic.id}`] || ''}
                                     explanationContent={
                                         explanation

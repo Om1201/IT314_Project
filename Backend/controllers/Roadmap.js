@@ -145,7 +145,7 @@ export const deleteRoadmap = async (req, res) => {
         }
 
         await RoadmapModel.deleteOne({ _id: roadmapId });
-
+        await NoteModel.deleteMany({ roadmapId: roadmapId })
         return res.status(200).json({ success: true, message: 'Roadmap deleted successfully' });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });

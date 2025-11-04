@@ -2,7 +2,7 @@ import { Save, CheckCircle2, Circle } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import MarkdownRenderer from './MarkdownRenderer';
-
+import { useSelector, useDispatch } from 'react-redux';
 const tabs = [
     { id: 'explanation', label: 'Explanation' },
     { id: 'quiz', label: 'Quiz' },
@@ -23,6 +23,7 @@ export default function SubtopicPanel({
     onSaveNote,
     onRequestExplanation,
 }) {
+    const { explanation_loading } = useSelector(state => state.roadmap);
     const [editingNote, setEditingNote] = useState(noteContent || '');
     const [isSaving, setIsSaving] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
@@ -62,10 +63,6 @@ export default function SubtopicPanel({
     };
 
     const renderContent = () => {
-        console.log('Looking for articles/videos:', { chapterId, subtopicId: subtopic.id });
-        console.log('Available articles:', allArticles);
-        console.log('Available videos:', allVideos);
-
         const articleSet = allArticles?.find(
             a => a.chapterId === chapterId && a.subtopicId === subtopic.id
         );
@@ -87,17 +84,28 @@ export default function SubtopicPanel({
                             <MDEditor.Markdown
                                 className="px-8 py-5"
                                 source={
-                                    `${explanationContent.slice(6, -3)}` ||
+                                    `${explanationContent[4] == 'd' ? explanationContent.slice(6, -3) : explanationContent.slice(11, -3)}` ||
                                     '_No explanation available yet._'
                                 }
                             />
                         )}
                         {explanationContent == '' && (
                             <button
-                                className="mt- px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                                onClick={onRequestExplanation}
+                                className="cursor-pointer disabled:cursor-not-allowed px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                                onClick={() => {
+                                    console.log(
+                                        'This is is is is ',
+                                        explanation_loading.includes(`${chapterId}:${subtopic.id}`)
+                                    );
+                                    onRequestExplanation();
+                                }}
+                                disabled={explanation_loading.includes(
+                                    `${chapterId}:${subtopic.id}`
+                                )}
                             >
-                                request Explanation
+                                {explanation_loading.includes(`${chapterId}:${subtopic.id}`)
+                                    ? `Generating explanation...`
+                                    : `Generate explanation`}
                             </button>
                         )}
                     </div>
@@ -249,7 +257,9 @@ export default function SubtopicPanel({
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
-                        onClick={() => onTabChange(tab.id)}
+                        onClick={() => {
+                            onTabChange(tab.id);
+                        }}
                         className={`px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-lg transition-all ${
                             selectedTab === tab.id
                                 ? 'bg-blue-600 text-white'

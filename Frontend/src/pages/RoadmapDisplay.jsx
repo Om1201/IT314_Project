@@ -28,7 +28,7 @@ export default function RoadmapDisplay() {
     const { id } = useParams();
     const [completedSubtopics, setCompletedSubtopics] = useState(new Map());
 
-    const [selectedTab, setSelectedTab] = useState('explanation');
+    const [selectedTab, setSelectedTab] = useState({});
     const [notes, setNotes] = useState({});
     const [explanation, setExplanation] = useState({});
     const [expandedModules, setExpandedModules] = useState(new Set());
@@ -42,29 +42,32 @@ export default function RoadmapDisplay() {
             if (id === undefined) return;
             let response = await dispatch(getUserRoadmapById(id));
             response = response.payload;
-            console.log(response);
             if (!response.success) {
                 setNotfound(true);
                 toast.error('Failed to fetch roadmap data');
                 setisLoading(false);
                 return;
             }
-            console.log('Fetched single roadmap:', response.roadmapData);
             setCurrRoadmap(response.data.roadmapData);
+            for (let i = 1; i <= response.data.roadmapData.chapters.length; i++) {
+                for (
+                    let j = 1;
+                    j <= response.data.roadmapData.chapters[i - 1].subtopics.length;
+                    j++
+                ) {
+                    setSelectedTab(prev => ({ ...prev, [`${i}:${j}`]: 'explanation' }));
+                }
+            }
             let notesResponse = await dispatch(fetchNotes(id));
             notesResponse = notesResponse.payload.data;
-            console.log('Fetched notes:', notesResponse);
-            console.log(response.data.roadmapData);
             setNotes(notesResponse);
 
             let progressResponse = await dispatch(fetchProgress({ roadmapId: id }));
             progressResponse = new Set(progressResponse.payload.data);
-            console.log('Fetched progress:', progressResponse);
 
             setCompletedSubtopics(progressResponse);
 
             let explanationResponse = await dispatch(fetchSubtopicExplanation({ roadmapId: id }));
-            console.log('Fetched explanations:', explanationResponse);
             explanationResponse = explanationResponse.payload.data;
             setExplanation(explanationResponse);
             setisLoading(false);
@@ -99,11 +102,11 @@ export default function RoadmapDisplay() {
         } else {
             newCompleted.add(`${moduleId}:${subtopicId}`);
         }
+        setCompletedSubtopics(newCompleted);
 
         const response = await dispatch(
             saveProgress({ roadmapId: id, chapterId: moduleId, subtopicId })
         );
-        setCompletedSubtopics(newCompleted);
     };
 
     const saveNotes = async (moduleId, subtopicId, content) => {
@@ -119,10 +122,19 @@ export default function RoadmapDisplay() {
             }
 
             await dispatch(fetchNotes(id));
+
             toast.success('Note saved successfully');
+            setNotes(prev => ({ ...prev, [`${moduleId}:${subtopicId}`]: content }));
         } catch (error) {
             toast.error(error.response.data.message);
         }
+    };
+
+    const onTabChange = (moduleId, subtopicId, tabId) => {
+        setSelectedTab(prev => ({
+            ...prev,
+            [`${moduleId}:${subtopicId}`]: tabId,
+        }));
     };
 
     const onRequestExplanation = async (moduleId, subtopicId) => {
@@ -142,7 +154,7 @@ export default function RoadmapDisplay() {
             }));
             toast.success('Explanation generated successfully');
         } catch (error) {
-            toast.error('Failed to generate explanation');
+            toast.error('Failed to generate explanation', error.message);
         }
     };
 
@@ -251,7 +263,7 @@ export default function RoadmapDisplay() {
                                     explanation={explanation}
                                     onSaveNote={saveNotes}
                                     selectedTab={selectedTab}
-                                    onTabChange={setSelectedTab}
+                                    onTabChange={onTabChange}
                                     allArticles={currRoadmap.articles}
                                     allVideos={currRoadmap.videos}
                                     onRequestExplanation={onRequestExplanation}
