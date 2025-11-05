@@ -1,14 +1,15 @@
-import { Save, CheckCircle2, Circle } from 'lucide-react';
+import { Save, CheckCircle2, Circle, X, Maximize2, Minimize2 } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import MarkdownRenderer from './MarkdownRenderer';
 import { useSelector, useDispatch } from 'react-redux';
+import YoutubeThumbnail from './youtube';
 const tabs = [
     { id: 'explanation', label: 'Explanation' },
-    { id: 'quiz', label: 'Quiz' },
-    { id: 'notes', label: 'Notes' },
     { id: 'videos', label: 'Videos' },
     { id: 'articles', label: 'Articles' },
+    { id: 'notes', label: 'Notes' },
+    { id: 'quiz', label: 'Quiz' },
 ];
 
 export default function SubtopicPanel({
@@ -27,7 +28,11 @@ export default function SubtopicPanel({
     const [editingNote, setEditingNote] = useState(noteContent || '');
     const [isSaving, setIsSaving] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalTab, setModalTab] = useState(null);
+    const [isFullscreen, setIsFullscreen] = useState(false);
     const editorRef = useRef(null);
+    const modalRef = useRef(null);
 
     useEffect(() => {
         setEditingNote(noteContent || '');
@@ -46,11 +51,36 @@ export default function SubtopicPanel({
                     e.preventDefault();
                     setIsFocused(false);
                 }
+                if (isModalOpen) {
+                    e.preventDefault();
+                    setIsModalOpen(false);
+                    setModalTab(null);
+                }
             }
         };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
-    }, [isFocused, editingNote]);
+    }, [isFocused, editingNote, isModalOpen]);
+
+    // Handle click outside modal
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (modalRef.current && !modalRef.current.contains(event.target)) {
+                setIsModalOpen(false);
+                setModalTab(null);
+            }
+        };
+
+        if (isModalOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+            document.body.style.overflow = 'hidden'; // Prevent body scroll when modal is open
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.body.style.overflow = 'unset';
+        };
+    }, [isModalOpen]);
 
     const handleSaveNote = async () => {
         setIsSaving(true);
@@ -62,7 +92,55 @@ export default function SubtopicPanel({
         setIsSaving(false);
     };
 
-    const renderContent = () => {
+    const handleTabClick = (tabId) => {
+        setModalTab(tabId);
+        setIsModalOpen(true);
+        onTabChange(tabId);
+    };
+
+    const handleCloseModal = () => {
+        // Exit fullscreen if active
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(err => {
+                console.error('Error exiting fullscreen:', err);
+            });
+        }
+        setIsModalOpen(false);
+        setModalTab(null);
+        setIsFullscreen(false);
+    };
+
+    const toggleFullscreen = async () => {
+        if (!modalRef.current) return;
+
+        try {
+            if (!document.fullscreenElement) {
+                // Enter fullscreen
+                await modalRef.current.requestFullscreen();
+                setIsFullscreen(true);
+            } else {
+                // Exit fullscreen
+                await document.exitFullscreen();
+                setIsFullscreen(false);
+            }
+        } catch (err) {
+            console.error('Error toggling fullscreen:', err);
+        }
+    };
+
+    // Listen for fullscreen changes
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        };
+    }, []);
+
+    const renderContent = (tabId) => {
         const articleSet = allArticles?.find(
             a => a.chapterId === chapterId && a.subtopicId === subtopic.id
         );
@@ -76,7 +154,7 @@ export default function SubtopicPanel({
         console.log('Found articles:', articles);
         console.log('Found videos:', videos);
 
-        switch (selectedTab) {
+        switch (tabId) {
             case 'explanation':
                 return (
                     <div className="text-slate-300 leading-relaxed">
@@ -186,20 +264,16 @@ export default function SubtopicPanel({
                         <p className="text-slate-300">Video resources for: {subtopic.title}</p>
                         <div className="bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
                             {videos.length > 0 ? (
-                                <ul className="list-disc list-inside space-y-2">
-                                    {videos.map((videoUrl, index) => (
-                                        <li key={index}>
-                                            <a
-                                                href={videoUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-400 hover:text-blue-300 hover:underline"
-                                            >
-                                                {videoUrl}
-                                            </a>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {videos.map((videoUrl, index) => {
+                                        console.log(`Rendering video ${index}:`, videoUrl);
+                                        return (
+                                            <div key={index} className="flex justify-center w-full">
+                                                <YoutubeThumbnail url={videoUrl} />
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             ) : (
                                 <p className="text-sm text-slate-400">
                                     No video resources found for this subtopic.
@@ -257,9 +331,7 @@ export default function SubtopicPanel({
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
-                        onClick={() => {
-                            onTabChange(tab.id);
-                        }}
+                        onClick={() => handleTabClick(tab.id)}
                         className={`px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-lg transition-all ${
                             selectedTab === tab.id
                                 ? 'bg-blue-600 text-white'
@@ -271,9 +343,54 @@ export default function SubtopicPanel({
                 ))}
             </div>
 
-            <div className="bg-slate-800/20 rounded-lg p-2 border border-slate-700/30">
-                {renderContent()}
-            </div>
+            {/* Modal Popup */}
+            {isModalOpen && modalTab && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseModal} />
+                    
+                    {/* Modal Content */}
+                    <div
+                        ref={modalRef}
+                        className={`relative bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col w-full max-w-4xl max-h-[90vh] ${
+                            isFullscreen ? 'rounded-none' : ''
+                        }`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-800">
+                            <h2 className="text-lg font-semibold text-white">
+                                {tabs.find(t => t.id === modalTab)?.label || 'Content'}
+                            </h2>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={toggleFullscreen}
+                                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                                    aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                                >
+                                    {isFullscreen ? (
+                                        <Minimize2 className="h-5 w-5" />
+                                    ) : (
+                                        <Maximize2 className="h-5 w-5" />
+                                    )}
+                                </button>
+                                <button
+                                    onClick={handleCloseModal}
+                                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                                    aria-label="Close modal"
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Scrollable Content */}
+                        <div className="flex-1 overflow-y-auto p-4">
+                            {renderContent(modalTab)}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
