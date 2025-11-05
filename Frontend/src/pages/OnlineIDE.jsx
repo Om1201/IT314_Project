@@ -9,25 +9,27 @@ import {
   Download,
   Search,
   Edit2,
-  Code2, // Added for app title
+  Code2,
+  X,
+  Moon,
+  Sun,
 } from "lucide-react";
 
-export default function OnlineIDE() {
-  const languageOptions = [
-    { label: "JavaScript", value: "javascript" },
-    { label: "TypeScript", value: "typescript" },
-    { label: "Python", value: "python" },
-    { label: "C++", value: "cpp" },
-    { label: "Java", value: "java" },
-    { label: "Go", value: "go" },
-    { label: "Ruby", value: "ruby" },
-    { label: "Rust", value: "rust" },
-    { label: "HTML", value: "html" },
-    { label: "CSS", value: "css" },
-    { label: "PHP", value: "php" },
-    { label: "C#", value: "csharp" },
-  ];
+const languageOptions = [
+  { label: "JavaScript", value: "javascript" },
+  { label: "Python", value: "python" },
+  { label: "Java", value: "java" },
+  { label: "C++", value: "cpp" },
+];
 
+const defaultCodeSnippets = {
+  javascript: "// Write your code here\nconsole.log('Hello World');",
+  python: "# Write your code here\nprint('Hello World')",
+  java: "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello World\");\n    }\n}",
+  cpp: "#include <iostream>\n\nint main() {\n    std::cout << \"Hello World\";\n    return 0;\n}",
+};
+
+export default function OnlineIDE() {
   const makeId = (prefix = "f") =>
     `${prefix}_${Date.now().toString(36)}_${Math.floor(Math.random() * 1000)}`;
 
@@ -36,17 +38,18 @@ export default function OnlineIDE() {
       id: makeId("main"),
       name: "main.js",
       language: "javascript",
-      code: "// Write your code here\nconsole.log('Hello World');",
-      input: "", // <-- new field for stdin
+      code: defaultCodeSnippets.javascript,
+      input: "",
+      output: "",
       saved: true,
     },
   ]);
 
   const [currentFileId, setCurrentFileId] = useState(files[0].id);
-  const [outputLogs, setOutputLogs] = useState([]);
-  const [isRunning, setIsRunning] = useState(false);
   const [filter, setFilter] = useState("");
+  const [theme, setTheme] = useState("dark");
   const editorRef = useRef(null);
+  const tabContainerRef = useRef(null);
 
   const currentFile = files.find((f) => f.id === currentFileId) || files[0];
 
@@ -68,13 +71,21 @@ export default function OnlineIDE() {
     const newFile = {
       id: makeId("u"),
       name: nameCandidate,
-      language: extension === "js" ? "javascript" : extension,
-      code: "",
+      language: "javascript",
+      code: defaultCodeSnippets.javascript,
       input: "",
+      output: "",
       saved: false,
     };
-    setFiles((p) => [newFile, ...p]);
+    setFiles((p) => [...p, newFile]);
     setCurrentFileId(newFile.id);
+
+    setTimeout(() => {
+      tabContainerRef.current?.scrollTo({
+        left: tabContainerRef.current.scrollWidth,
+        behavior: "smooth",
+      });
+    }, 100);
   }
 
   function removeFile(fileId) {
@@ -95,7 +106,11 @@ export default function OnlineIDE() {
   }
 
   function changeLanguageForFile(fileId, language) {
-    updateFile(fileId, { language, saved: false });
+    updateFile(fileId, {
+      language,
+      code: defaultCodeSnippets[language] || "",
+      saved: false,
+    });
   }
 
   function handleEditorChange(value) {
@@ -109,75 +124,7 @@ export default function OnlineIDE() {
   function saveCurrentFile() {
     if (!currentFile) return;
     updateFile(currentFile.id, { saved: true });
-    pushLog(`Saved ${currentFile.name}`);
   }
-
-  function pushLog(line) {
-    setOutputLogs((p) => [...p, `${new Date().toLocaleTimeString()}: ${line}`]);
-  }
-
-  function clearLogs() {
-    setOutputLogs([]);
-  }
-
-  async function runCode() {
-    if (!currentFile) return;
-    setIsRunning(true);
-    clearLogs();
-    pushLog(`Running ${currentFile.name} (${currentFile.language})`);
-    try {
-      await new Promise((r) => setTimeout(r, 700));
-      pushLog("--- Program output start ---");
-
-      // Simulate using stdin
-      if (currentFile.input?.trim()) {
-        pushLog(`Input provided:\n${currentFile.input.trim()}`);
-      }
-
-      const code = currentFile.code || "";
-      const consoleLogMatches = [...code.matchAll(/console\.log\(([^)]*)\)/g)];
-      if (consoleLogMatches.length) {
-        consoleLogMatches.slice(0, 10).forEach((m) => {
-          let txt = m[1].trim().replace(/^['"`]|['"`]$/g, "");
-          pushLog(txt || "(logged value)");
-        });
-      } else if (/print\(/.test(code)) {
-        const pyMatches = [...code.matchAll(/print\(([^)]*)\)/g)];
-        pyMatches.slice(0, 10).forEach((m) => {
-          let txt = m[1].trim().replace(/^['"`]|['"`]$/g, "");
-          pushLog(txt || "(printed value)");
-        });
-      } else {
-        pushLog(
-          "(simulated) Program executed successfully — no console-like output detected."
-        );
-      }
-
-      pushLog("--- Program output end ---");
-    } catch (err) {
-      pushLog(`Error: ${err?.message || String(err)}`);
-    }
-    setIsRunning(false);
-  }
-
-  // keyboard shortcuts: Ctrl/Cmd+S to save, Ctrl/Cmd+P to run
-  useEffect(() => {
-    const handler = (e) => {
-      const modKey = e.ctrlKey || e.metaKey;
-      if (modKey && e.key.toLowerCase() === "s") {
-        e.preventDefault();
-        saveCurrentFile();
-      }
-      if (modKey && e.key.toLowerCase() === "p") {
-        if (!e.shiftKey) {
-          e.preventDefault();
-          runCode();
-        }
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [currentFileId, files]);
 
   function downloadFile(file) {
     const blob = new Blob([file.code || ""], {
@@ -191,59 +138,98 @@ export default function OnlineIDE() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    pushLog(`Downloaded ${file.name}`);
   }
+
+  useEffect(() => {
+    const handler = (e) => {
+      const modKey = e.ctrlKey || e.metaKey;
+      if (modKey && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        saveCurrentFile();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [currentFileId, files]);
 
   const filteredFiles = files.filter((f) =>
     f.name.toLowerCase().includes(filter.toLowerCase())
   );
 
+  const toggleTheme = () =>
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+
+  const isDark = theme === "dark";
+  const bgPanel = isDark ? "bg-gray-900" : "bg-white";
+  const borderColor = isDark ? "border-gray-800" : "border-gray-300";
+  const textMuted = isDark ? "text-gray-400" : "text-gray-500";
+  const hoverBg = isDark ? "hover:bg-gray-800" : "hover:bg-gray-100";
+
   return (
-    // Use h-screen for full height and grid layout
-    <div className="h-screen bg-gray-950 text-white p-4 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4">
+    <div
+      className={`min-h-screen ${isDark ? "bg-gray-950 text-white" : "bg-gray-50 text-gray-900"} 
+      p-4 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4 transition-colors duration-300`}
+    >
       {/* Sidebar */}
-      <aside className="bg-gray-900 border border-gray-800 rounded-xl p-3 flex flex-col gap-3 overflow-hidden">
-        {/* App Title */}
-        <div className="flex items-center gap-2 pb-2 border-b border-gray-800">
-          <Code2 size={20} className="text-blue-400" />
-          <h2 className="font-semibold text-lg">Web IDE</h2>
+      <aside
+        className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-3 flex flex-col gap-3 transition-all duration-300`}
+      >
+        <div className="flex items-center justify-between pb-2 border-b border-gray-700">
+          <div className="flex items-center gap-2">
+            <Code2 size={20} className="text-blue-500" />
+            <h2 className="font-semibold text-lg">Web IDE</h2>
+          </div>
+          <button
+            onClick={toggleTheme}
+            className={`p-2 rounded-md ${hoverBg} transition`}
+          >
+            {isDark ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
         </div>
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText size={18} />
-            <h3 className="font-semibold">Files</h3>
-            <span className="text-xs text-gray-400 ml-2">({files.length})</span>
+            <h3 className={`uppercase text-xs font-semibold tracking-wider ${textMuted}`}>
+              Files
+            </h3>
           </div>
           <button
             onClick={() => addFile("js")}
             title="New file"
-            className="p-2 rounded-md bg-green-600 hover:bg-green-700"
+            className="p-2 rounded-md bg-green-600 hover:bg-green-700 active:scale-95 transition-transform"
           >
             <Plus size={16} />
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Search size={16} />
+        <div
+          className={`flex items-center gap-2 ${
+            isDark ? "bg-gray-800" : "bg-gray-100"
+          } rounded-md px-2 py-1`}
+        >
+          <Search size={16} className={textMuted} />
           <input
             placeholder="Search files..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="bg-gray-800 flex-1 px-2 py-1 rounded-md text-sm"
+            className="bg-transparent flex-1 text-sm outline-none"
           />
         </div>
 
-        {/* File List - takes remaining space */}
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto mt-1">
           {filteredFiles.length === 0 ? (
-            <p className="text-sm text-gray-400 mt-3">No files found</p>
+            <p className={`text-sm ${textMuted} mt-3`}>No files found</p>
           ) : (
             filteredFiles.map((f) => (
               <div
                 key={f.id}
-                className={`flex items-center justify-between gap-2 p-2 rounded-md cursor-pointer hover:bg-gray-800 ${
-                  f.id === currentFileId ? "bg-gray-800" : ""
+                className={`flex items-center justify-between gap-2 p-2 rounded-md cursor-pointer ${hoverBg} transition-colors ${
+                  f.id === currentFileId
+                    ? isDark
+                      ? "bg-gray-800"
+                      : "bg-gray-200"
+                    : ""
                 }`}
               >
                 <div onClick={() => setCurrentFileId(f.id)} className="flex-1">
@@ -252,31 +238,31 @@ export default function OnlineIDE() {
                       {f.name}
                     </span>
                     {!f.saved && (
-                      <span className="ml-1 text-xs text-yellow-400">•</span>
+                      <span className="ml-1 text-xs text-yellow-500">•</span>
                     )}
                   </div>
-                  <div className="text-xs text-gray-400">{f.language}</div>
+                  <div className={`text-xs ${textMuted}`}>{f.language}</div>
                 </div>
 
                 <div className="flex items-center gap-1">
                   <button
                     title="Rename"
                     onClick={() => renameFile(f.id)}
-                    className="p-1 rounded hover:bg-gray-800"
+                    className={`p-1 rounded ${hoverBg}`}
                   >
                     <Edit2 size={14} />
                   </button>
                   <button
                     title="Download"
                     onClick={() => downloadFile(f)}
-                    className="p-1 rounded hover:bg-gray-800"
+                    className={`p-1 rounded ${hoverBg}`}
                   >
                     <Download size={14} />
                   </button>
                   <button
                     title="Delete"
                     onClick={() => removeFile(f.id)}
-                    className="p-1 rounded hover:bg-red-800"
+                    className="p-1 rounded hover:bg-red-700"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -285,45 +271,56 @@ export default function OnlineIDE() {
             ))
           )}
         </div>
-
-        <div className="flex items-center gap-2 pt-2 border-t border-gray-800">
-          <button
-            onClick={() => setFiles([])}
-            className="text-sm text-gray-400 hover:text-white"
-            title="Clear all files (unsaved will be lost)"
-          >
-            Clear all
-          </button>
-          <div className="flex-1" />
-          <small className="text-xs text-gray-500">Tip: Ctrl/Cmd+S to save</small>
-        </div>
       </aside>
 
-      {/* Main area - flex col and overflow-hidden */}
+      {/* Main Area */}
       <main className="flex flex-col gap-3 overflow-hidden">
-        {/* Header - shrinks */}
-        <div className="flex items-center justify-between gap-3 flex-shrink-0">
-          <div className="flex items-center gap-2 overflow-x-auto">
+        {/* Tabs + Actions */}
+        <div
+          className={`flex items-center justify-between gap-3 flex-shrink-0 border-b ${borderColor} pb-1`}
+        >
+          <div
+            ref={tabContainerRef}
+            className="flex items-center gap-1 overflow-x-auto scrollbar-hide scroll-smooth flex-1"
+          >
             {files.map((f) => (
-              <button
+              <div
                 key={f.id}
-                onClick={() => setCurrentFileId(f.id)}
-                className={`px-3 py-1 rounded-lg text-sm font-medium ${
-                  f.id === currentFileId ? "bg-gray-800" : "bg-gray-900"
-                }`}
+                className={`flex items-center gap-2 px-3 py-2 text-sm font-medium border-b-2 transition-all duration-150 ${
+                  f.id === currentFileId
+                    ? "border-blue-400 bg-blue-500/10"
+                    : "border-transparent hover:bg-gray-200/20"
+                } rounded-t-md cursor-pointer flex-shrink-0`}
               >
-                {f.name} {!f.saved && <span className="text-xs text-yellow-400">•</span>}
-              </button>
+                <button
+                  onClick={() => setCurrentFileId(f.id)}
+                  className="flex items-center gap-2"
+                >
+                  <span>{f.name}</span>
+                  {!f.saved && (
+                    <span className="text-xs text-yellow-500">•</span>
+                  )}
+                </button>
+                {files.length > 1 && (
+                  <button
+                    onClick={() => removeFile(f.id)}
+                    title="Close file"
+                    className="hover:text-red-400 text-gray-400"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <select
               value={currentFile?.language || "javascript"}
               onChange={(e) =>
                 changeLanguageForFile(currentFile.id, e.target.value)
               }
-              className="bg-gray-800 px-3 py-2 rounded-lg border border-gray-700 text-sm"
+              className={`${bgPanel} ${borderColor} border font-medium px-3 py-2 rounded-lg text-sm`}
             >
               {languageOptions.map((l) => (
                 <option key={l.value} value={l.value}>
@@ -334,52 +331,47 @@ export default function OnlineIDE() {
 
             <button
               onClick={saveCurrentFile}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg"
+              className={`${bgPanel} ${borderColor} border flex items-center gap-2 px-3 py-2 rounded-lg hover:scale-95 active:scale-90 transition`}
             >
               <Save size={14} /> Save
             </button>
 
             <button
-              onClick={runCode}
-              disabled={isRunning}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-3 py-2 rounded-lg"
+              title="Run (handled by backend)"
+              className={`${bgPanel} ${borderColor} border flex items-center gap-2 text-gray-400 px-3 py-2 rounded-lg cursor-not-allowed`}
+              disabled
             >
-              <Play size={16} /> {isRunning ? "Running..." : "Run"}
+              <Play size={16} /> Run
             </button>
 
             <button
               onClick={() => downloadFile(currentFile)}
               title="Download file"
-              className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg"
+              className={`${bgPanel} ${borderColor} border flex items-center justify-center px-3 h-[40px] rounded-lg hover:scale-95 transition`}
             >
               <Download size={14} />
             </button>
           </div>
         </div>
 
-        {/* Editor + Input + Output - takes remaining space */}
+        {/* Editor + Console */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 overflow-hidden">
-          {/* Editor - flex col and overflow-hidden */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-2 flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between px-2">
-              {/* --- 1. TITLE CHANGED --- */}
+          {/* Editor Section */}
+          <div
+            className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-4 flex flex-col overflow-hidden transition-all duration-300`}
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-gray-700">
               <h2 className="text-lg font-semibold">Editor</h2>
-              <div className="text-sm text-gray-400">
+              <div className={`text-sm ${textMuted}`}>
                 {currentFile?.name} ({currentFile?.language})
               </div>
             </div>
 
-            {/* Editor container - takes remaining space */}
             <div className="flex-1 mt-2">
-              {/* --- 3. EDITOR HEIGHT CHANGED --- */}
               <Editor
                 height="100%"
-                theme="vs-dark"
-                language={
-                  currentFile?.language === "cpp"
-                    ? "cpp"
-                    : currentFile?.language || "javascript"
-                }
+                theme={isDark ? "vs-dark" : "light"}
+                language={currentFile?.language || "javascript"}
                 value={currentFile?.code}
                 onChange={handleEditorChange}
                 options={{
@@ -392,62 +384,69 @@ export default function OnlineIDE() {
               />
             </div>
           </div>
-
-          {/* Console & Input - flex col and overflow-hidden */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-2 flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between">
-              {/* --- 2. MAIN HEADING CHANGED --- */}
-              <h2 className="text-lg font-semibold">Console</h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    navigator.clipboard?.writeText(outputLogs.join("\n"));
-                    pushLog("Copied output to clipboard");
-                  }}
-                  className="px-2 py-1 rounded hover:bg-gray-800 text-sm"
-                >
-                  Copy
-                </button>
-                <button
-                  onClick={clearLogs}
-                  className="px-2 py-1 rounded hover:bg-gray-800 text-sm"
-                >
-                  Clear
-                </button>
+            {/* Console Section */}
+            <div
+              className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-4 flex flex-col overflow-hidden transition-all duration-300`}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold">Console</h2>
+                <div className="flex gap-3 text-sm text-blue-400">
+                  <button
+                    className="hover:underline"
+                    onClick={() =>
+                      navigator.clipboard.writeText(currentFile.input || "")
+                    }
+                  >
+                    Copy
+                  </button>
+                  <button
+                    className="hover:underline"
+                    onClick={() =>
+                      updateFile(currentFile.id, { input: "", output: "" })
+                    }
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+                
+              {/* Input & Output Container */}
+              <div className="flex flex-col gap-4 flex-1 min-h-[400px]">
+                {/* Input Box (40%) */}
+                <div className="flex flex-col h-[40%]">
+                  <h3 className="text-sm font-semibold mb-1">Input</h3>
+                  <textarea
+                    placeholder="Enter input here..."
+                    value={currentFile?.input}
+                    onChange={(e) => handleInputChange(e.target.value)}
+                    className={`flex-1 w-full p-2 rounded-md font-mono text-sm outline-none resize-none
+                      ${
+                        isDark
+                          ? "bg-black text-gray-300 border border-gray-700 placeholder-gray-600"
+                          : "bg-gray-50 text-gray-800 border border-gray-300 placeholder-gray-400"
+                      }`}
+                  />
+                </div>
+                  
+                {/* Output Box (60%) */}
+                <div className="flex flex-col h-[60%]">
+                  <h3 className="text-sm font-semibold mb-1">Output</h3>
+                  <div
+                    className={`flex-1 w-full p-2 rounded-md font-mono text-sm overflow-auto
+                      ${
+                        isDark
+                          ? "bg-black text-green-400 border border-gray-700"
+                          : "bg-gray-50 text-green-700 border border-gray-300"
+                      }`}
+                  >
+                    {currentFile.output
+                      ? currentFile.output
+                      : "(no output yet)"}
+                  </div>
+                </div>
               </div>
             </div>
-
-            {/* Input Panel - shrinks */}
-            <div className="mt-2 flex-shrink-0">
-              {/* --- 2. INPUT HEADING ADDED --- */}
-              <h3 className="text-md font-semibold mb-1">Input (stdin)</h3>
-              <textarea
-                className="w-full bg-black text-white p-2 rounded-md resize-none text-sm border border-gray-800 font-mono"
-                rows={4} // Use rows instead of fixed height
-                value={currentFile?.input || ""}
-                onChange={(e) => handleInputChange(e.target.value)}
-                placeholder="Enter input here..."
-              />
-            </div>
-
-            {/* Output Panel - takes remaining space */}
-            <div className="mt-3 flex-1 overflow-auto">
-              {/* --- 2. OUTPUT HEADING ADDED --- */}
-              <h3 className="text-md font-semibold mb-1">Output</h3>
-              <pre
-                className="bg-black text-green-400 p-4 rounded-lg overflow-auto whitespace-pre-wrap text-sm font-mono
-                           h-full" // --- 3. OUTPUT HEIGHT CHANGED ---
-              >
-                {outputLogs.length === 0
-                  ? "(no output yet)"
-                  : outputLogs.join("\n")}
-              </pre>
-            </div>
-
-            <div className="mt-2 text-xs text-gray-400 flex-shrink-0">
-              Tip: This IDE simulates execution for safety.
-            </div>
-          </div>
         </div>
       </main>
     </div>
