@@ -17,6 +17,8 @@ import Loader from './components/Loader';
 import { useSelector } from 'react-redux';
 import Roadmaps from './pages/Roadmaps';
 import { fetchUserRoadmaps } from './features/roadmapSlicer';
+import OnlineIDE from './pages/OnlineIDE';
+
 
 function App() {
     const dispatch = useDispatch();
@@ -82,6 +84,7 @@ function App() {
                             </ProtectedRoute>
                         }
                     />
+                    <Route path="/ide" element={<OnlineIDE />} />
                 </Routes>
             </Router>
         </>
