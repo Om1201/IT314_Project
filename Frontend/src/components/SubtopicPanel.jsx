@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import MarkdownRenderer from './MarkdownRenderer';
 import { useSelector, useDispatch } from 'react-redux';
+import YoutubeThumbnail from './youtube';
 const tabs = [
     { id: 'explanation', label: 'Explanation' },
     { id: 'quiz', label: 'Quiz' },
@@ -186,20 +187,16 @@ export default function SubtopicPanel({
                         <p className="text-slate-300">Video resources for: {subtopic.title}</p>
                         <div className="bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
                             {videos.length > 0 ? (
-                                <ul className="list-disc list-inside space-y-2">
-                                    {videos.map((videoUrl, index) => (
-                                        <li key={index}>
-                                            <a
-                                                href={videoUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-400 hover:text-blue-300 hover:underline"
-                                            >
-                                                {videoUrl}
-                                            </a>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {videos.map((videoUrl, index) => {
+                                        console.log(`Rendering video ${index}:`, videoUrl);
+                                        return (
+                                            <div key={index} className="flex justify-center w-full">
+                                                <YoutubeThumbnail url={videoUrl} />
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             ) : (
                                 <p className="text-sm text-slate-400">
                                     No video resources found for this subtopic.
