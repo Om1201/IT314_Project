@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import { useSelector } from 'react-redux';
+import { LampContainer } from '../components/ui/lamp';
+import { motion } from 'motion/react';
+import { InfiniteMovingCardsDemo } from '../components/InfiniteMovingCardsDemo';
 
 export default function Home() {
     const { isLoggedin } = useSelector(state => state.user);
@@ -11,114 +14,70 @@ export default function Home() {
         <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-black text-white overflow-hidden">
             <Navbar />
 
-            <section className="pt-56 pb-20 px-4 sm:px-6 lg:px-8 relative">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center space-y-8">
-                        <div className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-full hover:border-blue-500/50 transition-colors">
-                            <Zap className="w-4 h-4 text-blue-400" />
-                            <span className="text-sm font-medium text-blue-300">
-                                AI-Powered Roadmap Generation
-                            </span>
-                        </div>
-                        <div className="space-y-4">
-                            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight">
-                                <span className="bg-gradient-to-r from-blue-400 via-blue-300 to-white bg-clip-text text-transparent">
-                                    AI-Powered Roadmaps
+            <LampContainer>
+                <motion.h1
+                    initial={{ opacity: 0.5, y: 400 }}
+                    whileInView={{ opacity: 1, y: 160 }}
+                    transition={{
+                        delay: 0.3,
+                        duration: 0.8,
+                        ease: 'easeInOut',
+                    }}
+                    className="pt-24 bg-gradient-to-br from-slate-300 to-slate-500 py-4 bg-clip-text text-center text-4xl font-medium tracking-tight text-transparent md:text-7xl"
+                >
+                    <div className="max-w-7xl mx-auto">
+                        <div className="text-center space-y-8">
+                            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-full hover:border-blue-500/50 transition-colors">
+                                <Zap className="w-4 h-4 text-blue-400" />
+                                <span className="text-sm font-medium tracking-wide text-blue-300 font-sans">
+                                    AI-Powered Roadmap Generation
                                 </span>
-                                <br />
-                                <span className="text-slate-300">for Your Success</span>
-                            </h1>
-                            <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                                Generate intelligent, personalized learning roadmaps powered by AI.
-                                From beginner to expert, we chart your path to mastery.
-                            </p>
-                        </div>
+                            </div>
+                            <div className="space-y-4">
+                                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight">
+                                    <span className="bg-gradient-to-r from-blue-400 via-blue-300 to-white bg-clip-text text-transparent">
+                                        AI-Powered Roadmaps
+                                    </span>
+                                    <br />
+                                    <span className="text-slate-300">for Your Success</span>
+                                </h1>
+                                <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed font-light tracking-wide font-sans">
+                                    Generate intelligent, personalized learning roadmaps powered by
+                                    AI. From beginner to expert, we chart your path to mastery.
+                                </p>
+                            </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                            <Link
-                                to={`${isLoggedin ? '/roadmap/generate' : '/signin'}`}
-                                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold text-lg hover:shadow-lg hover:shadow-blue-500/25 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
-                            >
-                                {isLoggedin ? 'Get Started' : 'Sign In'}{' '}
-                                <ArrowRight className="h-5 w-5" />
-                            </Link>
-                            <Link
-                                to="/about"
-                                className="px-8 py-4 border border-slate-600 rounded-xl hover:bg-slate-800 hover:border-blue-400 transition-all duration-300 font-semibold text-lg hover:shadow-md"
-                            >
-                                Learn More
-                            </Link>
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                                <Link
+                                    to={`${isLoggedin ? '/roadmap/generate' : '/signin'}`}
+                                    className="px-7 py-3 text-white bg-gradient-to-r from-blue-600 to-blue-700 
+             rounded-xl font-medium tracking-wide font-sans text-lg
+             hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:shadow-blue-500/25 
+             transform hover:scale-105 active:scale-95 
+             transition-all duration-300 flex items-center justify-center gap-2"
+                                >
+                                    {isLoggedin ? 'Get Started' : 'Sign In'}{' '}
+                                    <ArrowRight className="h-5 w-5" />
+                                </Link>
+
+                                <Link
+                                    to="/about"
+                                    className="px-7 py-3 border border-slate-600 rounded-xl 
+             font-medium tracking-wide font-sans text-lg text-slate-200
+             hover:bg-slate-800 hover:border-blue-400 
+             hover:shadow-lg hover:shadow-blue-500/10 
+             transform hover:scale-105 active:scale-95
+             transition-all duration-300 flex items-center justify-center gap-2"
+                                >
+                                    Learn More
+                                </Link>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </motion.h1>
+            </LampContainer>
 
-            <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 relative">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl sm:text-5xl font-bold mb-4">
-                            <span className="bg-gradient-to-r from-blue-400 to-white bg-clip-text text-transparent">
-                                Powerful Features
-                            </span>
-                        </h2>
-                        <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-                            Everything you need to create and follow your perfect learning journey
-                        </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div className="group bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300 hover:-translate-y-1">
-                            <div className="relative mb-4">
-                                <div className="h-12 w-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
-                                    <Zap className="h-6 w-6 text-blue-400" />
-                                </div>
-                            </div>
-                            <h3 className="text-xl font-semibold mb-2">AI Generation</h3>
-                            <p className="text-slate-400">
-                                Instantly generate personalized roadmaps tailored to your goals and
-                                skill level
-                            </p>
-                        </div>
-
-                        <div className="group bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300 hover:-translate-y-1">
-                            <div className="relative mb-4">
-                                <div className="h-12 w-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
-                                    <Target className="h-6 w-6 text-blue-400" />
-                                </div>
-                            </div>
-                            <h3 className="text-xl font-semibold mb-2">Goal Tracking</h3>
-                            <p className="text-slate-400">
-                                Monitor your progress with detailed milestones and achievement
-                                tracking
-                            </p>
-                        </div>
-
-                        <div className="group bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300 hover:-translate-y-1">
-                            <div className="relative mb-4">
-                                <div className="h-12 w-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
-                                    <Lightbulb className="h-6 w-6 text-blue-400" />
-                                </div>
-                            </div>
-                            <h3 className="text-xl font-semibold mb-2">Smart Insights</h3>
-                            <p className="text-slate-400">
-                                Get AI-powered recommendations to optimize your learning path
-                            </p>
-                        </div>
-
-                        <div className="group bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300 hover:-translate-y-1">
-                            <div className="relative mb-4">
-                                <div className="h-12 w-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
-                                    <Code className="h-6 w-6 text-blue-400" />
-                                </div>
-                            </div>
-                            <h3 className="text-xl font-semibold mb-2">Resource Library</h3>
-                            <p className="text-slate-400">
-                                Access curated resources and learning materials for every step
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <InfiniteMovingCardsDemo />
 
             <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 relative">
                 <div className="max-w-7xl mx-auto">

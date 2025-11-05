@@ -139,10 +139,13 @@ export const userSlice = createSlice({
                 state.authLoading = true;
             })
             .addCase(checkAuth.fulfilled, (state, action) => {
-                state.authLoading = false;
-                state.isLoggedin = true;
-                state.username = action.payload.user.name;
-                state.email = action.payload.user.email;
+                console.log(action.payload);
+                if(action.payload.success){
+                    state.authLoading = false;
+                    state.isLoggedin = true;
+                    state.username = action.payload.user.name;
+                    state.email = action.payload.user.email;
+                }
             })
             .addCase(checkAuth.rejected, state => {
                 state.authLoading = false;
