@@ -65,3 +65,14 @@ html {
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.03);
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
