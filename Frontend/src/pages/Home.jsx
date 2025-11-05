@@ -6,7 +6,9 @@ import { useSelector } from 'react-redux';
 import { LampContainer } from '../components/ui/lamp';
 import { motion } from 'motion/react';
 import { InfiniteMovingCardsDemo } from '../components/InfiniteMovingCardsDemo';
-
+import { StickyScrollRevealDemo } from '../components/StickyScrollRevealDemo';
+import { TypewriterEffect } from '../components/ui/typewriter-effect';
+import { Meteors } from '../components/ui/meteors';
 export default function Home() {
     const { isLoggedin } = useSelector(state => state.user);
 
@@ -79,79 +81,57 @@ export default function Home() {
 
             <InfiniteMovingCardsDemo />
 
-            <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 relative">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl sm:text-5xl font-bold mb-4">
-                            <span className="bg-gradient-to-r from-blue-400 to-white bg-clip-text text-transparent">
-                                How It Works
-                            </span>
-                        </h2>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-8">
-                        <div className="relative">
-                            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 text-center">
-                                <div className="h-16 w-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
-                                    1
-                                </div>
-                                <h3 className="text-2xl font-semibold mb-3">Define Your Goal</h3>
-                                <p className="text-slate-400">
-                                    Tell us what you want to learn and your current skill level
+            <section className="bg-[#02354B]">
+                            <div className="text-center mb-20">
+                                <h2
+                                    className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 
+                             bg-gradient-to-r from-blue-400 via-blue-200 to-white 
+                             bg-clip-text text-transparent tracking-wide drop-shadow-[0_2px_6px_rgba(0,186,217,0.25)]"
+                                >
+                                    How It Works
+                                </h2>
+                                <p className="text-slate-400 text-lg max-w-2xl mx-auto font-medium">
+                                    Discover how our AI designs your personalized roadmap - step by step.
                                 </p>
                             </div>
-                            <div className="hidden md:block absolute top-1/2 -right-9 w-8 h-0.5 bg-gradient-to-r from-blue-500 to-transparent"></div>
-                        </div>
+            
+                            <StickyScrollRevealDemo />
+                        </section>
 
-                        <div className="relative">
-                            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 text-center">
-                                <div className="h-16 w-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
-                                    2
+            <section className="py-20 bg-gradient-to-b from-[#02354B] to-slate-900 px-4 sm:px-6 lg:px-8 relative">
+                            <div className="max-w-4xl mx-auto">
+                                <div className="relative overflow-hidden bg-gradient-to-r from-[#00181F] to-slate-900/50 backdrop-blur-xl border border-blue-500/30 rounded-3xl p-12 text-center">
+                                    <div className="relative z-10">
+                                        <TypewriterEffect
+                                            words={[
+                                                { text: 'Ready', className: 'text-white' },
+                                                { text: 'to', className: 'text-white' },
+                                                { text: 'Start', className: 'text-white' },
+                                                { text: 'Your', className: 'text-white' },
+                                                { text: 'Journey?', className: 'text-white' },
+                                            ]}
+                                            className="text-4xl sm:text-5xl font-bold mb-6"
+                                            cursorClassName="bg-blue-500"
+                                            staggerDelay={0.04}
+                                            charDuration={0.15}
+                                        />
+                                        <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
+                                            Join learners creating their perfect roadmaps with AI
+                                        </p>
+                                        <Link
+                                            to={`${isLoggedin ? '/roadmap/generate' : '/signin'}`}
+                                            className="inline-block px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold text-lg hover:shadow-lg hover:shadow-blue-500/25 transform hover:scale-105 active:scale-95"
+                                        >
+                                            Get Started Now
+                                        </Link>
+                                    </div>
+            
+                                    <div className="pointer-events-none absolute inset-0">
+                                        <Meteors number={24} />
+                                    </div>
                                 </div>
-                                <h3 className="text-2xl font-semibold mb-3">
-                                    AI Generates Roadmap
-                                </h3>
-                                <p className="text-slate-400">
-                                    Our AI creates a personalized learning path with milestones
-                                </p>
                             </div>
-                            <div className="hidden md:block absolute top-1/2 -right-9 w-8 h-0.5 bg-gradient-to-r from-blue-500 to-transparent"></div>
-                        </div>
-
-                        <div className="relative">
-                            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 text-center">
-                                <div className="h-16 w-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
-                                    3
-                                </div>
-                                <h3 className="text-2xl font-semibold mb-3">Learn & Track</h3>
-                                <p className="text-slate-400">
-                                    Follow your roadmap and track progress toward mastery
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
-                <div className="max-w-4xl mx-auto">
-                    <div className="bg-gradient-to-r from-blue-900/50 to-slate-900/50 backdrop-blur-xl border border-blue-500/30 rounded-3xl p-12 text-center">
-                        <h2 className="text-4xl sm:text-5xl font-bold mb-6">
-                            Ready to Start Your Journey?
-                        </h2>
-                        <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-                            Join learners creating their perfect roadmaps with AI
-                        </p>
-                        <Link
-                            to={`${isLoggedin ? '/roadmap/generate' : '/signin'}`}
-                            className="inline-block px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold text-lg hover:shadow-lg hover:shadow-blue-500/25 transform hover:scale-105 active:scale-95"
-                        >
-                            Get Started Now
-                        </Link>
-                    </div>
-                </div>
-            </section>
-
+                        </section>
             <Footer />
         </div>
     );
