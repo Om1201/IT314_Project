@@ -4,6 +4,7 @@ import MDEditor from '@uiw/react-md-editor';
 import MarkdownRenderer from './MarkdownRenderer';
 import { useSelector, useDispatch } from 'react-redux';
 import YoutubeThumbnail from './youtube';
+import ReactDOM from 'react-dom';
 const tabs = [
     { id: 'explanation', label: 'Explanation' },
     { id: 'videos', label: 'Videos' },
@@ -64,7 +65,7 @@ export default function SubtopicPanel({
 
     // Handle click outside modal
     useEffect(() => {
-        const handleClickOutside = (event) => {
+        const handleClickOutside = event => {
             if (modalRef.current && !modalRef.current.contains(event.target)) {
                 setIsModalOpen(false);
                 setModalTab(null);
@@ -92,7 +93,7 @@ export default function SubtopicPanel({
         setIsSaving(false);
     };
 
-    const handleTabClick = (tabId) => {
+    const handleTabClick = tabId => {
         setModalTab(tabId);
         setIsModalOpen(true);
         onTabChange(tabId);
@@ -140,7 +141,7 @@ export default function SubtopicPanel({
         };
     }, []);
 
-    const renderContent = (tabId) => {
+    const renderContent = tabId => {
         const articleSet = allArticles?.find(
             a => a.chapterId === chapterId && a.subtopicId === subtopic.id
         );
@@ -344,53 +345,55 @@ export default function SubtopicPanel({
             </div>
 
             {/* Modal Popup */}
-            {isModalOpen && modalTab && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    {/* Backdrop */}
-                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseModal} />
-                    
-                    {/* Modal Content */}
-                    <div
-                        ref={modalRef}
-                        className={`relative bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col w-full max-w-4xl max-h-[90vh] ${
-                            isFullscreen ? 'rounded-none' : ''
-                        }`}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Modal Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-800">
-                            <h2 className="text-lg font-semibold text-white">
-                                {tabs.find(t => t.id === modalTab)?.label || 'Content'}
-                            </h2>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={toggleFullscreen}
-                                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-                                    aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-                                >
-                                    {isFullscreen ? (
-                                        <Minimize2 className="h-5 w-5" />
-                                    ) : (
-                                        <Maximize2 className="h-5 w-5" />
-                                    )}
-                                </button>
-                                <button
-                                    onClick={handleCloseModal}
-                                    className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-                                    aria-label="Close modal"
-                                >
-                                    <X className="h-5 w-5" />
-                                </button>
+            {isModalOpen &&
+                modalTab &&
+                ReactDOM.createPortal(
+                    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+                        <div
+                            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[99998]"
+                            onClick={handleCloseModal}
+                        />
+                        <div
+                            ref={modalRef}
+                            className={`relative bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col w-full max-w-4xl max-h-[90vh] ${isFullscreen ? 'rounded-none' : ''} z-[99999]`}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {/* Modal Header */}
+                            <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-800">
+                                <h2 className="text-lg font-semibold text-white">
+                                    {tabs.find(t => t.id === modalTab)?.label || 'Content'}
+                                </h2>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={toggleFullscreen}
+                                        className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                                        aria-label={
+                                            isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'
+                                        }
+                                    >
+                                        {isFullscreen ? (
+                                            <Minimize2 className="h-5 w-5" />
+                                        ) : (
+                                            <Maximize2 className="h-5 w-5" />
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={handleCloseModal}
+                                        className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                                        aria-label="Close modal"
+                                    >
+                                        <X className="h-5 w-5" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto p-4">
+                                {renderContent(modalTab)}
                             </div>
                         </div>
-
-                        {/* Scrollable Content */}
-                        <div className="flex-1 overflow-y-auto p-4">
-                            {renderContent(modalTab)}
-                        </div>
-                    </div>
-                </div>
-            )}
+                    </div>,
+                    document.body
+                )}
         </div>
     );
 }
