@@ -149,26 +149,47 @@ export default function OnlineIDE() {
       updateFile(currentFile.id, { output: "Running..." });
     
       try {
-        
-        const response = await fetch("https://your-backend-api-domain.com/run", {
+        const response = await fetch("http://localhost:4000/api/code/execute", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            // If auth is needed:
+            // "Authorization": `Bearer ${token}`,
           },
           body: JSON.stringify({
             language: currentFile.language,
-            code: currentFile.code,
-            input: currentFile.input,
+            version: "latest", 
+            files: [
+              {
+                name:
+                  currentFile.name ||
+                  `main.${currentFile.language === "python"
+                    ? "py"
+                    : currentFile.language === "javascript"
+                    ? "js"
+                    : currentFile.language === "java"
+                    ? "java"
+                    : "cpp"}`,
+                content: currentFile.code,
+              },
+            ],
+            args: [],
+            stdin: currentFile.input || "",
           }),
         });
       
         const data = await response.json();
       
-        
-        if (data.error) {
-          updateFile(currentFile.id, { output: `Error:\n${data.error}` });
+        if (!data.success) {
+          updateFile(currentFile.id, { output: `Error: ${data.message}` });
         } else {
-          updateFile(currentFile.id, { output: data.output || "(no output)" });
+          // Piston returns output inside data.data.run.output
+          const pistonResult = data.data?.run || {};
+          const finalOutput =
+            pistonResult.output ||
+            pistonResult.stderr ||
+            "(no output)";
+          updateFile(currentFile.id, { output: finalOutput });
         }
       } catch (err) {
         updateFile(currentFile.id, { output: "Execution failed: " + err.message });
@@ -176,6 +197,7 @@ export default function OnlineIDE() {
         setIsRunning(false);
       }
     }
+
 
     useEffect(() => {
         const handler = e => {
