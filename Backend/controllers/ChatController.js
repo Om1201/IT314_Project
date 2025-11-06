@@ -31,10 +31,9 @@ export const createChat = async (req, res) => {
             title: json_rsp.title,
             messages: [{ role: "user", content: userMessage }]
         });
-        newChat.messages.push({ role: "ai", content: JSON.stringify(json_rsp), chatId: newChat._id });
+        newChat.messages.push({ role: "ai", content:json_rsp.response, chatId: newChat._id });
         await newChat.save();
-        console.log("Generated Chat Title JSON:", json_rsp);
-        res.status(201).json({ message: "Chat created successfully", data: json_rsp });
+        res.status(201).json({ message: "Chat created successfully", data: json_rsp});
         
     } catch (error) {
         res.status(500).json({ message: "Error creating chat", error });
