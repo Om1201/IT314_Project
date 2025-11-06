@@ -209,3 +209,11 @@ export const getTitlePrompt = (userDescription) => {
     "response": "<ai_response_here>"
   }`;
 }
+
+
+export const getResponsePrompt = (userMessage, context) => {
+  return `You are an AI chat assistant.
+  Given this user message: "${userMessage}".
+  And this some last past conversation between you and user as context: "${context}". 
+  Generate a helpful and natural response to the user's message considering the provided context.`;
+}
