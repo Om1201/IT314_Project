@@ -53,6 +53,8 @@ export default function OnlineIDE() {
 
     const currentFile = files.find(f => f.id === currentFileId) || files[0];
 
+    const [isRunning, setIsRunning] = useState(false);
+
     function updateFile(fileId, patch) {
         setFiles(prev => prev.map(f => (f.id === fileId ? { ...f, ...patch } : f)));
     }
@@ -136,6 +138,67 @@ export default function OnlineIDE() {
         a.remove();
         URL.revokeObjectURL(url);
     }
+
+    async function runCode() {
+      
+
+      if (!currentFile || !currentFile.code.trim()) {
+        alert("No code to run!");
+        return;
+      }
+    
+      setIsRunning(true);
+      updateFile(currentFile.id, { output: "Running..." });
+    
+      try {
+        const response = await fetch("http://localhost:4000/api/code/execute", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",            
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            language: currentFile.language,
+            version: "latest", 
+            files: [
+              {
+                name:
+                  currentFile.name ||
+                  `main.${currentFile.language === "python"
+                    ? "py"
+                    : currentFile.language === "javascript"
+                    ? "js"
+                    : currentFile.language === "java"
+                    ? "java"
+                    : "cpp"}`,
+                content: currentFile.code,
+              },
+            ],
+            args: [],
+            stdin: currentFile.input || "",
+          }),
+        });
+      
+        const data = await response.json();
+      
+        if (!data.success) {
+          updateFile(currentFile.id, { output: `Error: ${data.message}` });
+        } else {
+          // Piston returns output inside data.data.run.output
+          const pistonResult = data.data?.run || {};
+          const finalOutput =
+            pistonResult.output ||
+            pistonResult.stderr ||
+            "(no output)";
+          updateFile(currentFile.id, { output: finalOutput });
+        }
+      } catch (err) {
+        updateFile(currentFile.id, { output: "Execution failed: " + err.message });
+      } finally {
+        setIsRunning(false);
+      }
+    }
+
 
     useEffect(() => {
         const handler = e => {
@@ -269,9 +332,9 @@ export default function OnlineIDE() {
                 </div>
             </aside>
 
-            {/* Main Area */}
+            {/* Main Part */}
             <main className="flex flex-col gap-3 overflow-hidden">
-                {/* Tabs + Actions */}
+                {/* Tabs  */}
                 <div
                     className={`flex items-center justify-between gap-3 flex-shrink-0 border-b ${borderColor} pb-1`}
                 >
@@ -329,11 +392,14 @@ export default function OnlineIDE() {
                         </button>
 
                         <button
-                            title="Run (handled by backend)"
-                            className={`${bgPanel} ${borderColor} border flex items-center gap-2 text-gray-400 px-3 py-2 rounded-lg cursor-not-allowed`}
-                            disabled
+                          onClick={runCode}
+                          title="Run code"
+                          disabled={isRunning}
+                          className={`${bgPanel} ${borderColor} border flex items-center gap-2 px-3 py-2 rounded-lg
+                            ${isRunning ? "opacity-70 cursor-wait" : "hover:scale-95 transition"}`}
                         >
-                            <Play size={16} /> Run
+                          <Play size={16} />
+                          {isRunning ? "Running..." : "Run"}
                         </button>
 
                         <button
@@ -346,7 +412,7 @@ export default function OnlineIDE() {
                     </div>
                 </div>
 
-                {/* Editor + Console */}
+                {/* Editor and Console */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 overflow-hidden">
                     {/* Editor Section */}
                     <div
@@ -405,7 +471,7 @@ export default function OnlineIDE() {
 
                         {/* Input & Output Container */}
                         <div className="flex flex-col gap-4 flex-1 min-h-[400px]">
-                            {/* Input Box (40%) */}
+                            {/* Input Box */}
                             <div className="flex flex-col h-[40%]">
                                 <h3 className="text-sm font-semibold mb-1">Input</h3>
                                 <textarea
@@ -421,7 +487,7 @@ export default function OnlineIDE() {
                                 />
                             </div>
 
-                            {/* Output Box (60%) */}
+                            {/* Output Box  */}
                             <div className="flex flex-col h-[60%]">
                                 <h3 className="text-sm font-semibold mb-1">Output</h3>
                                 <div
