@@ -21,7 +21,9 @@ export default function ModuleCard({
     onRequestExplanation,
 }) {
     return (
-        <div className="bg-gradient-to-br from-slate-900/40 to-blue-900/20 backdrop-blur-xl border border-blue-500/30 rounded-2xl overflow-hidden hover:border-blue-400/50 transition-all duration-300">
+        <div
+        id={`chapter-${module.id}`}  
+        className="bg-gradient-to-br from-slate-900/40 to-blue-900/20 backdrop-blur-xl border border-blue-500/30 rounded-2xl overflow-hidden hover:border-blue-400/50 transition-all duration-300">
             <button
                 onClick={onToggle}
                 className="w-full flex items-center justify-between p-6 hover:bg-blue-500/10 transition-colors group"

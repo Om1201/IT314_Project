@@ -18,6 +18,9 @@ import { useSelector } from 'react-redux';
 import Roadmaps from './pages/Roadmaps';
 import { fetchUserRoadmaps } from './features/roadmapSlicer';
 import OnlineIDE from './pages/OnlineIDE';
+import Search from './pages/search';
+
+
 
 function App() {
     const dispatch = useDispatch();
@@ -40,6 +43,14 @@ function App() {
             <Router>
                 <Routes>
                     <Route path="/" element={<Home />} />
+                     <Route
+                        path="/search"
+                        element={
+                            <ProtectedRoute>
+                                <Search />
+                            </ProtectedRoute>
+                        }
+                    />
                     <Route
                         path="/signin"
                         element={

@@ -323,7 +323,9 @@ export default function SubtopicPanel({
     };
 
     return (
-        <div className="mt-4 bg-gradient-to-br from-slate-900/60 to-purple-900/30 backdrop-blur-xl border border-purple-500/30 rounded-xl p-6 border-l-4 border-l-purple-500">
+        <div
+                id={`subtopic-${chapterId}-${subtopic.id}`}
+        className="mt-4 bg-gradient-to-br from-slate-900/60 to-purple-900/30 backdrop-blur-xl border border-purple-500/30 rounded-xl p-6 border-l-4 border-l-purple-500">
             <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">

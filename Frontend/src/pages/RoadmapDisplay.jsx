@@ -75,6 +75,18 @@ export default function RoadmapDisplay() {
         fetchRoadmap();
     }, [id, dispatch]);
 
+    useEffect(() => {
+        if (!isLoading) {
+            const hash = location.hash?.slice(1);
+            if (hash) {
+                const el = document.getElementById(hash);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+    }, [isLoading, location.hash]);
+    
     const moduleProgress = useMemo(() => {
         return currRoadmap?.chapters?.map(module => {
             const completedCount = module.subtopics.filter(s =>

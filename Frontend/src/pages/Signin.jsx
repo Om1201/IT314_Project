@@ -64,7 +64,7 @@ export default function Signin() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-tr from-slate-800 via-blue-900 to-slate-600 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-tr from-[#030717] via-[#012C3C] to-[#02354B] flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 <div className="bg-slate-950/50 border border-slate-800/50 backdrop-blur-sm rounded-2xl shadow-2xl p-8 space-y-8">
                     <div className="space-y-3 text-center">

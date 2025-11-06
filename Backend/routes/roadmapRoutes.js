@@ -10,7 +10,8 @@ import {
     generateSubtopicSummary,
     saveProgress,
     fetchProgress,
-    fetchSubtopicExplanation
+    fetchSubtopicExplanation,
+    searchRoadmaps,
 } from '../controllers/Roadmap.js';
 import userAuth from '../middlewares/userAuth.js';
 import { validate } from '../middlewares/validate.js';
@@ -31,4 +32,6 @@ router.post('/fetch-progress', userAuth, fetchProgress);
 
 router.post('/generate-subtopic-summary', userAuth, generateSubtopicSummary);
 router.post('/fetch-subtopic-summary', userAuth, fetchSubtopicExplanation);
+router.get('/search', userAuth, searchRoadmaps);
+
 export default router;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Code, Menu, X } from 'lucide-react';
+import { Code, Menu, X, Search as SearchIcon } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
@@ -64,9 +64,40 @@ const Navbar = () => {
                     ))}
                 </div>
 
-                <div className="hidden lg:flex items-center gap-3">
+                {/* Desktop search + auth actions */}
+                <div className="hidden lg:flex items-center gap-6">
+                    {/* Search */}
+                    <form
+                        onSubmit={e => {
+                            e.preventDefault();
+                            const val = e.currentTarget.elements.search.value.trim();
+                            if (val) navigate(`/search?q=${encodeURIComponent(val)}`);
+                        }}
+                        className="relative"
+                    >
+                        <SearchIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                        <input
+                            name="search"
+                            type="search"
+                            placeholder="Search ( / )"
+                            className="w-50 pl-9 pr-3 py-1.5 rounded-3xl bg-[#020618] border border-slate-700 text-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+                            // className="w-50 pl-9 pr-3 py-2 rounded-lg bg-slate-800/60 border border-slate-700 text-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+                            onKeyDown={e => {
+                                if (e.key === '/' && e.currentTarget.value === '') {
+                                    e.preventDefault();
+                                    e.currentTarget.focus();
+                                }
+                            }}
+                        />
+                    </form>
+
                     {!isLoggedin && (
-                        <NavbarButton as={Link} to="/signin" variant="secondary" className="">
+                        <NavbarButton
+                            as={Link}
+                            to="/signin"
+                            variant="secondary"
+                            className=""
+                        >
                             Sign In
                         </NavbarButton>
                     )}
@@ -101,6 +132,33 @@ const Navbar = () => {
                     </button>
                 </MobileNavHeader>
                 <MobileNavMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)}>
+                    {/* Mobile search */}
+                    <form
+                        onSubmit={e => {
+                            e.preventDefault();
+                            const val = e.currentTarget.elements.search.value.trim();
+                            if (val) {
+                                setMobileMenuOpen(false);
+                                navigate(`/search?q=${encodeURIComponent(val)}`);
+                            }
+                        }}
+                        className="relative w-full mb-2"
+                    >
+                        <SearchIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                        <input
+                            name="search"
+                            type="search"
+                            placeholder="Search ( / )"
+                            className="w-full pl-9 pr-3 py-2  bg-slate-800/60 border border-slate-700 text-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+                            onKeyDown={e => {
+                                if (e.key === '/' && e.currentTarget.value === '') {
+                                    e.preventDefault();
+                                    e.currentTarget.focus();
+                                }
+                            }}
+                        />
+                    </form>
+
                     {navLinks.map(link => (
                         <Link
                             key={link.name}
