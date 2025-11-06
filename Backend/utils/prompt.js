@@ -194,3 +194,18 @@ Your task:
   "spaceExplanation": "<Explain the reasoning behind the space complexity with reasonable details.>",
 }`
 };
+
+export const getTitlePrompt = (userDescription) => {
+  return `You are an AI chat assistant.
+  Given this user description or question: "${userDescription}".
+
+  1. Generate a concise and engaging title (max 5 words) that summarizes the user's description/question.
+  2. Generate a helpful and natural response to the user's description/question.
+
+  Respond strictly in the following JSON format (no extra text, no markdown, no explanations, no newlines):
+
+  {
+    "title": "<generated_title_here>",
+    "response": "<ai_response_here>"
+  }`;
+}
