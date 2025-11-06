@@ -5,7 +5,7 @@ import 'dotenv/config';
 
 import authRouter from './routes/authRoutes.js';
 import roadmapRouter from './routes/roadmapRoutes.js';
-import codeExecutorRouter from './routes/codeExecutorRoutes.js';
+import codeRoutes from './routes/codeRoutes.js';
 
 const app = express();
 
@@ -15,8 +15,7 @@ app.use(cors({ origin: ['http://localhost:5173'], credentials: true }));
 
 app.use('/api/auth', authRouter);
 app.use('/api/roadmap', roadmapRouter);
-app.use('/api/code', codeExecutorRouter);
-
+app.use('/api/code', codeRoutes);
 app.get('/', (req, res) => {
     res.send('Server is healthy');
 });
