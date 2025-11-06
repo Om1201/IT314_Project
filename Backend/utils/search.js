@@ -85,18 +85,37 @@ export const getArticleLinks = async (mainTopic, subtopic) => {
   }
 };
 
-const getVideoLinks = async (mainTopic, subtopic) => {
-  const query = `${subtopic.title}  ${mainTopic} tutorial`;
-  const url = `${API_BASE_URL}?key=${API_KEY}&cx=${cx}&q=${encodeURIComponent(query)}&siteSearch=youtube.com&num=5`;
+/* Fetching video using programable google search engine */
+// const getVideoLinks = async (mainTopic, subtopic) => {
+//   const query = `${subtopic.title}  ${mainTopic} tutorial`;
+//   const url = `${API_BASE_URL}?key=${API_KEY}&cx=${cx}&q=${encodeURIComponent(query)}&siteSearch=youtube.com&num=5`;
 
-  try {
-    const response = await axios.get(url);
-    return response.data.items?.map(item => item.link) || [];
-  } catch (error) {
-    console.error('Error fetching videos:', error.message);
-    return [];
-  }
-};
+//   try {
+//     const response = await axios.get(url);
+//     return response.data.items?.map(item => item.link) || [];
+//   } catch (error) {
+//     console.error('Error fetching videos:', error.message);
+//     return [];
+//   }
+// };
+
+/* Fetching video using serper api */
+const getVideoLinks = async (mainTopic, subtopic) => {
+  const query = `${subtopic.title}  ${mainTopic} tutorial site:youtube.com`;
+  const { data } = await axios.post(
+    SERPER_URL,
+    { q: query, num: 10 },
+    {
+      headers: {
+        "X-API-KEY": SERPER_API_KEY,
+        "Content-Type": "application/json",
+      },
+      timeout: 8000,
+    }
+  );
+  const results = data.organic || [];
+  return results.map(result => result.link);
+}
 
 
 export const getArticles = async (roadmapText) => {
