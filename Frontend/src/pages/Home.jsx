@@ -82,56 +82,56 @@ export default function Home() {
             <InfiniteMovingCardsDemo />
 
             <section className="bg-[#02354B]">
-                            <div className="text-center mb-20">
-                                <h2
-                                    className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 
+                <div className="text-center mb-20">
+                    <h2
+                        className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 
                              bg-gradient-to-r from-blue-400 via-blue-200 to-white 
                              bg-clip-text text-transparent tracking-wide drop-shadow-[0_2px_6px_rgba(0,186,217,0.25)]"
-                                >
-                                    How It Works
-                                </h2>
-                                <p className="text-slate-400 text-lg max-w-2xl mx-auto font-medium">
-                                    Discover how our AI designs your personalized roadmap - step by step.
-                                </p>
-                            </div>
-            
-                            <StickyScrollRevealDemo />
-                        </section>
+                    >
+                        How It Works
+                    </h2>
+                    <p className="text-slate-400 text-lg max-w-2xl mx-auto font-medium">
+                        Discover how our AI designs your personalized roadmap - step by step.
+                    </p>
+                </div>
+
+                <StickyScrollRevealDemo />
+            </section>
 
             <section className="py-20 bg-gradient-to-b from-[#02354B] to-slate-900 px-4 sm:px-6 lg:px-8 relative">
-                            <div className="max-w-4xl mx-auto">
-                                <div className="relative overflow-hidden bg-gradient-to-r from-[#00181F] to-slate-900/50 backdrop-blur-xl border border-blue-500/30 rounded-3xl p-12 text-center">
-                                    <div className="relative z-10">
-                                        <TypewriterEffect
-                                            words={[
-                                                { text: 'Ready', className: 'text-white' },
-                                                { text: 'to', className: 'text-white' },
-                                                { text: 'Start', className: 'text-white' },
-                                                { text: 'Your', className: 'text-white' },
-                                                { text: 'Journey?', className: 'text-white' },
-                                            ]}
-                                            className="text-4xl sm:text-5xl font-bold mb-6"
-                                            cursorClassName="bg-blue-500"
-                                            staggerDelay={0.04}
-                                            charDuration={0.15}
-                                        />
-                                        <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-                                            Join learners creating their perfect roadmaps with AI
-                                        </p>
-                                        <Link
-                                            to={`${isLoggedin ? '/roadmap/generate' : '/signin'}`}
-                                            className="inline-block px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold text-lg hover:shadow-lg hover:shadow-blue-500/25 transform hover:scale-105 active:scale-95"
-                                        >
-                                            Get Started Now
-                                        </Link>
-                                    </div>
-            
-                                    <div className="pointer-events-none absolute inset-0">
-                                        <Meteors number={24} />
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
+                <div className="max-w-4xl mx-auto">
+                    <div className="relative overflow-hidden bg-gradient-to-r from-[#00181F] to-slate-900/50 backdrop-blur-xl border border-blue-500/30 rounded-3xl p-12 text-center">
+                        <div className="relative z-10">
+                            <TypewriterEffect
+                                words={[
+                                    { text: 'Ready', className: 'text-white' },
+                                    { text: 'to', className: 'text-white' },
+                                    { text: 'Start', className: 'text-white' },
+                                    { text: 'Your', className: 'text-white' },
+                                    { text: 'Journey?', className: 'text-white' },
+                                ]}
+                                className="text-4xl sm:text-5xl font-bold mb-6"
+                                cursorClassName="bg-blue-500"
+                                staggerDelay={0.04}
+                                charDuration={0.15}
+                            />
+                            <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
+                                Join learners creating their perfect roadmaps with AI
+                            </p>
+                            <Link
+                                to={`${isLoggedin ? '/roadmap/generate' : '/signin'}`}
+                                className="inline-block px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold text-lg hover:shadow-lg hover:shadow-blue-500/25 transform hover:scale-105 active:scale-95"
+                            >
+                                Get Started Now
+                            </Link>
+                        </div>
+
+                        <div className="pointer-events-none absolute inset-0">
+                            <Meteors number={24} />
+                        </div>
+                    </div>
+                </div>
+            </section>
             <Footer />
         </div>
     );

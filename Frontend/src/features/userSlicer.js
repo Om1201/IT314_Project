@@ -140,7 +140,7 @@ export const userSlice = createSlice({
             })
             .addCase(checkAuth.fulfilled, (state, action) => {
                 console.log(action.payload);
-                if(action.payload.success){
+                if (action.payload.success) {
                     state.authLoading = false;
                     state.isLoggedin = true;
                     state.username = action.payload.user.name;

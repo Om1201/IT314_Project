@@ -1,4 +1,4 @@
-import { Save, CheckCircle2, Circle, X, Maximize2, Minimize2 } from 'lucide-react';
+import { Save, CheckCircle2, Circle, X, Maximize2, Minimize2, Loader2 } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import MarkdownRenderer from './MarkdownRenderer';
@@ -182,9 +182,14 @@ export default function SubtopicPanel({
                                     `${chapterId}:${subtopic.id}`
                                 )}
                             >
-                                {explanation_loading.includes(`${chapterId}:${subtopic.id}`)
-                                    ? `Generating explanation...`
-                                    : `Generate explanation`}
+                                {explanation_loading.includes(`${chapterId}:${subtopic.id}`) ? (
+                                    <div className="flex gap-2 justify-center items-center">
+                                        <Loader2 className="animate-spin" /> Generating
+                                        explanation...
+                                    </div>
+                                ) : (
+                                    `Generate explanation`
+                                )}
                             </button>
                         )}
                     </div>

@@ -66,12 +66,7 @@ const Navbar = () => {
 
                 <div className="hidden lg:flex items-center gap-3">
                     {!isLoggedin && (
-                        <NavbarButton
-                            as={Link}
-                            to="/signin"
-                            variant="secondary"
-                            className=""
-                        >
+                        <NavbarButton as={Link} to="/signin" variant="secondary" className="">
                             Sign In
                         </NavbarButton>
                     )}

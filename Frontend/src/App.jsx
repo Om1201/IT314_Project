@@ -19,7 +19,6 @@ import Roadmaps from './pages/Roadmaps';
 import { fetchUserRoadmaps } from './features/roadmapSlicer';
 import OnlineIDE from './pages/OnlineIDE';
 
-
 function App() {
     const dispatch = useDispatch();
     const { authLoading } = useSelector(state => state.user);

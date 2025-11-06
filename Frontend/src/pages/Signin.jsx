@@ -154,8 +154,7 @@ export default function Signin() {
                             >
                                 {isLoading ? (
                                     <div className="flex justify-center items-center gap-1">
-                                        <Loader2 className="h-5 w-5 animate-spin" />{' '}
-                                        Signing In
+                                        <Loader2 className="h-5 w-5 animate-spin" /> Signing In
                                     </div>
                                 ) : (
                                     <>Sign In</>
