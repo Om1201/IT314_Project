@@ -140,6 +140,8 @@ export default function OnlineIDE() {
     }
 
     async function runCode() {
+      
+
       if (!currentFile || !currentFile.code.trim()) {
         alert("No code to run!");
         return;
@@ -152,10 +154,9 @@ export default function OnlineIDE() {
         const response = await fetch("http://localhost:4000/api/code/execute", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            // If auth is needed:
-            // "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",            
           },
+          credentials: "include",
           body: JSON.stringify({
             language: currentFile.language,
             version: "latest", 
