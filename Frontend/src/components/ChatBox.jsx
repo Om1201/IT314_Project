@@ -1,19 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Send, Loader2, Maximize2, Minimize2, ExternalLink, Plus, MessageSquare, Trash2, Pencil } from 'lucide-react';
+import { X, Send, Loader2, Plus, MessageSquare, Trash2, Pencil } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createChat, getChatResponse, setActiveChat, fetchChatsForChapter, deleteChat, renameChat } from '../features/chatSlicer.js';
 import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: externalFullscreen, onFullscreenToggle }) {
+export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: externalFullscreen }) {
     const dispatch = useDispatch();
     const [message, setMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
-    const [isFullscreen, setIsFullscreen] = useState(externalFullscreen || false);
+    const isFullscreen = externalFullscreen || false;
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
-    const chatBoxRef = useRef(null);
 
     const userEmail = useSelector(state => state.user.email);
     const chatKey = `${chapterId}`;
@@ -35,43 +34,6 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
         inputRef.current?.focus();
     }, [chapterChats.activeChatId]);
 
-    useEffect(() => {
-        if (externalFullscreen !== undefined) {
-            setIsFullscreen(externalFullscreen);
-        }
-    }, [externalFullscreen]);
-
-    const handleFullscreen = async () => {
-        if (chatBoxRef.current) {
-            try {
-                if (!document.fullscreenElement) {
-                    await chatBoxRef.current.requestFullscreen();
-                    setIsFullscreen(true);
-                    onFullscreenToggle?.(true);
-                } else {
-                    await document.exitFullscreen();
-                    setIsFullscreen(false);
-                    onFullscreenToggle?.(false);
-                }
-            } catch (err) {
-                console.error('Error toggling fullscreen:', err);
-            }
-        }
-    };
-
-    useEffect(() => {
-        const handleFullscreenChange = () => {
-            const isCurrentlyFullscreen = !!document.fullscreenElement;
-            setIsFullscreen(isCurrentlyFullscreen);
-            onFullscreenToggle?.(isCurrentlyFullscreen);
-        };
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    }, [onFullscreenToggle]);
-
-    const handleOpenInNewTab = () => {
-        window.open(`${window.location.origin}/roadmap/${roadmapId}/chat/${chapterId}`, '_blank');
-    };
 
     const handleNewChat = () => {
         dispatch(setActiveChat({ chapterId, chatId: null }));
@@ -149,7 +111,6 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
 
     return (
         <div
-            ref={chatBoxRef}
             className={`${isFullscreen ? 'fixed inset-0 w-full h-full' : 'fixed right-0 top-16 bottom-0 w-[400px]'} bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 ${isFullscreen ? '' : 'border-l border-blue-500/30'} flex flex-col shadow-2xl z-50`}
         >
             <div className="flex items-center justify-between p-4 border-b border-blue-500/30 bg-slate-800/50">
@@ -168,40 +129,15 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
                     >
                         <Plus className="h-4 w-4" />
                     </button>
-                    {!isFullscreen && (
-                        <>
-                            <button
-                                onClick={handleOpenInNewTab}
-                                className="p-2 rounded-lg hover:bg-slate-700/50 transition-colors text-slate-400 hover:text-white"
-                                title="Open in new tab"
-                            >
-                                <ExternalLink className="h-4 w-4" />
-                            </button>
-                            <button
-                                onClick={handleFullscreen}
-                                className="p-2 rounded-lg hover:bg-slate-700/50 transition-colors text-slate-400 hover:text-white"
-                                title="Enter fullscreen"
-                            >
-                                <Maximize2 className="h-4 w-4" />
-                            </button>
-                        </>
-                    )}
-                    {isFullscreen && (
+                    {onClose && (
                         <button
-                            onClick={handleFullscreen}
+                            onClick={onClose}
                             className="p-2 rounded-lg hover:bg-slate-700/50 transition-colors text-slate-400 hover:text-white"
-                            title="Exit fullscreen"
+                            title="Close chat"
                         >
-                            <Minimize2 className="h-4 w-4" />
+                            <X className="h-4 w-4" />
                         </button>
                     )}
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-lg hover:bg-slate-700/50 transition-colors text-slate-400 hover:text-white"
-                        title="Close chat"
-                    >
-                        <X className="h-4 w-4" />
-                    </button>
                 </div>
             </div>
 
