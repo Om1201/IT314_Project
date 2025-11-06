@@ -33,7 +33,6 @@ export default function RoadmapDisplay() {
     const [explanation, setExplanation] = useState({});
     const [expandedModules, setExpandedModules] = useState(new Set());
     const [expandedSubtopics, setExpandedSubtopics] = useState(new Map());
-
     const stopwatch = useStopwatch();
     const timer = useTimer();
 
@@ -199,6 +198,11 @@ export default function RoadmapDisplay() {
         setExpandedSubtopics(newExpandedSubtopics);
     };
 
+    const handleChatClick = chapterId => {
+        const url = `${window.location.origin}/roadmap/${id}/chat/${chapterId}`;
+        window.open(url, '_blank');
+    };
+
     if (notfound) {
         return (
             <div className="flex items-center justify-center h-screen pt-16 bg-gradient-to-br from-slate-950 via-blue-950 to-black text-white overflow-hidden">
@@ -279,6 +283,7 @@ export default function RoadmapDisplay() {
                                     allArticles={currRoadmap.articles}
                                     allVideos={currRoadmap.videos}
                                     onRequestExplanation={onRequestExplanation}
+                                    onChatClick={handleChatClick}
                                 />
                             </div>
                         ))}
