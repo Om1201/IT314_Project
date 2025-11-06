@@ -19,6 +19,7 @@ import Roadmaps from './pages/Roadmaps';
 import { fetchUserRoadmaps } from './features/roadmapSlicer';
 import OnlineIDE from './pages/OnlineIDE';
 import Search from './pages/search';
+import ChatPage from './pages/ChatPage';
 
 
 
@@ -83,6 +84,14 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <RoadmapDisplay />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/roadmap/:roadmapId/chat/:chapterId"
+                        element={
+                            <ProtectedRoute>
+                                <ChatPage />
                             </ProtectedRoute>
                         }
                     />

@@ -1,4 +1,4 @@
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, MessageCircle } from 'lucide-react';
 import SubtopicCard from './SubtopicCard';
 import SubtopicPanel from './SubtopicPanel';
 
@@ -19,6 +19,7 @@ export default function ModuleCard({
     allArticles,
     allVideos,
     onRequestExplanation,
+    onChatClick,
 }) {
     return (
         <div
@@ -39,9 +40,21 @@ export default function ModuleCard({
                         <p className="text-slate-400 text-sm mt-1">{module.description}</p>
                     </div>
                 </div>
-                <ChevronDown
-                    className={`h-6 w-6 text-slate-400 flex-shrink-0 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
-                />
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                        onClick={e => {
+                            e.stopPropagation();
+                            onChatClick?.(module.id);
+                        }}
+                        className="p-2 rounded-lg hover:bg-blue-500/20 transition-colors group/chat"
+                        title="Open chat"
+                    >
+                        <MessageCircle className="h-5 w-5 text-slate-400 group-hover/chat:text-blue-400 transition-colors" />
+                    </button>
+                    <ChevronDown
+                        className={`h-6 w-6 text-slate-400 flex-shrink-0 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                    />
+                </div>
             </button>
 
             {progress && (
