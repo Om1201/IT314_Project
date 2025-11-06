@@ -1,4 +1,3 @@
-import { GoogleGenAI } from '@google/genai';
 import RoadmapModel from '../models/RoadmapModel.js';
 import UserModel from '../models/UserModel.js';
 import { getRoadmapPrompt } from '../utils/prompt.js';
@@ -7,26 +6,7 @@ import { getArticles } from '../utils/search.js';
 import { getVideos } from '../utils/search.js';
 import NoteModel from '../models/NoteModel.js';
 import { getSubtopicSummaryPrompt } from '../utils/prompt.js';
-
-const genAI = new GoogleGenAI({
-    apiKey: process.env.GOOGLE_GENAI_API_KEY,
-});
-
-export const geminiModel = genAI.models.generateContent.bind(genAI.models);
-
-export async function generateWithGemini(prompt, model = 'gemini-2.0-flash-001') {
-    try {
-        const response = await genAI.models.generateContent({
-            model,
-            contents: prompt,
-        });
-
-        return response.text;
-    } catch (error) {
-        console.error('Gemini API Error:', error);
-        throw new Error('Failed to generate content with Gemini');
-    }
-}
+import { generateWithGemini } from '../utils/generate.js';
 
 export const generateRoadmap = async (req, res) => {
     try {

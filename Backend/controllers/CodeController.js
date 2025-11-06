@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { generateWithGemini } from '../utils/generate.js';
+import {getAnalysePrompt} from '../utils/prompt.js';
+
 
 const PISTON_API_URL = 'https://emkc.org/api/v2/piston/execute';
 
@@ -44,5 +47,27 @@ export const executeCode = async (req, res) => {
             success: false,
             message: error.message,
         });
+    }
+};
+
+export const analyse = async (req, res) => {
+    try {
+        const code = req.body.content;
+        console.log("code is ", code);
+        const prompt = getAnalysePrompt(code);
+        let response = await generateWithGemini(prompt);
+        response = response.trim().replace(/^```json\s*|\s*```$/g, '').trim();
+        const responseJson = JSON.parse(response);
+        console.log(responseJson);
+        return res.status(200).json({
+            success: true,
+            data : responseJson,
+            message : 'Analysis successful'
+        });
+    }catch (error){
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        })
     }
 };

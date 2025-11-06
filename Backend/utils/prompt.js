@@ -24,6 +24,7 @@ Create a comprehensive learning roadmap for "${topic}". Return a JSON object wit
             "top-site1.org",
             "top-site2.com",
             "top-site3.dev"
+            (Include popular sites like GFG, w3School and documentations first, if relevent)
           ],
           "detailedExplanation": "<remain this field empty string>"
         }
@@ -164,4 +165,32 @@ export const getSubtopicSummaryPrompt = (subtopic, roadmapTitle, chapterTitle) =
     * Keep the summary focused and ideally upto 1500 words.
 
 Begin the summary now.`;
+};
+
+export const getAnalysePrompt = (code) => {
+  return `You are an expert at analyzing code. You are given a piece of code to analyze its time and space complexity.
+
+Code:
+${code}
+
+Your task:
+1. If the code contains syntax errors or an infinite loop, explicitly mention it in the "compilationError" section.
+2. Analyze the time and space complexity of the given code carefully.
+3. Provide clear and detailed explanations for both.
+
+
+ Important Instructions:
+- Respond in **ONLY** the JSON format shown below.
+- Do **not** include any extra text, comments, or explanations outside of the JSON.
+
+{
+  "compilationError": <true | false>,
+  "errorExplanation": "<Explain the syntax or logical issue if any>",
+
+  "timeComplexity": "<Big O notation, e.g., O(n^2)>",
+  "timeExplanation": "<Explain the reasoning behind the time complexity wiht reasonable details.>",
+  
+  "spaceComplexity": "<Big O notation, e.g., O(1)>",
+  "spaceExplanation": "<Explain the reasoning behind the space complexity with reasonable details.>",
+}`
 };
