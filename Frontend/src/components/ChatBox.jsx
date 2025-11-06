@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Send, Loader2, Maximize2, Minimize2, ExternalLink, Plus, MessageSquare, Trash2 } from 'lucide-react';
+import { X, Send, Loader2, Maximize2, Minimize2, ExternalLink, Plus, MessageSquare, Trash2, Pencil } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { createChat, getChatResponse, setActiveChat, fetchChatsForChapter, deleteChat } from '../features/chatSlicer.js';
+import { createChat, getChatResponse, setActiveChat, fetchChatsForChapter, deleteChat, renameChat } from '../features/chatSlicer.js';
 import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -89,10 +89,22 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
         const result = await dispatch(deleteChat({ chatId }));
         if (result.payload?.message === 'Chat deleted successfully') {
             toast.success('Chat deleted');
-            // Refresh chats list
             dispatch(fetchChatsForChapter({ roadmapId, moduleId: chapterId }));
         } else {
             toast.error('Failed to delete chat');
+        }
+    };
+
+    const handleRenameChat = async (e, chatId, currentTitle) => {
+        e.stopPropagation();
+        const newTitle = window.prompt('Enter new chat title:', currentTitle);
+        if (!newTitle || newTitle.trim() === '' || newTitle === currentTitle) return;
+
+        const result = await dispatch(renameChat({ chatId, newTitle: newTitle.trim() }));
+        if (result.payload?.message === 'Chat renamed successfully') {
+            toast.success('Chat renamed');
+        } else {
+            toast.error(result.payload?.message || 'Failed to rename chat');
         }
     };
 
@@ -225,13 +237,22 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
                                         {chat.title}
                                     </button>
                                     {chat.chatId && (
-                                        <button
-                                            onClick={e => handleDeleteChat(e, chat.chatId)}
-                                            className="opacity-0 group-hover:opacity-100 p-1.5 rounded hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-all"
-                                            title="Delete chat"
-                                        >
-                                            <Trash2 className="h-3.5 w-3.5" />
-                                        </button>
+                                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
+                                            <button
+                                                onClick={e => handleRenameChat(e, chat.chatId, chat.title)}
+                                                className="p-1.5 rounded hover:bg-blue-500/20 text-slate-400 hover:text-blue-400 transition-all"
+                                                title="Rename chat"
+                                            >
+                                                <Pencil className="h-3.5 w-3.5" />
+                                            </button>
+                                            <button
+                                                onClick={e => handleDeleteChat(e, chat.chatId)}
+                                                className="p-1.5 rounded hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-all"
+                                                title="Delete chat"
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             ))
