@@ -9,6 +9,6 @@ import userAuth from '../middlewares/userAuth.js';
 const router = express.Router();
 
 router.post('/execute', userAuth, validate(codeExecutionSchema), executeCode);
-router.post('/analyse', analyse);
+router.post('/analyse',userAuth, validate(codeStructureSchema), analyse);
 
 export default router;

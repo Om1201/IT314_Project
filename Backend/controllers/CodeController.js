@@ -53,12 +53,10 @@ export const executeCode = async (req, res) => {
 export const analyse = async (req, res) => {
     try {
         const code = req.body.content;
-        console.log("code is ", code);
         const prompt = getAnalysePrompt(code);
         let response = await generateWithGemini(prompt);
         response = response.trim().replace(/^```json\s*|\s*```$/g, '').trim();
         const responseJson = JSON.parse(response);
-        console.log(responseJson);
         return res.status(200).json({
             success: true,
             data : responseJson,
