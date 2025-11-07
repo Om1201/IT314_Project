@@ -88,7 +88,7 @@ export default function Signup() {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-tr from-[#030717] via-[#012C3C] to-[#02354B] flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-tr from-slate-800 via-cyan-900 to-slate-600 flex items-center justify-center p-4">
             {/* <Navbar /> */}
 
             <div className="w-full max-w-md">
