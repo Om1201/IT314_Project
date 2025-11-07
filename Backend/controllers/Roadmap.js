@@ -62,7 +62,7 @@ export const generateRoadmap = async (req, res) => {
 
         console.log('Roadmap generated successfully');
         const endTime = new Date().toLocaleString();
-        console.log(`Total time: ${endTime} - ${initTime}`);
+        console.log("total time ", new Date(endTime) - new Date(initTime));
 
         return res.status(200).json({
             success: true,
