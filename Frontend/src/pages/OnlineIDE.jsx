@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Editor from '@monaco-editor/react';
+import { motion } from 'motion/react';
+import NoteModal from '../components/NoteModal.jsx';
+import GridBackground from '../components/ui/GridBackground.jsx';
 import {
     Play,
     Plus,
@@ -13,6 +16,13 @@ import {
     X,
     Moon,
     Sun,
+    Copy,
+    Eraser,
+    FilePlus,
+    Maximize2,
+    Minimize2,
+    Rows,
+    Columns,
 } from 'lucide-react';
 
 const languageOptions = [
@@ -143,6 +153,9 @@ export default function OnlineIDE() {
     const currentFile = files.find(f => f.id === currentFileId) || files[0];
 
     const [isRunning, setIsRunning] = useState(false);
+    const [showNote, setShowNote] = useState(false);
+    const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
+    const [layoutMode, setLayoutMode] = useState('side'); // 'side' | 'bottom'
 
     function updateFile(fileId, patch) {
         setFiles(prev => prev.map(f => (f.id === fileId ? { ...f, ...patch } : f)));
@@ -306,28 +319,37 @@ export default function OnlineIDE() {
     const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
 
     const isDark = theme === 'dark';
-    const bgPanel = isDark ? 'bg-gray-900' : 'bg-white';
-    const borderColor = isDark ? 'border-gray-800' : 'border-gray-300';
-    const textMuted = isDark ? 'text-gray-400' : 'text-gray-500';
-    const hoverBg = isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-100';
+    // Themed palette leaning into black/blue/green coder aesthetic
+    const bgPanel = isDark ? 'bg-black/50 backdrop-blur-sm' : 'bg-white/60 backdrop-blur-sm';
+    // Lighten only the sidebar and console panels to avoid overall heavy black feel
+    const bgSidebar = isDark ? 'bg-zinc-900/30 backdrop-blur-sm' : 'bg-black/5 backdrop-blur-sm';
+    const bgConsole = isDark ? 'bg-zinc-900/30 backdrop-blur-sm' : 'bg-black/5 backdrop-blur-sm';
+    const borderColor = isDark ? 'border-white/10' : 'border-black/10';
+    const textMuted = isDark ? 'text-zinc-400' : 'text-zinc-600';
+    const hoverBg = isDark ? 'hover:bg-white/5' : 'hover:bg-black/5';
 
     return (
-        <div
-            className={`min-h-screen ${isDark ? 'bg-gray-950 text-white' : 'bg-gray-50 text-gray-900'} 
-      p-4 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4 transition-colors duration-300`}
-        >
+        <div className={`relative min-h-screen ${isDark ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+            {/* Grid background replacement using shared UI component */}
+            <GridBackground className="absolute inset-0 -z-10 dark:bg-black bg-black" containerClassName="hidden" />
+
+            {/* Page content grid (full height) */}
+            <div className={`relative z-10 p-4 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 min-h-screen`}>
             {/* Sidebar */}
-            <aside
-                className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-3 flex flex-col gap-3 transition-all duration-300`}
+            <motion.aside
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
+                className={`${bgSidebar} ${borderColor} border rounded-xl shadow-[0_10px_40px_-20px_rgba(14,165,233,0.25)] p-3 flex flex-col gap-3 transition-all duration-300 h-[calc(100vh-2rem)] min-h-0`}
             >
                 <div className="flex items-center justify-between pb-2 border-b border-gray-700">
                     <div className="flex items-center gap-2">
-                        <Code2 size={20} className="text-blue-500" />
-                        <h2 className="font-semibold text-lg">Web IDE</h2>
+                        <Code2 size={20} className="text-sky-400" />
+                        <h2 className="font-semibold text-lg tracking-tight">Web IDE</h2>
                     </div>
                     <button
                         onClick={toggleTheme}
-                        className={`p-2 rounded-md ${hoverBg} transition`}
+                        className={`p-2 rounded-md ${hoverBg} transition glow-blue cursor-pointer`}
                     >
                         {isDark ? <Sun size={16} /> : <Moon size={16} />}
                     </button>
@@ -345,16 +367,14 @@ export default function OnlineIDE() {
                     <button
                         onClick={() => addFile('js')}
                         title="New file"
-                        className="p-2 rounded-md bg-green-600 hover:bg-green-700 active:scale-95 transition-transform"
+                        className="p-2 rounded-md bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-transform text-white glow-green cursor-pointer"
                     >
                         <Plus size={16} />
                     </button>
                 </div>
 
                 <div
-                    className={`flex items-center gap-2 ${
-                        isDark ? 'bg-gray-800' : 'bg-gray-100'
-                    } rounded-md px-2 py-1`}
+                    className={`flex items-center gap-2 ${isDark ? 'bg-white/5' : 'bg-black/5'} rounded-md px-2 py-1 border ${borderColor}`}
                 >
                     <Search size={16} className={textMuted} />
                     <input
@@ -370,14 +390,13 @@ export default function OnlineIDE() {
                         <p className={`text-sm ${textMuted} mt-3`}>No files found</p>
                     ) : (
                         filteredFiles.map(f => (
-                            <div
+                            <motion.div
                                 key={f.id}
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.25, ease: 'easeOut' }}
                                 className={`flex items-center justify-between gap-2 p-2 rounded-md cursor-pointer ${hoverBg} transition-colors ${
-                                    f.id === currentFileId
-                                        ? isDark
-                                            ? 'bg-gray-800'
-                                            : 'bg-gray-200'
-                                        : ''
+                                    f.id === currentFileId ? 'bg-sky-400/10 border border-sky-400/20' : 'border border-transparent'
                                 }`}
                             >
                                 <div onClick={() => setCurrentFileId(f.id)} className="flex-1">
@@ -396,53 +415,51 @@ export default function OnlineIDE() {
                                     <button
                                         title="Rename"
                                         onClick={() => renameFile(f.id)}
-                                        className={`p-1 rounded ${hoverBg}`}
+                                        className={`p-1 rounded ${hoverBg} cursor-pointer`}
                                     >
                                         <Edit2 size={14} />
                                     </button>
                                     <button
                                         title="Download"
                                         onClick={() => downloadFile(f)}
-                                        className={`p-1 rounded ${hoverBg}`}
+                                        className={`p-1 rounded ${hoverBg} cursor-pointer`}
                                     >
                                         <Download size={14} />
                                     </button>
                                     <button
                                         title="Delete"
                                         onClick={() => removeFile(f.id)}
-                                        className="p-1 rounded hover:bg-red-700"
+                                        className="p-1 rounded hover:bg-red-700 cursor-pointer"
                                     >
                                         <Trash2 size={14} />
                                     </button>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))
                     )}
                 </div>
-            </aside>
+            </motion.aside>
 
             {/* Main Part */}
-            <main className="flex flex-col gap-3 overflow-hidden">
+            <motion.main className="flex flex-col gap-3 overflow-hidden h-[calc(100vh-2rem)] min-h-0" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }}>
                 {/* Tabs  */}
-                <div
-                    className={`flex items-center justify-between gap-3 flex-shrink-0 border-b ${borderColor} pb-1`}
-                >
+                <div className={`flex items-center justify-between gap-3 shrink-0 border-b ${borderColor} pb-1`}>
                     <div
                         ref={tabContainerRef}
-                        className="flex items-center gap-1 overflow-x-auto scrollbar-hide scroll-smooth flex-1"
+                        className="flex items-center gap-1 overflow-x-auto hide-scrollbar scroll-smooth flex-1"
                     >
                         {files.map(f => (
                             <div
                                 key={f.id}
-                                className={`flex items-center gap-2 px-3 py-2 text-sm font-medium border-b-2 transition-all duration-150 ${
+                                className={`group flex items-center gap-2 px-3 py-2 text-sm font-medium border-b-2 transition-all duration-150 ${
                                     f.id === currentFileId
-                                        ? 'border-blue-400 bg-blue-500/10'
-                                        : 'border-transparent hover:bg-gray-200/20'
-                                } rounded-t-md cursor-pointer flex-shrink-0`}
+                                        ? 'border-sky-400 bg-sky-400/10'
+                                        : 'border-transparent hover:bg-white/5'
+                                } rounded-t-md cursor-pointer shrink-0`}
                             >
                                 <button
                                     onClick={() => setCurrentFileId(f.id)}
-                                    className="flex items-center gap-2"
+                                    className="flex items-center gap-2 cursor-pointer"
                                 >
                                     <span>{f.name}</span>
                                     {!f.saved && <span className="text-xs text-yellow-500">•</span>}
@@ -451,7 +468,7 @@ export default function OnlineIDE() {
                                     <button
                                         onClick={() => removeFile(f.id)}
                                         title="Close file"
-                                        className="hover:text-red-400 text-gray-400"
+                                        className="hover:text-red-400 text-zinc-400 cursor-pointer"
                                     >
                                         <X size={14} />
                                     </button>
@@ -460,11 +477,11 @@ export default function OnlineIDE() {
                         ))}
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 shrink-0">
                         <select
                             value={currentFile?.language || 'javascript'}
                             onChange={e => changeLanguageForFile(currentFile.id, e.target.value)}
-                            className={`${bgPanel} ${borderColor} border font-medium px-3 py-2 rounded-lg text-sm`}
+                            className={`${bgPanel} ${borderColor} border font-medium px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/40`}
                         >
                             {languageOptions.map(l => (
                                 <option key={l.value} value={l.value}>
@@ -475,7 +492,7 @@ export default function OnlineIDE() {
 
                         <button
                             onClick={saveCurrentFile}
-                            className={`${bgPanel} ${borderColor} border flex items-center gap-2 px-3 py-2 rounded-lg hover:scale-95 active:scale-90 transition`}
+                            className={`${bgPanel} ${borderColor} border flex items-center gap-2 px-3 py-2 rounded-lg hover:scale-95 active:scale-90 transition glow-blue cursor-pointer`}
                         >
                             <Save size={14} /> Save
                         </button>
@@ -484,33 +501,82 @@ export default function OnlineIDE() {
                           onClick={runCode}
                           title="Run code"
                           disabled={isRunning}
-                          className={`${bgPanel} ${borderColor} border flex items-center gap-2 px-3 py-2 rounded-lg
-                            ${isRunning ? "opacity-70 cursor-wait" : "hover:scale-95 transition"}`}
+                                                    className={`relative overflow-hidden border ${borderColor} flex items-center gap-2 px-4 py-2 rounded-lg text-white
+                            ${isRunning ? 'opacity-80 cursor-wait running-pulse' : 'hover:scale-95 transition transform glow-green'}
+                                                        bg-linear-to-r from-emerald-600 to-sky-600`}
                         >
                           <Play size={16} />
                           {isRunning ? "Running..." : "Run"}
+                          <span className="pointer-events-none absolute inset-0 opacity-0 hover:opacity-20 transition-opacity bg-[radial-gradient(600px_200px_at_var(--x,50%)_0%,white,transparent_40%)]" />
                         </button>
 
                         <button
                             onClick={() => downloadFile(currentFile)}
                             title="Download file"
-                            className={`${bgPanel} ${borderColor} border flex items-center justify-center px-3 h-[40px] rounded-lg hover:scale-95 transition`}
+                            className={`${bgPanel} ${borderColor} border flex items-center justify-center px-3 h-10 rounded-lg hover:scale-95 transition glow-blue cursor-pointer`}
                         >
                             <Download size={14} />
+                        </button>
+
+                        <button
+                            onClick={() => setLayoutMode(prev => (prev === 'side' ? 'bottom' : 'side'))}
+                            title={layoutMode === 'side' ? 'Move console to bottom' : 'Place console to the right'}
+                            className={`${bgPanel} ${borderColor} border flex items-center justify-center px-3 h-10 rounded-lg hover:scale-95 transition cursor-pointer`}
+                        >
+                            {layoutMode === 'side' ? <Columns size={14} /> : <Rows size={14} />}
                         </button>
                     </div>
                 </div>
 
                 {/* Editor and Console */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 overflow-hidden">
+                <div className={`grid ${layoutMode === 'side' ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'} gap-4 flex-1 overflow-hidden min-h-0`}>
                     {/* Editor Section */}
-                    <div
-                        className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-4 flex flex-col overflow-hidden transition-all duration-300`}
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35, delay: 0.05 }}
+                        className={`${bgPanel} ${borderColor} border rounded-xl shadow-[0_12px_50px_-22px_rgba(34,197,94,0.25)] p-4 flex flex-col overflow-hidden transition-all duration-300 min-h-0 ${layoutMode === 'bottom' ? 'h-[60vh]' : ''}`}
                     >
                         <div className="flex items-center justify-between pb-2 border-b border-gray-700">
                             <h2 className="text-lg font-semibold">Editor</h2>
-                            <div className={`text-sm ${textMuted}`}>
-                                {currentFile?.name} ({currentFile?.language})
+                            <div className="flex items-center gap-2">
+                                {/* File meta */}
+                                <div className={`hidden sm:block text-sm ${textMuted}`}>
+                                    {currentFile?.name} ({currentFile?.language})
+                                </div>
+                                {/* Editor actions: Copy/Clear code */}
+                                <button
+                                    title="Copy code"
+                                    aria-label="Copy code"
+                                    className={`p-2 rounded-md ${hoverBg} border ${borderColor} cursor-pointer`}
+                                    onClick={() => navigator.clipboard.writeText(currentFile.code || '')}
+                                >
+                                    <Copy size={16} />
+                                </button>
+                                <button
+                                    title="Clear code"
+                                    aria-label="Clear code"
+                                    className={`p-2 rounded-md ${hoverBg} border ${borderColor} cursor-pointer`}
+                                    onClick={() => updateFile(currentFile.id, { code: '', saved: false })}
+                                >
+                                    <Eraser size={16} />
+                                </button>
+                                <button
+                                    title="Add note"
+                                    aria-label="Add note"
+                                    className={`p-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer glow-green`}
+                                    onClick={() => setShowNote(true)}
+                                >
+                                    <FilePlus size={16} />
+                                </button>
+                                {/* Fullscreen toggle */}
+                                <button
+                                    title={isEditorFullscreen ? 'Exit full screen' : 'Full screen editor'}
+                                    onClick={() => setIsEditorFullscreen(v => !v)}
+                                    className={`p-2 rounded-md ${hoverBg} border ${borderColor} cursor-pointer`}
+                                >
+                                    {isEditorFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                                </button>
                             </div>
                         </div>
 
@@ -530,36 +596,21 @@ export default function OnlineIDE() {
                                 onMount={editor => (editorRef.current = editor)}
                             />
                         </div>
-                    </div>
+                    </motion.div>
                     {/* Console Section */}
-                    <div
-                        className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-4 flex flex-col overflow-hidden transition-all duration-300`}
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35, delay: 0.1 }}
+                        className={`${bgConsole} ${borderColor} border rounded-xl shadow-[0_12px_50px_-22px_rgba(14,165,233,0.25)] p-4 flex flex-col ${layoutMode === 'bottom' ? 'overflow-y-auto' : 'overflow-hidden'} transition-all duration-300 min-h-0 ${layoutMode === 'bottom' ? 'h-[40vh]' : ''}`}
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between mb-3">
                             <h2 className="text-lg font-semibold">Console</h2>
-                            <div className="flex gap-3 text-sm text-blue-400">
-                                <button
-                                    className="hover:underline"
-                                    onClick={() =>
-                                        navigator.clipboard.writeText(currentFile.input || '')
-                                    }
-                                >
-                                    Copy
-                                </button>
-                                <button
-                                    className="hover:underline"
-                                    onClick={() =>
-                                        updateFile(currentFile.id, { input: '', output: '' })
-                                    }
-                                >
-                                    Clear
-                                </button>
-                            </div>
                         </div>
 
                         {/* Input & Output Container */}
-                        <div className="flex flex-col gap-4 flex-1 min-h-[400px]">
+                        <div className="flex flex-col gap-4 flex-1 min-h-0">
                             {/* Input Box */}
                             <div className="flex flex-col h-[40%]">
                                 <h3 className="text-sm font-semibold mb-1">Input</h3>
@@ -570,8 +621,8 @@ export default function OnlineIDE() {
                                     className={`flex-1 w-full p-2 rounded-md font-mono text-sm outline-none resize-none
                       ${
                           isDark
-                              ? 'bg-black text-gray-300 border border-gray-700 placeholder-gray-600'
-                              : 'bg-gray-50 text-gray-800 border border-gray-300 placeholder-gray-400'
+                              ? 'bg-black/70 text-zinc-300 border border-white/10 placeholder-zinc-600'
+                              : 'bg-white/70 text-zinc-800 border border-black/10 placeholder-zinc-400'
                       }`}
                                 />
                             </div>
@@ -583,17 +634,93 @@ export default function OnlineIDE() {
                                     className={`flex-1 w-full p-2 rounded-md font-mono text-sm overflow-auto
                       ${
                           isDark
-                              ? 'bg-black text-green-400 border border-gray-700'
-                              : 'bg-gray-50 text-green-700 border border-gray-300'
+                              ? 'bg-black/80 text-emerald-400 border border-white/10'
+                              : 'bg-white/80 text-emerald-700 border border-black/10'
                       }`}
                                 >
                                     {currentFile.output ? currentFile.output : '(no output yet)'}
                                 </div>
                             </div>
                         </div>
+                    </motion.div>
+                </div>
+                {/* Subtle status bar */}
+                <div className={`mt-2 text-xs ${textMuted} flex items-center gap-4`}>
+                    <span className="inline-flex items-center gap-1"><Code2 size={12} className="text-sky-400" /> {currentFile?.language}</span>
+                    <span>UTF-8</span>
+                    <span>Ln -, Col -</span>
+                </div>
+            </motion.main>
+            </div>
+            {isEditorFullscreen && (
+                <div className="fixed inset-0 z-50 bg-black/90 p-4">
+                    <div className={`${bgPanel} ${borderColor} border rounded-xl h-full flex flex-col overflow-hidden`}>
+                        <div className="flex items-center justify-between pb-2 border-b border-gray-700 p-2">
+                            <h2 className="text-lg font-semibold">Editor</h2>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    title="Copy code"
+                                    aria-label="Copy code"
+                                    className={`p-2 rounded-md ${hoverBg} border ${borderColor} cursor-pointer`}
+                                    onClick={() => navigator.clipboard.writeText(currentFile.code || '')}
+                                >
+                                    <Copy size={16} />
+                                </button>
+                                <button
+                                    title="Clear code"
+                                    aria-label="Clear code"
+                                    className={`p-2 rounded-md ${hoverBg} border ${borderColor} cursor-pointer`}
+                                    onClick={() => updateFile(currentFile.id, { code: '', saved: false })}
+                                >
+                                    <Eraser size={16} />
+                                </button>
+                                <button
+                                    title="Add note"
+                                    aria-label="Add note"
+                                    className={`p-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer glow-green`}
+                                    onClick={() => setShowNote(true)}
+                                >
+                                    <FilePlus size={16} />
+                                </button>
+                                <button
+                                    title="Exit full screen"
+                                    onClick={() => setIsEditorFullscreen(false)}
+                                    className={`p-2 rounded-md ${hoverBg} border ${borderColor} cursor-pointer`}
+                                >
+                                    <Minimize2 size={16} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex-1 mt-2">
+                            <Editor
+                                height="100%"
+                                theme={isDark ? 'vs-dark' : 'light'}
+                                language={currentFile?.language || 'javascript'}
+                                value={currentFile?.code}
+                                onChange={handleEditorChange}
+                                options={{
+                                    fontSize: 14,
+                                    minimap: { enabled: false },
+                                    automaticLayout: true,
+                                    wordWrap: 'on',
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
-            </main>
+            )}
+            {showNote && (
+                <NoteModal
+                    title="IDE Note"
+                    initialContent={''}
+                    onClose={() => setShowNote(false)}
+                    onSave={async ({ title, content }) => {
+                        // TODO: wire this to your notes backend if desired.
+                        // For now, just copy the note content to the clipboard as a convenience.
+                        try { await navigator.clipboard.writeText(`# ${title}\n\n${content}`); } catch {}
+                    }}
+                />
+            )}
         </div>
     );
 }

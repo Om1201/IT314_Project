@@ -28,3 +28,44 @@
   animation: meteor 5s linear infinite;
   pointer-events: none;
 }
+
+/* Online IDE themed background and glow helpers */
+.ide-animated-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1200px 800px at 85% -10%, rgba(14, 165, 233, 0.16), transparent 40%),
+    radial-gradient(1000px 700px at 10% 110%, rgba(34, 197, 94, 0.14), transparent 35%),
+    linear-gradient(180deg, #0a0f1f 0%, #070b16 100%);
+  filter: saturate(1.05);
+}
+
+.ide-grid-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  /* Soften vignette to avoid a visually "compressed" feel */
+  mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.35), transparent 85%);
+  pointer-events: none;
+}
+
+@keyframes floatGlow {
+  0%, 100% { transform: translateY(0px); opacity: 0.5; }
+  50% { transform: translateY(-6px); opacity: 0.9; }
+}
+
+.glow-green { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.0); }
+.glow-blue { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.0); }
+.glow-green:hover { box-shadow: 0 8px 24px -6px rgba(34, 197, 94, 0.45); }
+.glow-blue:hover { box-shadow: 0 8px 24px -6px rgba(14, 165, 233, 0.45); }
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.35); }
+  50% { box-shadow: 0 0 24px 4px rgba(34, 197, 94, 0.5); }
+}
+
+.running-pulse { animation: pulseGlow 1.6s ease-in-out infinite; }
+
