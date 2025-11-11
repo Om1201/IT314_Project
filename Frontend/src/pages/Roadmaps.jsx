@@ -18,7 +18,7 @@ export default function Roadmaps() {
 
     return (
         // <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-black text-white overflow-hidden">
-        <div className="min-h-screen bg-gradient-to-br from-slate-800 via-cyan-900 to-slate-800 text-white overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-tr from-slate-800 via-cyan-900 to-slate-600 text-white overflow-hidden">
             <Navbar />
 
             {/* Main Content */}

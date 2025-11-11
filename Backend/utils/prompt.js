@@ -215,5 +215,6 @@ export const getResponsePrompt = (userMessage, context) => {
   return `You are an AI chat assistant.
   Given this user message: "${userMessage}".
   And this some last past conversation between you and user as context: "${context}". 
-  Generate a helpful and natural response to the user's message considering the provided context.`;
+  Generate a helpful and natural response to the user's message considering the provided context.
+  don't reply like this: "Given our previous back-and-forth or as the last thing we discussed was the or anything like as our conversation was...", you know the context is there, just use it to generate a better response. `;
 }

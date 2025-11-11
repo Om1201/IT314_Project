@@ -17,17 +17,106 @@ import {
 
 const languageOptions = [
     { label: 'JavaScript', value: 'javascript' },
+    { label: 'TypeScript', value: 'typescript' },
     { label: 'Python', value: 'python' },
     { label: 'Java', value: 'java' },
+    { label: 'C', value: 'c' },
     { label: 'C++', value: 'cpp' },
+    { label: 'C#', value: 'csharp' },
+    { label: 'Go', value: 'go' },
+    { label: 'Rust', value: 'rust' },
+    { label: 'Ruby', value: 'ruby' },
+    { label: 'PHP', value: 'php' },
+    { label: 'Swift', value: 'swift' },
+    { label: 'Kotlin', value: 'kotlin' },
+    { label: 'R', value: 'r' },
+    { label: 'Scala', value: 'scala' },
+    { label: 'Perl', value: 'perl' },
+    { label: 'Haskell', value: 'haskell' },
+    { label: 'Lua', value: 'lua' },
+    { label: 'Dart', value: 'dart' },
+    { label: 'Bash', value: 'bash' },
 ];
 
 const defaultCodeSnippets = {
-    javascript: "// Write your code here\nconsole.log('Hello World');",
-    python: "# Write your code here\nprint('Hello World')",
-    java: 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello World");\n    }\n}',
-    cpp: '#include <iostream>\n\nint main() {\n    std::cout << "Hello World";\n    return 0;\n}',
+    javascript: `// Write your code here
+console.log("Hello World");`,
+
+    typescript: `// Write your code here
+const msg: string = "Hello World";
+console.log(msg);`,
+
+    python: `# Write your code here
+print("Hello World")`,
+
+    java: `public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello World");
+    }
+}`,
+
+    c: `#include <stdio.h>
+int main() {
+    printf("Hello World");
+    return 0;
+}`,
+
+    cpp: `#include <iostream>
+using namespace std;
+int main() {
+    cout << "Hello World";
+    return 0;
+}`,
+
+    csharp: `using System;
+class Program {
+    static void Main() {
+        Console.WriteLine("Hello World");
+    }
+}`,
+
+    go: `package main
+import "fmt"
+func main() {
+    fmt.Println("Hello World")
+}`,
+
+    rust: `fn main() {
+    println!("Hello World");
+}`,
+
+    ruby: `puts "Hello World"`,
+
+    php: `<?php
+echo "Hello World";
+?>`,
+
+    swift: `import Foundation
+print("Hello World")`,
+
+    kotlin: `fun main() {
+    println("Hello World")
+}`,
+
+    r: `print("Hello World")`,
+
+    scala: `object Main extends App {
+  println("Hello World")
+}`,
+
+    perl: `print "Hello World\\n";`,
+
+    haskell: `main = putStrLn "Hello World"`,
+
+    lua: `print("Hello World")`,
+
+    dart: `void main() {
+  print("Hello World");
+}`,
+
+    bash: `echo "Hello World"`,
 };
+
 
 export default function OnlineIDE() {
     const makeId = (prefix = 'f') =>
