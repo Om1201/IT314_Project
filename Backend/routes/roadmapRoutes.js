@@ -12,6 +12,7 @@ import {
     fetchProgress,
     fetchSubtopicExplanation,
     searchRoadmaps,
+    togglePinRoadmap,  // Add this import
 } from '../controllers/Roadmap.js';
 import userAuth from '../middlewares/userAuth.js';
 import { validate } from '../middlewares/validate.js';
@@ -33,5 +34,6 @@ router.post('/fetch-progress', userAuth, fetchProgress);
 router.post('/generate-subtopic-summary', userAuth, generateSubtopicSummary);
 router.post('/fetch-subtopic-summary', userAuth, fetchSubtopicExplanation);
 router.get('/search', userAuth, searchRoadmaps);
+router.post('/toggle-pin', userAuth, togglePinRoadmap);
 
 export default router;

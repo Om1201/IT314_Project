@@ -18,8 +18,8 @@ import { useSelector } from 'react-redux';
 import Roadmaps from './pages/Roadmaps';
 import { fetchUserRoadmaps } from './features/roadmapSlicer';
 import OnlineIDE from './pages/OnlineIDE';
-import Search from './pages/search';
-import ChatPage from './pages/ChatPage';
+import Search from './pages/Search.jsx';
+import ChatPage from './pages/ChatPage.jsx';
 
 
 

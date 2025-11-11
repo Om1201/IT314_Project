@@ -34,8 +34,9 @@ export const fetchUserRoadmaps = createAsyncThunk(
                     withCredentials: true,
                 }
             );
-            console.log('Fetched user roadmaps:', response.data);
-            return response.data;
+            let roadMaps = response.data;
+            console.log('Fetched roadmaps:', roadMaps);
+            return roadMaps;
         } catch (error) {
             console.error('Error in fetchUserRoadmaps:', error);
             return rejectWithValue(error.response?.data || { message: 'Unknown error' });
@@ -191,6 +192,26 @@ export const fetchSubtopicExplanation = createAsyncThunk(
     }
 );
 
+export const togglePinRoadmap = createAsyncThunk(
+    'roadmap/togglePinRoadmap',
+    async (roadmapId, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/toggle-pin`,
+                { roadmapId },
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                    withCredentials: true,
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error in togglePinRoadmap:', error);
+            return rejectWithValue(error.response?.data || { message: 'Unknown error' });
+        }
+    }
+);
+
 const initialState = {
     currRoadmap: {},
     generation_loading: false,
@@ -249,7 +270,8 @@ export const roadmapSlice = createSlice({
             .addCase(fetchUserRoadmaps.fulfilled, (state, action) => {
                 state.fetch_loading = false;
                 state.fetch_error = false;
-                state.userRoadmaps = action.payload.data;
+                // Backend already sorts, so just store the data
+                state.userRoadmaps = action.payload.data || [];
             })
             .addCase(fetchUserRoadmaps.rejected, (state, action) => {
                 state.fetch_loading = false;
@@ -289,6 +311,20 @@ export const roadmapSlice = createSlice({
                 state.explanation_loading = state.explanation_loading.filter(
                     id => id !== `${args.moduleId}:${args.subtopicId}`
                 );
+            })
+            .addCase(togglePinRoadmap.fulfilled, (state, action) => {
+                const updatedRoadmap = action.payload.data;
+                const index = state.userRoadmaps.findIndex(r => r._id === updatedRoadmap._id);
+                if (index !== -1) {
+                    state.userRoadmaps[index] = updatedRoadmap;
+                    // Re-sort locally after pin toggle
+                    state.userRoadmaps.sort((a, b) => {
+                        if (b.isPinned !== a.isPinned) {
+                            return b.isPinned - a.isPinned;
+                        }
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    });
+                }
             });
     },
 });
