@@ -37,13 +37,13 @@ function DeleteConfirmationModal({ isOpen, onConfirm, onCancel, title }) {
                             <div className="flex gap-3 justify-end">
                                 <button
                                     onClick={onCancel}
-                                    className="px-4 py-2 rounded-lg font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                                    className="px-4 cursor-pointer py-2 rounded-lg font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={onConfirm}
-                                    className="px-4 py-2 rounded-lg font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
+                                    className="px-4 cursor-pointer py-2 rounded-lg font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
                                 >
                                     Delete
                                 </button>
@@ -187,7 +187,7 @@ export function ExpandableCardDemo() {
                                 <img
                                     width={200}
                                     height={200}
-                                    src="/images/code.png"
+                                    src={`/images/code/code${Math.floor(Math.random() * 5) + 1}.png`}
                                     alt={active.title}
                                     className="w-full h-80 lg:h-80 sm:rounded-tr-lg sm:rounded-tl-lg object-cover object-center"
                                 />
@@ -340,7 +340,7 @@ export function ExpandableCardDemo() {
                                     <img
                                         width={300}
                                         height={200}
-                                        src="/images/code.png"
+                                        src={`/images/code/code${Math.floor(Math.random() * 5) + 1}.png`}
                                         alt={card.title}
                                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                                     />
@@ -353,12 +353,12 @@ export function ExpandableCardDemo() {
                                     >
                                         {card.title}
                                     </motion.h3>
-                                    <motion.p
+                                    <p
                                         layoutId={`description-${card.description}-${id}`}
                                         className="text-sm text-neutral-600 dark:text-neutral-400 pb-5 pt-1 line-clamp-1"
                                     >
                                         {card.description}
-                                    </motion.p>
+                                    </p>
 
                                     <Link
                                         className="mt-auto cursor-pointer text-center px-4 py-3 text-sm rounded-full font-bold bg-slate-700 text-white transition-all duration-200 shadow-sm hover:shadow-md w-full"

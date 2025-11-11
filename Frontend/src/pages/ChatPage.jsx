@@ -7,7 +7,6 @@ export default function ChatPage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // If required params are missing, redirect
         if (!roadmapId || !chapterId) {
             navigate('/roadmaps');
         }
@@ -18,7 +17,6 @@ export default function ChatPage() {
     }
 
     const handleClose = () => {
-        // Navigate back to the roadmap page
         navigate(`/roadmap/${roadmapId}`);
     };
 

@@ -29,11 +29,11 @@ export const createChat = async (req, res) => {
             roadmapId,
             moduleId,
             title: json_rsp.title,
-            messages: [{ role: "user", content: userMessage }]
+            messages: [{ role: "user", content: userMessage, time: Date.now() }],
         });
-        newChat.messages.push({ role: "ai", content:json_rsp.response, chatId: newChat._id });
+        newChat.messages.push({ role: "ai", content:json_rsp.response, time: Date.now() });
         await newChat.save();
-        res.status(201).json({ message: "Chat created successfully", data: json_rsp});
+        res.status(201).json({ message: "Chat created successfully", data: json_rsp, chatId: newChat._id });
         
     } catch (error) {
         res.status(500).json({ message: "Error creating chat", error });
@@ -52,8 +52,8 @@ export const getResponse = async (req, res) => {
 
         const response = await generateWithGemini(getResponsePrompt(userMessage, context));
 
-        chat.messages.push({ role: "user", content: userMessage });
-        chat.messages.push({ role: "ai", content: response });
+        chat.messages.push({ role: "user", content: userMessage, time: Date.now() });
+        chat.messages.push({ role: "ai", content: response, time: Date.now() });
         await chat.save();
 
         res.status(200).json({ message: "AI response generated", data: response });

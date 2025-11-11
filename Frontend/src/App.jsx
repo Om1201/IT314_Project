@@ -103,7 +103,7 @@ function App() {
                             </ProtectedRoute>
                         }
                     />
-                    <Route path="/ide" element={<OnlineIDE />} />
+                    <Route path="/ide/:id" element={<OnlineIDE />} />
                 </Routes>
             </Router>
         </>

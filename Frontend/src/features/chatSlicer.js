@@ -145,8 +145,8 @@ export const chatSlice = createSlice({
                     .find(c => c.chatId === chatId || c.id === chatId);
                 
                 if (chat) {
-                    chat.messages.push({ role: 'user', content: action.meta.arg.userMessage });
-                    chat.messages.push({ role: 'ai', content: '' });
+                    chat.messages.push({ role: 'user', content: action.meta.arg.userMessage, time: Date.now() });
+                    chat.messages.push({ role: 'ai', content: '', time: Date.now() });
                 }
             })
             .addCase(getChatResponse.fulfilled, (state, action) => {
