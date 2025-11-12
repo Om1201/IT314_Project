@@ -4,6 +4,14 @@ import {getAnalysePrompt} from '../utils/prompt.js';
 
 
 const PISTON_API_URL = 'https://emkc.org/api/v2/piston/execute';
+export const LANGUAGE_VERSIONS = {
+  java: "15.0.2",
+  "c++": "10.2.0",
+  python: "3.10.0",
+  javascript: "18.15.0",
+};
+// you can find other supported versions at https://emkc.org/api/v2/piston/runtimes
+
 
 export const executeCode = async (req, res) => {
     try {
@@ -16,7 +24,7 @@ export const executeCode = async (req, res) => {
         // Prepare the request payload for Piston API
         const payload = {
             language,
-            version,
+            version : LANGUAGE_VERSIONS[language] || version,
             files: filesArray,
             args: Array.isArray(args) ? args : [],
             stdin: stdin || '',

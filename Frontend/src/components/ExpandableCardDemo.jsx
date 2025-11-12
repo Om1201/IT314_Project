@@ -4,7 +4,8 @@ import { useOutsideClick } from '../hooks/use-outside-click';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { deleteUserRoadmap, setUserRoadmaps } from '../features/roadmapSlicer';
+import { deleteUserRoadmap, setUserRoadmaps, togglePinRoadmap } from '../features/roadmapSlicer';
+import { Pin, PinOff } from 'lucide-react';
 
 function DeleteConfirmationModal({ isOpen, onConfirm, onCancel, title }) {
     return (
@@ -68,6 +69,7 @@ export function ExpandableCardDemo() {
         description: roadmap.roadmapData?.difficulty,
         title: roadmap.roadmapData?.title,
         ctaLink: '/roadmap/' + roadmap?._id,
+        isPinned: roadmap.isPinned || false,  
         content: () => {
             return <p>{roadmap.roadmapData?.description}</p>;
         },
@@ -96,6 +98,21 @@ export function ExpandableCardDemo() {
         e.stopPropagation();
         setDeleteConfirm({ isOpen: true, id: cardId, title: cardTitle });
         setActive(null);
+    };
+
+    const handlePinClick = async (e, cardId) => {
+        e.stopPropagation();
+        try {
+            const response = await dispatch(togglePinRoadmap(cardId));
+            if (response.payload?.success) {
+                toast.success('Roadmap pinned successfully');
+            } else {
+                toast.error('Failed to pin roadmap');
+            }
+        } catch (err) {
+            console.error('Error toggling pin:', err);
+            toast.error('Failed to update pin status');
+        }
     };
 
     const handleConfirmDelete = async () => {
@@ -195,6 +212,21 @@ export function ExpandableCardDemo() {
 
                                     <div className="flex gap-2 flex-shrink-0">
                                         <button
+                                            onClick={e => handlePinClick(e, active._id)}
+                                            className={`px-3 cursor-pointer py-3 text-sm rounded-full font-bold transition-colors flex items-center justify-center ${
+                                                active.isPinned
+                                                    ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                                                    : 'bg-slate-500 hover:bg-slate-600 text-white'
+                                            }`}
+                                            title={active.isPinned ? 'Unpin roadmap' : 'Pin roadmap'}
+                                        >
+                                            {active.isPinned ? (
+                                                <Pin className="h-4 w-4" fill="currentColor" />
+                                            ) : (
+                                                <PinOff className="h-4 w-4" />
+                                            )}
+                                        </button>
+                                        <button
                                             onClick={e =>
                                                 handleDeleteClick(e, active._id, active.title)
                                             }
@@ -260,6 +292,24 @@ export function ExpandableCardDemo() {
                                 onClick={() => setActive(card)}
                                 className="group flex flex-col h-full bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border border-neutral-200 dark:border-neutral-800 relative"
                             >
+                                {/* Pin button */}
+                                <motion.button
+                                    onClick={e => handlePinClick(e, card._id)}
+                                    className={`absolute top-2 left-2 z-20 p-2 rounded-full transition-opacity shadow-md ${
+                                        card.isPinned
+                                            ? 'bg-yellow-500 hover:bg-yellow-600 text-white opacity-100'
+                                            : 'bg-slate-500 hover:bg-slate-600 text-white opacity-0 group-hover:opacity-100'
+                                    }`}
+                                    title={card.isPinned ? 'Unpin roadmap' : 'Pin roadmap'}
+                                >
+                                    {card.isPinned ? (
+                                        <Pin className="h-4 w-4" fill="currentColor" />
+                                    ) : (
+                                        <PinOff className="h-4 w-4" />
+                                    )}
+                                </motion.button>
+                                
+                                {/* Delete button */}
                                 <motion.button
                                     onClick={e => handleDeleteClick(e, card._id, card.title)}
                                     className="absolute top-2 right-2 z-20 p-2 rounded-full bg-red-500 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
@@ -282,6 +332,7 @@ export function ExpandableCardDemo() {
                                         <line x1="14" y1="11" x2="14" y2="17" />
                                     </svg>
                                 </motion.button>
+                                
                                 <motion.div
                                     layoutId={`image-${card.title}-${id}`}
                                     className="overflow-hidden h-48 md:h-40 bg-neutral-100 dark:bg-neutral-800"

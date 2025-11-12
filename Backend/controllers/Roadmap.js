@@ -62,7 +62,7 @@ export const generateRoadmap = async (req, res) => {
 
         console.log('Roadmap generated successfully');
         const endTime = new Date().toLocaleString();
-        console.log(`Total time: ${endTime} - ${initTime}`);
+        console.log("total time ", new Date(endTime) - new Date(initTime));
 
         return res.status(200).json({
             success: true,
@@ -103,7 +103,8 @@ export const generateQuiz = async (req, res) => {
 export const getUserRoadmaps = async (req, res) => {
     try {
         const { email } = req;
-        const roadmaps = await RoadmapModel.find({ email }).sort({ createdAt: -1 });
+        const roadmaps = await RoadmapModel.find({ email })
+            .sort({ isPinned: -1, createdAt: -1 });  // Sort by pinned first, then by creation date
 
         return res
             .status(200)
@@ -414,6 +415,30 @@ export const searchRoadmaps = async (req, res) => {
         });
     } catch (error) {
         console.error('Error in searchRoadmaps:', error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const togglePinRoadmap = async (req, res) => {
+    try {
+        const { roadmapId } = req.body;
+        const { email } = req;
+
+        const roadmap = await RoadmapModel.findOne({ _id: roadmapId, email });
+
+        if (!roadmap) {
+            return res.status(404).json({ success: false, message: 'Roadmap not found' });
+        }
+
+        roadmap.isPinned = !roadmap.isPinned;
+        await roadmap.save();
+
+        return res.status(200).json({ 
+            success: true, 
+            data: roadmap, 
+            message: `Roadmap ${roadmap.isPinned ? 'pinned' : 'unpinned'} successfully` 
+        });
+    } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
 };

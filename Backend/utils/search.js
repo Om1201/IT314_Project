@@ -124,6 +124,7 @@ export const getArticles = async (roadmapText) => {
 
   for (const chapter of roadmapText.chapters) {
     for (const subtopic of chapter.subtopics) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
       promises.push(
         getArticleLinks(mainTopic, subtopic).then(articleLinks => ({
           chapterId: chapter.id,
@@ -144,6 +145,7 @@ export const getVideos = async (roadmapText) => {
 
   for (const chapter of roadmapText.chapters) {
     for (const subtopic of chapter.subtopics) {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Adding delay to avoid rate limiting
       promises.push(
         getVideoLinks(mainTopic, subtopic).then(videoLinks => ({
           chapterId: chapter.id,
