@@ -10,7 +10,7 @@ import {
     verifyResetToken,
 } from '../controllers/Auth.js';
 import userAuth from '../middlewares/userAuth.js';
-import { login as googleLogin } from '../controllers/oAuthController.js';
+import { login as googleLogin, githubLogin, githubVerifyToken } from '../controllers/oAuthController.js';
 import { verifyToken as googleVerifyToken } from '../controllers/oAuthController.js';
 import { validate } from '../middlewares/validate.js';
 import {
@@ -35,5 +35,9 @@ authRouter.post('/reset-password', validate(resetPassSchema), resetPassword);
 
 authRouter.get('/oauth/google/login', googleLogin);
 authRouter.post('/oauth/google/callback', googleVerifyToken);
+
+//github auth
+authRouter.get('/oauth/github/login', githubLogin);
+authRouter.post('/oauth/github/callback', githubVerifyToken);
 
 export default authRouter;
