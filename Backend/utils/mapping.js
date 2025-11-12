@@ -1,0 +1,22 @@
+export const langMap = {
+      js: "javascript",
+      ts: "typescript",
+      py: "python",
+      java: "java",
+      c: "c",
+      cpp: "cpp",
+      cs: "csharp",
+      go: "go",
+      rs: "rust",
+      rb: "ruby",
+      php: "php",
+      swift: "swift",
+      kt: "kotlin",
+      r: "r",
+      scala: "scala",
+      pl: "perl",
+      hs: "haskell",
+      lua: "lua",
+      dart: "dart",
+      sh: "bash"
+    };

@@ -57,6 +57,7 @@ export const generateRoadmap = async (req, res) => {
         const newRoadmap = new RoadmapModel({
             email: user.email,
             roadmapData: roadmapData,
+            roadmapPhoto: Math.floor(Math.random() * 5) + 1,
         });
         await newRoadmap.save();
 

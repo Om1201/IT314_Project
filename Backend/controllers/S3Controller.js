@@ -4,18 +4,21 @@ import {
     PutObjectCommand,
     CopyObjectCommand,
     ListObjectsV2Command,
-    DeleteObjectCommand 
+    DeleteObjectCommand, 
+    DeleteObjectsCommand,
+    HeadObjectCommand
 } from "@aws-sdk/client-s3";
+import {langMap} from "../utils/mapping.js"
 
 const s3 = new S3Client({
-  region: process.env.AWS_REGION,
+  region: "auto",
+  endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
   },
 });
-
-const BUCKET = process.env.AWS_S3_BUCKET;
+const BUCKET = process.env.R2_BUCKET_NAME;
 
 const streamToString = (stream) =>
   new Promise((resolve, reject) => {
@@ -41,24 +44,25 @@ const getLanguageFromExtension = (filename) => {
 export const loadProjectFiles = async (req, res) => {
   try {
     const { key } = req.body; 
+    console.log("Loading project files for key:", key);
     if (!key) {
-      return res.status(400).json({ error: "key (project prefix) is required" });
+      return res.status(400).json({ success: false, message: "key (project prefix) is required" });
     }
 
     const listResp = await s3.send(new ListObjectsV2Command({ Bucket: BUCKET, Prefix: key }));
 
     if (!listResp.Contents || listResp.Contents.length === 0) {
       
-      const defaultFile = {
-        id: `main_${Date.now()}`,
-        name: 'main.js',
-        language: 'javascript',
-        code: "// Write your code here\nconsole.log('Hello World');",
-        input: '',
-        output: '',
-        saved: true,
-      };
-      return res.json({ files: [defaultFile] });
+      // const defaultFile = {
+      //   id: `main_${Date.now()}`,
+      //   name: 'main.js',
+      //   language: 'javascript',
+      //   code: "// Write your code here\nconsole.log('Hello World');",
+      //   input: '',
+      //   output: '',
+      //   saved: true,
+      // };
+      return res.json({ success: true, message: "Files loaded successfully", data: [] });
     }
 
     const fileDataPromises = listResp.Contents.map(async (obj) => {
@@ -83,11 +87,11 @@ export const loadProjectFiles = async (req, res) => {
     });
 
     const files = (await Promise.all(fileDataPromises)).filter(Boolean);
-    res.json({ files: files.length > 0 ? files : [/* send default file if you want */] });
+    return res.json({ success: true, message: "Files loaded successfully", data: files.length > 0 ? files : [/* send default file if you want */] });
 
   } catch (error) {
-    console.error("Error loading project files:", error);
-    res.status(500).json({ error: "Error loading project", details: error.message });
+    console.log("Error loading project files:", error);
+    return res.status(500).json({ success: false, message: "Error loading project", details: error.message });
   }
 };
 
@@ -99,7 +103,21 @@ export const saveToS3 = async (req, res) => {
     const { key, filePath, content } = req.body;
     
     if (!key || !filePath || content === undefined) {
-      return res.status(400).json({ error: "key, filePath, and content are required" });
+      return res.status(400).json({ success: false, message: "key, filePath, and content are required" });
+    }
+
+    try {
+      await s3.send(new HeadObjectCommand({ Bucket: BUCKET, Key: filePath }));
+      // if no error -> file exists
+      return res.status(400).json({
+        success: false,
+        message: "File already exists at this path",
+      });
+    } catch (err) {
+      if (err.name !== "NotFound") {
+        throw err; // some other error, rethrow it
+      }
+      // if NotFound -> proceed to upload
     }
 
     await s3.send(new PutObjectCommand({
@@ -109,10 +127,20 @@ export const saveToS3 = async (req, res) => {
       ContentType: 'text/plain',
     }));
 
-    res.json({ message: "File saved successfully" });
+    const node = {
+      id: `${key}${filePath}_${Math.random()}`,  // e.g. "s3_/file.cpp_0.591..."
+      name: filePath,                            // "/file.cpp"
+      language: langMap[filePath.split('/').pop().split('.').pop()]||"plaintext", 
+      code: content,
+      input: "",
+      output: "",
+      saved: true,
+    };
+
+    return res.json({ success: true, message: "File saved successfully", data: node });
   } catch (error) {
     console.error("Error saving file:", error);
-    res.status(500).json({ error: "Error saving file", details: error.message });
+    return res.status(500).json({ success: false, message: "Error saving file" });
   }
 };
 
@@ -120,7 +148,7 @@ export const deleteS3File = async (req, res) => {
   try {
     const { key, filePath } = req.body;
     if (!key || !filePath) {
-      return res.status(400).json({ error: "key and filePath are required" });
+      return res.status(400).json({ success: false, message: "key and filePath are required" });
     }
 
     await s3.send(new DeleteObjectCommand({
@@ -128,18 +156,92 @@ export const deleteS3File = async (req, res) => {
       Key: `${key}${filePath}`,
     }));
 
-    res.json({ message: "File deleted successfully" });
+    return res.json({ success: true, message: "File deleted successfully" });
   } catch (error) {
     console.error("Error deleting file:", error);
-    res.status(500).json({ error: "Error deleting file", details: error.message });
+    return res.status(500).json({ success: false, message: "Error deleting file" });
   }
 };
+
+// export const deleteS3Folder = async (req, res) => {
+//   try {
+//     const { key, filePath } = req.body;
+//     const prefix = `${key}/${filePath}`; // e.g. "user123/folder/"
+//     console.log("Deleting folder:", prefix);
+
+//     const listedObjects = await s3.send(new ListObjectsV2Command({
+//       Bucket: BUCKET,
+//       Prefix: prefix,
+//     }));
+
+//     if (!listedObjects.Contents || listedObjects.Contents.length === 0) {
+//       return res.json({ success: false, message: "No files found in the folder" });
+//     }
+
+//     const deleteParams = {
+//       Bucket: BUCKET,
+//       Delete: {
+//         Objects: listedObjects.Contents.map(obj => ({ Key: obj.Key })),
+//       },
+//     };
+
+//     await s3.send(new DeleteObjectsCommand(deleteParams));
+
+//     return res.json({ success: true, message: "Folder deleted successfully" });
+//   } catch (error) {
+//     console.error("Error deleting folder:", error);
+//     return res.status(500).json({ success: false, message: "Error deleting folder" });
+//   }
+// };
+
+export const deleteS3Folder = async (req, res) => {
+  try {
+    const { key, filePath } = req.body;
+    const prefix = `${key}/${filePath.replace(/^\/+/, "")}`; 
+    console.log("Deleting folder:", prefix);
+
+    // 1️⃣ List all objects under this prefix
+    const listedObjects = await s3.send(new ListObjectsV2Command({
+      Bucket: BUCKET,
+      Prefix: prefix,
+    }));
+
+    if (!listedObjects.Contents || listedObjects.Contents.length === 0) {
+      // Try deleting the folder marker itself (just in case)
+      await s3.send(new DeleteObjectCommand({
+        Bucket: BUCKET,
+        Key: prefix,
+      }));
+      return res.json({ success: true, message: "Folder deleted (empty or marker only)" });
+    }
+
+    // 2️⃣ Delete all child objects
+    await s3.send(new DeleteObjectsCommand({
+      Bucket: BUCKET,
+      Delete: {
+        Objects: listedObjects.Contents.map(obj => ({ Key: obj.Key })),
+      },
+    }));
+
+    // 3️⃣ Explicitly delete the folder marker itself
+    await s3.send(new DeleteObjectCommand({
+      Bucket: BUCKET,
+      Key: prefix.endsWith("/") ? prefix : `${prefix}/`,
+    }));
+
+    return res.json({ success: true, message: "Folder deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting folder:", error);
+    return res.status(500).json({ success: false, message: "Error deleting folder" });
+  }
+};
+
 
 export const renameS3File = async (req, res) => {
   try {
     const { key, oldFilePath, newFilePath } = req.body;
     if (!key || !oldFilePath || !newFilePath) {
-      return res.status(400).json({ error: "key, oldFilePath, and newFilePath are required" });
+      return res.status(400).json({ success: false, message: "key, oldFilePath, and newFilePath are required" });
     }
 
     const sourceKey = `${key}${oldFilePath}`;
@@ -158,9 +260,48 @@ export const renameS3File = async (req, res) => {
       Key: sourceKey,
     }));
 
-    res.json({ message: "File renamed successfully" });
+    return res.json({ success: true, message: "File renamed successfully" });
   } catch (error) {
     console.error("Error renaming file:", error);
-    res.status(500).json({ error: "Error renaming file", details: error.message });
+    return res.status(500).json({ success: false, message: "Error renaming file" });
+  }
+};
+
+export const renameS3Folder = async (req, res) => {
+  try {
+    const { key, oldFilePath, newFilePath } = req.body;
+    const prefix = `${key}${oldFilePath}`;
+    console.log("Renaming folder from", prefix, "to", `${key}${newFilePath}`);
+
+    const listedObjects = await s3.send(new ListObjectsV2Command({
+      Bucket: BUCKET,
+      Prefix: prefix,
+    }));
+
+    if (!listedObjects.Contents || listedObjects.Contents.length === 0) {
+      return res.status(404).json({ success: false, message: "No files found in the folder" });
+    }
+
+    for (const obj of listedObjects.Contents) {
+      const oldKey = obj.Key;
+      const newKey = oldKey.replace(prefix, `${key}${newFilePath}`);
+      await s3.send(new CopyObjectCommand({
+        Bucket: BUCKET,
+        CopySource: `${BUCKET}/${oldKey}`,
+        Key: newKey,
+      }));
+    }
+
+    await s3.send(new DeleteObjectsCommand({
+      Bucket: BUCKET,
+      Delete: {
+        Objects: listedObjects.Contents.map(obj => ({ Key: obj.Key })),
+      },
+    }));
+
+    return res.status(200).json({ success: true, message: "Folder renamed successfully" });
+  } catch (error) {
+    console.error("Error renaming folder:", error);
+    return res.status(500).json({ success: false, message: "Error renaming folder" });
   }
 };

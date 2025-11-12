@@ -66,6 +66,7 @@ export function ExpandableCardDemo() {
 
     const cards = userRoadmaps.map(roadmap => ({
         _id: roadmap._id,
+        photo: roadmap.roadmapPhoto,
         description: roadmap.roadmapData?.difficulty,
         title: roadmap.roadmapData?.title,
         ctaLink: '/roadmap/' + roadmap?._id,
@@ -187,7 +188,7 @@ export function ExpandableCardDemo() {
                                 <img
                                     width={200}
                                     height={200}
-                                    src={`/images/code/code${Math.floor(Math.random() * 5) + 1}.png`}
+                                    src={`/images/code/code${active.photo}.png`}
                                     alt={active.title}
                                     className="w-full h-80 lg:h-80 sm:rounded-tr-lg sm:rounded-tl-lg object-cover object-center"
                                 />
@@ -340,7 +341,7 @@ export function ExpandableCardDemo() {
                                     <img
                                         width={300}
                                         height={200}
-                                        src={`/images/code/code${Math.floor(Math.random() * 5) + 1}.png`}
+                                        src={`/images/code/code${card.photo}.png`}
                                         alt={card.title}
                                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                                     />
