@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { StickToBottom } from "use-stick-to-bottom"
 import { cn } from "../../lib/utils"
 import { User, Bot, Copy, Check } from "lucide-react"
@@ -15,8 +15,70 @@ export function ChatMessageArea({ className, ...props }) {
   )
 }
 
-export function ChatMessageAreaContent({ className, messages = [], ...props }) {
+export function ChatMessageAreaContent({ className, messages = [], shouldStream, setShouldStream, isSending, ...props }) {
   const [copiedIndex, setCopiedIndex] = useState(null)
+  const contentRef = useRef(null)
+  const [streamedContent, setStreamedContent] = useState({})
+  const [isStreaming, setIsStreaming] = useState(false)
+  const messagesContainerRef = useRef(null)
+
+
+  const scrollToBottom = (smooth = true) => {
+    const scrollContainer = contentRef.current?.closest(".overflow-y-auto")
+          if (scrollContainer) {
+            scrollContainer.scrollTop = scrollContainer.scrollHeight
+          }
+  }
+
+  useEffect(() => {
+    setTimeout(() => scrollToBottom(false), 0)
+  }, [])
+
+  useEffect(() => {
+    if (messages.length === 0) return
+    
+    if(!shouldStream) return;
+    const lastMessage = messages[messages.length - 1]
+    const messageKey = `${messages.length - 1}`
+    
+    
+    if (lastMessage.role === 'ai' && lastMessage.content && !streamedContent[messageKey]) {
+      setIsStreaming(true)
+      const fullContent = lastMessage.content
+      let currentIndex = 0
+      
+      const streamInterval = setInterval(() => {
+        if (currentIndex < fullContent.length) {
+          const charsToAdd = Math.min(10, fullContent.length - currentIndex) 
+          currentIndex += charsToAdd
+          
+          setStreamedContent(prev => ({
+            ...prev,
+            [messageKey]: fullContent.slice(0, currentIndex)
+          }))
+          
+          
+          const scrollContainer = contentRef.current?.closest(".overflow-y-auto")
+          if (scrollContainer) {
+            scrollContainer.scrollTop = scrollContainer.scrollHeight
+          }
+        } else {
+          clearInterval(streamInterval)
+          setIsStreaming(false)
+        }
+      }, 100) 
+      setShouldStream(false)
+      return () => clearInterval(streamInterval)
+    }
+  }, [messages])
+
+  useEffect(() => {
+  if (isSending){const scrollContainer = contentRef.current?.closest(".overflow-y-auto")
+    if (scrollContainer) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight
+    }
+  }
+}, [isSending])
 
   const handleCopy = (content, index) => {
     navigator.clipboard.writeText(content)
@@ -26,18 +88,29 @@ export function ChatMessageAreaContent({ className, messages = [], ...props }) {
 
 
   return (
-    <StickToBottom.Content className={cn("mx-auto w-[70%] h-full py-4 px-4 space-y-4", className)} {...props}>
+    <StickToBottom className={cn("mx-auto w-[70%] h-full py-4 px-4 space-y-4", className)} {...props}>
      
-      {messages.map((msg, index) => (
+      {messages
+        .filter(msg => msg.content && msg.content.trim() !== '') // Skip empty messages
+        .map((msg, index) => {
+          const messageKey = `${index}`
+          const isLastAiMessage = index === messages.length - 1 && msg.role === 'ai'
+          const displayContent = isLastAiMessage && streamedContent[messageKey] 
+            ? streamedContent[messageKey] 
+            : msg.content
+          
+          return (
   <div
-    key={index}
+   ref={contentRef} 
+   key={index}
     className={cn(
       "flex items-start gap-3 group",
       msg.role === "user" ? "justify-end" : "justify-start"
     )}
   >
     {/* AI icon — top-left */}
-    {msg.role === "ai" && (
+
+    {msg.role === "ai"  && (
       <div className="flex-shrink-0 bg-[#4B61F5] rounded-full w-9 h-9 flex items-center justify-center">
         <img
           src="/images/ai.png"
@@ -66,7 +139,7 @@ export function ChatMessageAreaContent({ className, messages = [], ...props }) {
           <MDEditor.Markdown
             // style={{ backgroundColor: "#252B37", padding: "0.5rem 1.7rem" }}
             style={{ backgroundColor: "transparent", padding: "0.5rem 1.7rem", fontSize: "1.1rem" }}
-            source={msg.content}
+            source={displayContent}
             />
           </div>
           </div>
@@ -75,7 +148,7 @@ export function ChatMessageAreaContent({ className, messages = [], ...props }) {
       <div
         className={cn(
           "flex items-center ml-6 gap-2 text-xs transition-opacity opacity-0 group-hover:opacity-100",
-          msg.role === "user" ? "justify-end pr-1" : "justify-start pl-1"
+          !isSending && msg.role === "user" ? "justify-end pr-1" : "justify-start pl-1"
         )}
 
       >
@@ -111,8 +184,50 @@ export function ChatMessageAreaContent({ className, messages = [], ...props }) {
       </div>
     )}
   </div>
-))}
+          )
+        })}
 
-    </StickToBottom.Content>
+      {/* AI Thinking Indicator */}
+      {isSending && (
+        <div className="flex items-start gap-3 animate-in fade-in duration-300">
+          {/* AI Avatar with pulse animation */}
+          <div className="flex-shrink-0">
+            <div className="relative w-9 h-9">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse"></div>
+              <div className="absolute inset-1 rounded-full bg-[#4B61F5] flex items-center justify-center">
+                <img
+                  src="/images/ai.png"
+                  alt="AI"
+                  className="w-7 h-7 rounded-full object-cover opacity-90"
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Thinking message bubble */}
+          <div className="flex flex-col gap-1">
+            <div className="bg-card text-card-foreground rounded-lg rounded-bl-none px-6 py-4">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <span 
+                    className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-bounce" 
+                    style={{ animationDelay: "0ms" }}
+                  ></span>
+                  <span 
+                    className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-bounce" 
+                    style={{ animationDelay: "150ms" }}
+                  ></span>
+                  <span 
+                    className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-bounce" 
+                    style={{ animationDelay: "300ms" }}
+                  ></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </StickToBottom>
   )
 }

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react"
-import { Plus, MessageSquare, Trash2, Pencil, ArrowUp } from "lucide-react"
+import { Plus, MessageSquare, Trash2, Pencil, ArrowUp ,Loader2} from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
 import {
   createChat,
@@ -17,6 +17,7 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
   const dispatch = useDispatch()
   const [message, setMessage] = useState("")
   const [isSending, setIsSending] = useState(false)
+  const [shouldStream, setShouldStream] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, chatId: null })
   const isFullscreen = externalFullscreen || false
   const messagesEndRef = useRef(null)
@@ -89,6 +90,7 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
     const userMessage = message.trim()
     setMessage("")
     setIsSending(true)
+    setShouldStream(true)
 
     try {
       const needsNewChat = !chapterChats.activeChatId || !activeChat || !activeChat.chatId
@@ -244,9 +246,39 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
                     </div>
                   </div>
                 ) : (
+                  <>
+                  <div>
+                    {isSending && (
+                      <div className="flex gap-3 p-4 animate-in fade-in duration-300">
+                        {/* Animated glowing avatar */}
+                        <div className="flex-shrink-0">
+                          <div className="relative w-8 h-8">
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse shadow-lg shadow-blue-500/50"></div>
+                            <div className="absolute inset-1 rounded-full bg-slate-800 flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-pulse"></div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Glowing thinking text with animated dots */}
+                        <div className="flex items-center gap-2 py-2">
+                          <span className="text-sm font-medium bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent animate-pulse">Thinking</span>
+                          <div className="flex gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-bounce" style={{ animationDelay: "300ms" }}></span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <ChatMessageArea>
-                    <ChatMessageAreaContent messages={activeChat.messages} />
+                   <ChatMessageAreaContent messages={activeChat.messages} isSending={isSending} shouldStream={shouldStream} setShouldStream={setShouldStream}/>
+                    
+                    {/* Add animated loading indicator for AI response */}
+                    
                   </ChatMessageArea>
+                  </>
                 )}
 
                 <div ref={messagesEndRef} />
