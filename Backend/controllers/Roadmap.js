@@ -105,8 +105,7 @@ export const generateQuiz = async (req, res) => {
             throw new Error("AI returned invalid JSON");
         }
 
-        const quizJson = JSON.parse(quiz);
-        console.log("Quiz generated: ", quizJson); 
+        console.log("Quiz generated: ", quizJson);
 
         return res.status(200).json({ success: true, data: quizJson, message: "Quiz generated successfully" });
 
