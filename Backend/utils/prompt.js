@@ -49,99 +49,59 @@ Return ONLY the valid JSON object, with no other text or explanation.
 }
 
 export const quizPrompt = (roadMap, chapterId, subtopicId) => {
-  if(subtopicId){
-    //quiz is for subtopic
 
-    const subtopic = roadMap.chapters.find(chapter => chapter.id === chapterId).subtopic.find(subtopic => subtopic.id === subtopicId);
+    const chapters = roadMap.roadmapData?.chapters || [];
 
-   return `You are an expert quiz generator.
-      Generate a 5-question multiple-choice quiz for the topic:
-      Title: "${subtopic.title}"
-      Description: "${subtopic.description}"
+    if (subtopicId) {
+        // quiz for subtopic
+        const chapter = chapters.find(ch => ch.id === chapterId);
+        if (!chapter) throw new Error("Chapter not found");
 
-      Each question should:
-      - Be related to the topic and increase in difficulty from Q1 to Q5.
-      - Have exactly **4 answer options (a, b, c, d)**.
-      - Clearly specify the **correct answer**.
-      - Include a short, clear **explanation** of why that answer is correct.
+        const subtopic = chapter.subtopics.find(st => st.id === subtopicId);
+        if (!subtopic) throw new Error("Subtopic not found");
 
-      Output must be a **valid JSON array** with the following structure:
+        return `
+        You are an expert quiz generator.
 
-      [
-        {
-          "questionId": 1,
-          "question": "<question text>",
-          "options": {
-            "a": "<option A>",
-            "b": "<option B>",
-            "c": "<option C>",
-            "d": "<option D>"
-          },
-          "correctAnswer": "a/b/c/d",
-          "explanation": "<explanation text in detail (3-4 lines).>"
-        }
-      ]
+        Generate a 5-question multiple-choice quiz for:
+        Title: "${subtopic.title}"
+        Description: "${subtopic.description}"
 
-      Only output the JSON array — no additional commentary.
-      `
-  }else {
-    //quiz is for chapter
-    const chapter = roadMap.chapters.find(chapter => chapter.id === chapterId);
+        Each question must have:
+        - 4 MCQ options (a, b, c, d)
+        - correctAnswer field
+        - explanation field (3–4 lines)
 
-    return `You are an expert educational content creator and quiz generator.
+        Return ONLY a JSON array.
+      `;
+    }
 
-            Generate a comprehensive multiple-choice quiz for the given **chapter** and its **subtopics**.
+    // quiz for whole chapter
+    const chapter = chapters.find(ch => ch.id === chapterId);
+    if (!chapter) throw new Error("Chapter not found");
 
-            Chapter Title: "${chapter.title}"
-            Chapter Description: "${chapter.description}"
+    const subtopics = chapter.subtopics || [];
 
-            Subtopics (with descriptions):
-            ${subtopics.map(
-              (s, i) => `${i + 1}. ${s.title}: ${s.description}`
-            ).join('\n')}
+    return `
+    You are an expert educational quiz generator.
 
-            Instructions:
-            - Create **3–4 questions per subtopic**, covering all subtopics fairly.
-            - Each question should be related to its subtopic and gradually increase in difficulty within that subtopic.
-            - Each question must include **4 options (a, b, c, d)**.
-            - Clearly specify the **correct answer**.
-            - Include a concise and informative **explanation** for each answer.
+    Generate a quiz covering the chapter and its subtopics.
 
-            Output Format (strictly follow this JSON structure):
+    Chapter Title: "${chapter.title}"
+    Chapter Description: "${chapter.description}"
 
-            {
-              "chapterTitle": "${chapter.title}",
-              "totalQuestions": <total number of questions>,
-              "quiz": [
-                {
-                  "subtopic": "<subtopic title>",
-                  "questions": [
-                    {
-                      "questionId": <number>,
-                      "question": "<question text>",
-                      "options": {
-                        "a": "<option A>",
-                        "b": "<option B>",
-                        "c": "<option C>",
-                        "d": "<option D>"
-                      },
-                      "correctAnswer": "a",
-                      "explanation": "<explanation text>"
-                    }
-                  ]
-                }
-              ]
-            }
+    Subtopics:
+    ${subtopics.map((s, i) => `${i + 1}. ${s.title}: ${s.description}`).join("\n")}
 
-            Guidelines:
-            - Keep question wording clear, engaging, and relevant to the topic.
-            - Avoid repeating similar questions.
-            - Maintain factual accuracy and balanced difficulty across the quiz.
-            - Return **only** the JSON output — no extra commentary or formatting.
-            `
+    Return ONLY JSON with:
+    {
+      "chapterTitle": "...",
+      "totalQuestions": <number>,
+      "quiz": [...]
+    }
+  `;
+};
 
-  }
-}
 
 export const getSubtopicSummaryPrompt = (subtopic, roadmapTitle, chapterTitle) => {
 

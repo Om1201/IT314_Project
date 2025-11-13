@@ -3,12 +3,12 @@ import { useStopwatch } from '../hooks/stopwatch.js';
 import { useTimer } from '../hooks/timer.js';
 import LeftSidebar from '../components/LeftSidebar.jsx';
 import ModuleCard from '../components/ModuleCard.jsx';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import {
     fetchNotes,
     fetchProgress,
-    fetchSubtopicExplanation,
+    fetchSubtopicExplanation, generateQuiz,
     generateSubtopicSummary,
     getUserRoadmapById,
     saveNote,
@@ -30,6 +30,8 @@ export default function RoadmapDisplay() {
 
     const [selectedTab, setSelectedTab] = useState({});
     const [notes, setNotes] = useState({});
+    const [quiz, setQuiz] = useState({});
+    const { quizLoading } = useSelector((state) => state.roadmap);
     const [explanation, setExplanation] = useState({});
     const [expandedModules, setExpandedModules] = useState(new Set());
     const [expandedSubtopics, setExpandedSubtopics] = useState(new Map());
@@ -85,7 +87,7 @@ export default function RoadmapDisplay() {
             }
         }
     }, [isLoading, location.hash]);
-    
+
     const moduleProgress = useMemo(() => {
         return currRoadmap?.chapters?.map(module => {
             const completedCount = module.subtopics.filter(s =>
@@ -141,6 +143,7 @@ export default function RoadmapDisplay() {
         }
     };
 
+
     const onTabChange = (moduleId, subtopicId, tabId) => {
         setSelectedTab(prev => ({
             ...prev,
@@ -168,6 +171,31 @@ export default function RoadmapDisplay() {
             toast.error('Failed to generate explanation', error.message);
         }
     };
+
+    const onRequestQuiz = async (moduleId, subtopicId) => {
+        try {
+            let response = await dispatch(
+                generateQuiz({ roadmapId: id, moduleId, subtopicId })
+            );
+            response = response.payload;
+            console.log('Generated quiz:', response);
+
+            if (!response.success) {
+                toast.error('Failed to generate quiz');
+                return;
+            }
+
+            setQuiz(prev => ({
+                ...prev,
+                [`${moduleId}:${subtopicId}`]: response.data, // quizJson array
+            }));
+
+            toast.success('Quiz generated successfully');
+        } catch (error) {
+            toast.error('Failed to generate quiz', error.message);
+        }
+    };
+
 
     const toggleModuleExpanded = moduleId => {
         const newExpanded = new Set(expandedModules);
@@ -276,7 +304,14 @@ export default function RoadmapDisplay() {
                                     }
                                     onToggleComplete={toggleSubtopicComplete}
                                     notes={notes}
+
                                     explanation={explanation}
+
+                                    quiz={quiz}
+                                    quizLoading={quizLoading}
+                                    onRequestQuiz={onRequestQuiz}
+
+
                                     onSaveNote={saveNotes}
                                     selectedTab={selectedTab}
                                     onTabChange={onTabChange}

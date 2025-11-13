@@ -3,28 +3,32 @@ import SubtopicCard from './SubtopicCard';
 import SubtopicPanel from './SubtopicPanel';
 
 export default function ModuleCard({
-    module,
-    isExpanded,
-    onToggle,
-    progress,
-    completedSubtopics,
-    onSubtopicClick,
-    expandedSubtopics,
-    onToggleComplete,
-    notes,
-    explanation,
-    onSaveNote,
-    selectedTab,
-    onTabChange,
-    allArticles,
-    allVideos,
-    onRequestExplanation,
-    onChatClick,
-}) {
+                                       module,
+                                       isExpanded,
+                                       onToggle,
+                                       progress,
+                                       completedSubtopics,
+                                       onSubtopicClick,
+                                       expandedSubtopics,
+                                       onToggleComplete,
+                                       notes,
+                                       explanation,
+                                       onSaveNote,
+                                       selectedTab,
+                                       onTabChange,
+
+                                       allArticles,
+                                       allVideos,
+                                       onRequestExplanation,
+                                       onChatClick,
+                                       onRequestQuiz,
+                                       quiz,
+                                       quizLoading,
+                                   }) {
     return (
         <div
-        id={`chapter-${module.id}`}  
-        className="bg-gradient-to-br from-slate-900/40 to-blue-900/20 backdrop-blur-xl border border-blue-500/30 rounded-2xl overflow-hidden hover:border-blue-400/50 transition-all duration-300">
+            id={`chapter-${module.id}`}
+            className="bg-gradient-to-br from-slate-900/40 to-blue-900/20 backdrop-blur-xl border border-blue-500/30 rounded-2xl overflow-hidden hover:border-blue-400/50 transition-all duration-300">
             <button
                 onClick={onToggle}
                 className="w-full flex items-center justify-between p-6 hover:bg-blue-500/10 transition-colors group"
@@ -89,15 +93,18 @@ export default function ModuleCard({
                             {expandedSubtopics.has(`${module.id}:${subtopic.id}`) && (
                                 <SubtopicPanel
                                     subtopic={subtopic}
+                                    selectedTab={selectedTab}
+                                    onTabChange={onTabChange}
                                     chapterId={module.id}
                                     allArticles={allArticles}
                                     allVideos={allVideos}
-                                    selectedTab={
-                                        selectedTab[`${module.id}:${subtopic.id}`] || 'explanation'
-                                    }
-                                    onTabChange={tabId =>
-                                        onTabChange(module.id, subtopic.id, tabId)
-                                    }
+
+                                    quizContent={quiz[`${module.id}:${subtopic.id}`] || []}
+                                    quizLoading={quizLoading}
+                                    onRequestQuiz={() => onRequestQuiz(module.id, subtopic.id)}
+
+
+
                                     noteContent={notes[`${module.id}:${subtopic.id}`] || ''}
                                     explanationContent={
                                         explanation

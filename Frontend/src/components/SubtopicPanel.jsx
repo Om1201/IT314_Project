@@ -1,10 +1,17 @@
-import { Save, CheckCircle2, Circle, X, Maximize2, Minimize2, Loader2 } from 'lucide-react';
+import {
+    Save,
+    X,
+    Maximize2,
+    Minimize2,
+    Loader2
+} from 'lucide-react';
+
 import { useEffect, useState, useRef } from 'react';
 import MDEditor from '@uiw/react-md-editor';
-import MarkdownRenderer from './MarkdownRenderer';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import YoutubeThumbnail from './youtube';
 import ReactDOM from 'react-dom';
+
 const tabs = [
     { id: 'explanation', label: 'Explanation' },
     { id: 'videos', label: 'Videos' },
@@ -14,19 +21,25 @@ const tabs = [
 ];
 
 export default function SubtopicPanel({
-    subtopic,
-    chapterId,
-    allArticles,
-    allVideos,
-    selectedTab,
-    onTabChange,
-    noteContent,
-    explanationContent,
-    onSaveNote,
-    onRequestExplanation,
-}) {
-    const { explanation_loading } = useSelector(state => state.roadmap);
-    const [editingNote, setEditingNote] = useState(noteContent || '');
+                                          subtopic,
+                                          selectedTab = 'explanation',
+                                          onTabChange = () => {},
+                                          noteContent = '',
+                                          onSaveNote = () => {},
+                                          onRequestExplanation = () => {},
+                                          onRequestQuiz = () => {},
+                                          quizContent = [],
+                                          quizLoading = [],
+                                          chapterId,
+
+                                          // These now come correctly from ModuleCard
+                                          allArticles = [],
+                                          allVideos = [],
+                                          explanationContent = "",
+                                      }) {
+    const { explanation_loading } = useSelector(state => state.roadmap || {});
+
+    const [editingNote, setEditingNote] = useState(noteContent || "");
     const [isSaving, setIsSaving] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,11 +47,14 @@ export default function SubtopicPanel({
     const [isFullscreen, setIsFullscreen] = useState(false);
     const editorRef = useRef(null);
     const modalRef = useRef(null);
+    const [userAnswers, setUserAnswers] = useState({});
 
+    /** Update note content when parent changes it */
     useEffect(() => {
-        setEditingNote(noteContent || '');
+        setEditingNote(noteContent || "");
     }, [noteContent]);
 
+    /** global shortcuts */
     useEffect(() => {
         const onKey = e => {
             if (e.ctrlKey && e.key.toLowerCase() === 's') {
@@ -47,25 +63,21 @@ export default function SubtopicPanel({
                     handleSaveNote();
                 }
             }
-            if (e.key === 'Escape') {
-                if (isFocused) {
-                    e.preventDefault();
-                    setIsFocused(false);
-                }
+            if (e.key === "Escape") {
+                if (isFocused) setIsFocused(false);
                 if (isModalOpen) {
-                    e.preventDefault();
                     setIsModalOpen(false);
                     setModalTab(null);
                 }
             }
         };
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
     }, [isFocused, editingNote, isModalOpen]);
 
-    // Handle click outside modal
+    /** close modal when clicking outside */
     useEffect(() => {
-        const handleClickOutside = event => {
+        const handleClickOutside = (event) => {
             if (modalRef.current && !modalRef.current.contains(event.target)) {
                 setIsModalOpen(false);
                 setModalTab(null);
@@ -73,139 +85,244 @@ export default function SubtopicPanel({
         };
 
         if (isModalOpen) {
-            document.addEventListener('mousedown', handleClickOutside);
-            document.body.style.overflow = 'hidden'; // Prevent body scroll when modal is open
+            document.addEventListener("mousedown", handleClickOutside);
+            document.body.style.overflow = "hidden";
         }
 
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-            document.body.style.overflow = 'unset';
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.body.style.overflow = "unset";
         };
     }, [isModalOpen]);
 
+    /** Save note */
     const handleSaveNote = async () => {
         setIsSaving(true);
         try {
             await onSaveNote(editingNote);
         } catch (err) {
-            console.error('Save note failed', err);
+            console.error("Save note failed", err);
         }
         setIsSaving(false);
     };
 
-    const handleTabClick = tabId => {
+    /** quiz loading helper */
+    const isQuizGenerating = () =>
+        Array.isArray(quizLoading) &&
+        quizLoading.includes(`${chapterId}:${subtopic.id}`);
+
+    /** tab click handler */
+    const handleTabClick = (tabId) => {
         setModalTab(tabId);
         setIsModalOpen(true);
         onTabChange(tabId);
     };
 
+    /** modal close */
     const handleCloseModal = () => {
-        // Exit fullscreen if active
         if (document.fullscreenElement) {
-            document.exitFullscreen().catch(err => {
-                console.error('Error exiting fullscreen:', err);
-            });
+            document.exitFullscreen().catch(err => console.error(err));
         }
         setIsModalOpen(false);
         setModalTab(null);
         setIsFullscreen(false);
     };
 
+    /** fullscreen toggle */
     const toggleFullscreen = async () => {
         if (!modalRef.current) return;
 
         try {
             if (!document.fullscreenElement) {
-                // Enter fullscreen
                 await modalRef.current.requestFullscreen();
                 setIsFullscreen(true);
             } else {
-                // Exit fullscreen
                 await document.exitFullscreen();
                 setIsFullscreen(false);
             }
         } catch (err) {
-            console.error('Error toggling fullscreen:', err);
+            console.error("Fullscreen toggle error:", err);
         }
     };
 
-    // Listen for fullscreen changes
+    /** fullscreen listener */
     useEffect(() => {
-        const handleFullscreenChange = () => {
+        const handleChange = () => {
             setIsFullscreen(!!document.fullscreenElement);
         };
-
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        return () => {
-            document.removeEventListener('fullscreenchange', handleFullscreenChange);
-        };
+        document.addEventListener("fullscreenchange", handleChange);
+        return () => document.removeEventListener("fullscreenchange", handleChange);
     }, []);
 
-    const renderContent = tabId => {
+    /** content renderer */
+    const renderContent = (tabId) => {
         const articleSet = allArticles?.find(
             a => a.chapterId === chapterId && a.subtopicId === subtopic.id
         );
-        const articles = articleSet ? articleSet.articles : [];
+        const articles = articleSet?.articles || [];
 
         const videoSet = allVideos?.find(
             v => v.chapterId === chapterId && v.subtopicId === subtopic.id
         );
-        const videos = videoSet ? videoSet.videos : [];
-
-        console.log('Found articles:', articles);
-        console.log('Found videos:', videos);
+        const videos = videoSet?.videos || [];
 
         switch (tabId) {
-            case 'explanation':
+
+            /* EXPLANATION TAB -------------------------------------------------- */
+            case "explanation":
                 return (
                     <div className="text-slate-300 leading-relaxed">
-                        {explanationContent != '' && (
+                        {explanationContent ? (
                             <MDEditor.Markdown
                                 className="px-8 py-5"
-                                source={
-                                    `${explanationContent[4] == 'd' ? explanationContent.slice(6, -3) : explanationContent.slice(11, -3)}` ||
-                                    '_No explanation available yet._'
-                                }
+                                source={explanationContent}
                             />
-                        )}
-                        {explanationContent == '' && (
+                        ) : (
                             <button
                                 className="cursor-pointer disabled:cursor-not-allowed px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                                onClick={() => {
-                                    console.log(
-                                        'This is is is is ',
-                                        explanation_loading.includes(`${chapterId}:${subtopic.id}`)
-                                    );
-                                    onRequestExplanation();
-                                }}
-                                disabled={explanation_loading.includes(
-                                    `${chapterId}:${subtopic.id}`
-                                )}
+                                onClick={() => onRequestExplanation()}
+                                disabled={explanation_loading.includes(`${chapterId}:${subtopic.id}`)}
                             >
                                 {explanation_loading.includes(`${chapterId}:${subtopic.id}`) ? (
                                     <div className="flex gap-2 justify-center items-center">
-                                        <Loader2 className="animate-spin" /> Generating
-                                        explanation...
+                                        <Loader2 className="animate-spin" /> Generating explanation...
                                     </div>
                                 ) : (
-                                    `Generate explanation`
+                                    "Generate Explanation"
                                 )}
                             </button>
                         )}
                     </div>
                 );
-            case 'quiz':
+
+            /* QUIZ TAB --------------------------------------------------------- */
+            case "quiz":
                 return (
                     <div className="space-y-4">
-                        <p className="text-slate-300">Quiz content for: {subtopic.title}</p>
-                        <div className="bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
-                            <p className="text-sm text-slate-400">
-                                Quiz questions would be displayed here
-                            </p>
-                        </div>
+                        <p className="text-slate-300">Quiz for: {subtopic.title}</p>
+
+                        {quizContent.length > 0 ? (
+                            <div className="space-y-4 bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
+                                {quizContent.map((q, i) => {
+                                    const qKey = `${q.questionId ?? i}`;
+                                    const selected = userAnswers[qKey]?.selected;
+                                    const isSubmitted = userAnswers[qKey]?.submitted;
+                                    const isCorrect = selected === q.correctAnswer;
+
+                                    return (
+                                        <div
+                                            key={qKey}
+                                            className="p-4 bg-slate-900/50 rounded-xl space-y-3 border border-slate-700"
+                                        >
+                                            <p className="font-semibold text-blue-300">
+                                                Q{i + 1}: {q.question}
+                                            </p>
+
+                                            <div className="space-y-2">
+                                                {Object.entries(q.options || {}).map(([optKey, text]) => {
+                                                    const isSelected = selected === optKey;
+                                                    const correctOption =
+                                                        isSubmitted && optKey === q.correctAnswer;
+                                                    const wrongOption =
+                                                        isSubmitted && isSelected && optKey !== q.correctAnswer;
+
+                                                    return (
+                                                        <label
+                                                            key={optKey}
+                                                            className={`flex items-center gap-3 cursor-pointer p-2 rounded-lg border transition ${
+                                                                correctOption
+                                                                    ? "border-green-500 bg-green-500/20"
+                                                                    : wrongOption
+                                                                        ? "border-red-500 bg-red-500/20"
+                                                                        : "border-slate-600 hover:bg-slate-700/40"
+                                                            }`}
+                                                        >
+                                                            <input
+                                                                type="radio"
+                                                                name={`q-${qKey}`}
+                                                                value={optKey}
+                                                                checked={isSelected}
+                                                                disabled={isSubmitted}
+                                                                onChange={() =>
+                                                                    setUserAnswers(prev => ({
+                                                                        ...prev,
+                                                                        [qKey]: {
+                                                                            selected: optKey,
+                                                                            submitted: false,
+                                                                        },
+                                                                    }))
+                                                                }
+                                                            />
+                                                            <span className="text-slate-300">
+                                                                <span className="text-blue-400 font-semibold">
+                                                                    {optKey.toUpperCase()}:
+                                                                </span>{" "}
+                                                                {text}
+                                                            </span>
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {!isSubmitted && (
+                                                <button
+                                                    onClick={() =>
+                                                        setUserAnswers(prev => ({
+                                                            ...prev,
+                                                            [qKey]: {
+                                                                selected,
+                                                                submitted: true,
+                                                            },
+                                                        }))
+                                                    }
+                                                    disabled={!selected}
+                                                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:bg-slate-600 disabled:cursor-not-allowed"
+                                                >
+                                                    Submit Answer
+                                                </button>
+                                            )}
+
+                                            {isSubmitted && (
+                                                <div className="space-y-2">
+                                                    <p
+                                                        className={`font-semibold ${
+                                                            isCorrect ? "text-green-400" : "text-red-400"
+                                                        }`}
+                                                    >
+                                                        {isCorrect ? "Correct!" : "Incorrect!"}
+                                                    </p>
+                                                    <p className="text-slate-300 text-sm">
+                                                        <span className="text-blue-400 font-semibold">
+                                                            Explanation:
+                                                        </span>{" "}
+                                                        {q.explanation}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <button
+                                className="cursor-pointer disabled:cursor-not-allowed px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                                onClick={() => onRequestQuiz()}
+                                disabled={isQuizGenerating()}
+                            >
+                                {isQuizGenerating() ? (
+                                    <div className="flex gap-2 justify-center items-center">
+                                        <Loader2 className="animate-spin" /> Generating quiz...
+                                    </div>
+                                ) : (
+                                    "Generate Quiz"
+                                )}
+                            </button>
+                        )}
                     </div>
                 );
-            case 'notes':
+
+            /* NOTES TAB -------------------------------------------------------- */
+            case "notes":
                 return (
                     <div className="space-y-4" data-color-mode="dark">
                         {isFocused ? (
@@ -213,13 +330,9 @@ export default function SubtopicPanel({
                                 <MDEditor
                                     ref={editorRef}
                                     value={editingNote}
-                                    onChange={val => setEditingNote(val ?? '')}
+                                    onChange={val => setEditingNote(val ?? "")}
                                     height={320}
-                                    preview={`${isFocused ? 'live' : 'preview'}`}
-                                    textareaProps={{
-                                        placeholder: 'Write your markdown notes here...',
-                                        onFocus: () => setIsFocused(true),
-                                    }}
+                                    preview="live"
                                 />
 
                                 <div className="flex gap-2 mt-3">
@@ -229,13 +342,11 @@ export default function SubtopicPanel({
                                         className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
                                     >
                                         <Save className="h-4 w-4" />
-                                        {isSaving ? 'Saving...' : 'Save Notes'}
+                                        {isSaving ? "Saving..." : "Save Notes"}
                                     </button>
 
                                     <button
-                                        onClick={() => {
-                                            setIsFocused(false);
-                                        }}
+                                        onClick={() => setIsFocused(false)}
                                         className="flex items-center gap-2 px-4 py-2 bg-slate-800/60 text-slate-200 rounded-lg hover:bg-slate-700/60"
                                     >
                                         Preview
@@ -244,41 +355,33 @@ export default function SubtopicPanel({
                             </div>
                         ) : (
                             <div
-                                className="prose prose-invert max-w-none bg-slate-900/50 rounded-xl border border-slate-500 overflow-hidden  cursor-text"
+                                className="prose prose-invert max-w-none bg-slate-900/50 rounded-xl border border-slate-500 overflow-hidden cursor-text"
                                 onClick={() => setIsFocused(true)}
                                 role="button"
                                 tabIndex={0}
-                                onKeyDown={e => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        e.preventDefault();
-                                        setIsFocused(true);
-                                    }
-                                }}
                             >
                                 <MDEditor.Markdown
                                     className="px-8 py-5"
-                                    source={editingNote || '_No notes yet — click to add._'}
+                                    source={editingNote || "_No notes yet — click to add._"}
                                 />
                             </div>
                         )}
                     </div>
                 );
 
-            case 'videos':
+            /* VIDEOS TAB ------------------------------------------------------- */
+            case "videos":
                 return (
                     <div className="space-y-4">
                         <p className="text-slate-300">Video resources for: {subtopic.title}</p>
                         <div className="bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
                             {videos.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {videos.map((videoUrl, index) => {
-                                        console.log(`Rendering video ${index}:`, videoUrl);
-                                        return (
-                                            <div key={index} className="flex justify-center w-full">
-                                                <YoutubeThumbnail url={videoUrl} />
-                                            </div>
-                                        );
-                                    })}
+                                    {videos.map((url, index) => (
+                                        <div key={index} className="flex justify-center w-full">
+                                            <YoutubeThumbnail url={url} />
+                                        </div>
+                                    ))}
                                 </div>
                             ) : (
                                 <p className="text-sm text-slate-400">
@@ -289,7 +392,8 @@ export default function SubtopicPanel({
                     </div>
                 );
 
-            case 'articles':
+            /* ARTICLES TAB ----------------------------------------------------- */
+            case "articles":
                 return (
                     <div className="space-y-4">
                         <p className="text-slate-300">Article resources for: {subtopic.title}</p>
@@ -302,7 +406,7 @@ export default function SubtopicPanel({
                                                 href={articleUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-blue-400 hover:text-blue-300 hover:underline"
+                                                className="text-blue-400 hover:underline"
                                             >
                                                 {articleUrl}
                                             </a>
@@ -317,6 +421,7 @@ export default function SubtopicPanel({
                         </div>
                     </div>
                 );
+
             default:
                 return null;
         }
@@ -324,13 +429,12 @@ export default function SubtopicPanel({
 
     return (
         <div
-                id={`subtopic-${chapterId}-${subtopic.id}`}
-        className="mt-4 bg-gradient-to-br from-slate-900/60 to-purple-900/30 backdrop-blur-xl border border-purple-500/30 rounded-xl p-6 border-l-4 border-l-purple-500">
+            id={`subtopic-${chapterId}-${subtopic.id}`}
+            className="mt-4 bg-gradient-to-br from-slate-900/60 to-purple-900/30 backdrop-blur-xl border border-purple-500/30 rounded-xl p-6 border-l-4 border-l-purple-500"
+        >
             <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-2xl font-bold text-white">{subtopic.title}</h3>
-                    </div>
+                    <h3 className="text-2xl font-bold text-white">{subtopic.title}</h3>
                     <p className="text-slate-300 text-sm">{subtopic.estimatedTime}</p>
                 </div>
             </div>
@@ -342,8 +446,8 @@ export default function SubtopicPanel({
                         onClick={() => handleTabClick(tab.id)}
                         className={`px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-lg transition-all ${
                             selectedTab === tab.id
-                                ? 'bg-blue-600 text-white'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                                ? "bg-blue-600 text-white"
+                                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
                         }`}
                     >
                         {tab.label}
@@ -351,7 +455,6 @@ export default function SubtopicPanel({
                 ))}
             </div>
 
-            {/* Modal Popup */}
             {isModalOpen &&
                 modalTab &&
                 ReactDOM.createPortal(
@@ -362,21 +465,19 @@ export default function SubtopicPanel({
                         />
                         <div
                             ref={modalRef}
-                            className={`relative bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col w-full max-w-4xl max-h-[90vh] ${isFullscreen ? 'rounded-none' : ''} z-[99999]`}
+                            className={`relative bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col w-full max-w-4xl max-h-[90vh] ${
+                                isFullscreen ? "rounded-none" : ""
+                            } z-[99999]`}
                             onClick={e => e.stopPropagation()}
                         >
-                            {/* Modal Header */}
                             <div className="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-800">
                                 <h2 className="text-lg font-semibold text-white">
-                                    {tabs.find(t => t.id === modalTab)?.label || 'Content'}
+                                    {tabs.find(t => t.id === modalTab)?.label}
                                 </h2>
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={toggleFullscreen}
                                         className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-                                        aria-label={
-                                            isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'
-                                        }
                                     >
                                         {isFullscreen ? (
                                             <Minimize2 className="h-5 w-5" />
@@ -387,7 +488,6 @@ export default function SubtopicPanel({
                                     <button
                                         onClick={handleCloseModal}
                                         className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-                                        aria-label="Close modal"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>
