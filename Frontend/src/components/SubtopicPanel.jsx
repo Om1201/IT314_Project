@@ -15,11 +15,20 @@ export default function SubtopicPanel({
     onTabChange,
     noteContent,
     onSaveNote,
-}) {
+    onRequestExplanation,
+    onRequestQuiz,
+    quizContent,
+    quizLoading,
+
+                                      }) {
+    const { explanation_loading } = useSelector(state => state.roadmap);
     const [editingNote, setEditingNote] = useState(noteContent || '');
     const [isSaving, setIsSaving] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const editorRef = useRef(null);
+
+    const modalRef = useRef(null);
+    const [userAnswers, setUserAnswers] = useState({});
 
     useEffect(() => {
         setEditingNote(noteContent || '');
@@ -65,12 +74,138 @@ export default function SubtopicPanel({
             case 'quiz':
                 return (
                     <div className="space-y-4">
-                        <p className="text-slate-300">Quiz content for: {subtopic.title}</p>
-                        <div className="bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
-                            <p className="text-sm text-slate-400">
-                                Quiz questions would be displayed here
-                            </p>
-                        </div>
+                        <p className="text-slate-300">Quiz for: {subtopic.title}</p>
+
+                        {quizContent.length > 0 ? (
+                            <div className="space-y-4 bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
+
+                                {quizContent.map((q, i) => {
+                                    const qKey = `${q.questionId}`;
+                                    const selected = userAnswers[qKey]?.selected;
+                                    const isSubmitted = userAnswers[qKey]?.submitted;
+                                    const isCorrect = selected === q.correctAnswer;
+
+                                    return (
+                                        <div
+                                            key={i}
+                                            className="p-4 bg-slate-900/50 rounded-xl space-y-3 border border-slate-700"
+                                        >
+                                            {/* Question */}
+                                            <p className="font-semibold text-blue-300">
+                                                Q{i + 1}: {q.question}
+                                            </p>
+
+                                            {/* Options (radio buttons) */}
+                                            <div className="space-y-2">
+                                                {Object.entries(q.options).map(([optKey, text]) => {
+                                                    const isSelected = selected === optKey;
+                                                    const isCorrectOption =
+                                                        isSubmitted && optKey === q.correctAnswer;
+                                                    const isWrongOption =
+                                                        isSubmitted &&
+                                                        isSelected &&
+                                                        optKey !== q.correctAnswer;
+
+                                                    return (
+                                                        <label
+                                                            key={optKey}
+                                                            className={`
+                                                    flex items-center gap-3 cursor-pointer p-2 rounded-lg 
+                                                    border transition 
+                                                    ${
+                                                                isCorrectOption
+                                                                    ? 'border-green-500 bg-green-500/20'
+                                                                    : isWrongOption
+                                                                        ? 'border-red-500 bg-red-500/20'
+                                                                        : 'border-slate-600 hover:bg-slate-700/40'
+                                                            }
+                                                `}
+                                                        >
+                                                            <input
+                                                                type="radio"
+                                                                name={`q-${qKey}`}
+                                                                value={optKey}
+                                                                checked={isSelected}
+                                                                disabled={isSubmitted}
+                                                                onChange={() =>
+                                                                    setUserAnswers(prev => ({
+                                                                        ...prev,
+                                                                        [qKey]: {
+                                                                            selected: optKey,
+                                                                            submitted: false,
+                                                                        },
+                                                                    }))
+                                                                }
+                                                            />
+                                                            <span className="text-slate-300">
+                                                    <span className="text-blue-400 font-semibold">
+                                                        {optKey.toUpperCase()}:
+                                                    </span>{' '}
+                                                                {text}
+                                                </span>
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {/* Submit Button */}
+                                            {!isSubmitted && (
+                                                <button
+                                                    onClick={() =>
+                                                        setUserAnswers(prev => ({
+                                                            ...prev,
+                                                            [qKey]: {
+                                                                selected,
+                                                                submitted: true,
+                                                            },
+                                                        }))
+                                                    }
+                                                    disabled={!selected}
+                                                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:bg-slate-600 disabled:cursor-not-allowed"
+                                                >
+                                                    Submit Answer
+                                                </button>
+                                            )}
+
+                                            {/* Result + Explanation */}
+                                            {isSubmitted && (
+                                                <div className="space-y-2">
+                                                    <p
+                                                        className={`font-semibold ${
+                                                            isCorrect ? 'text-green-400' : 'text-red-400'
+                                                        }`}
+                                                    >
+                                                        {isCorrect ? 'Correct!' : 'Incorrect!'}
+                                                    </p>
+
+                                                    <p className="text-slate-300 text-sm">
+                                            <span className="text-blue-400 font-semibold">
+                                                Explanation:
+                                            </span>{' '}
+                                                        {q.explanation}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+
+                            </div>
+                        ) : (
+                            <button
+                                className="cursor-pointer disabled:cursor-not-allowed px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                                onClick={onRequestQuiz}
+                                disabled={quizLoading.includes(`${chapterId}:${subtopic.id}`)}
+                            >
+                                {quizLoading.includes(`${chapterId}:${subtopic.id}`) ? (
+                                    <div className="flex gap-2 justify-center items-center">
+                                        <Loader2 className="animate-spin" /> Generating quiz...
+                                    </div>
+                                ) : (
+                                    `Generate Quiz`
+                                )}
+                            </button>
+                        )}
                     </div>
                 );
             case 'notes':

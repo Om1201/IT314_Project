@@ -15,6 +15,14 @@ export default function ModuleCard({
     onSaveNote,
     selectedTab,
     onTabChange,
+
+    allArticles,
+    allVideos,
+    onRequestExplanation,
+    onChatClick,
+    onRequestQuiz,
+    quiz,
+    quizLoading,
 }) {
     return (
         <div className="bg-gradient-to-br from-slate-900/40 to-blue-900/20 backdrop-blur-xl border border-blue-500/30 rounded-2xl overflow-hidden hover:border-blue-400/50 transition-all duration-300">
@@ -72,6 +80,21 @@ export default function ModuleCard({
                                     subtopic={subtopic}
                                     selectedTab={selectedTab}
                                     onTabChange={onTabChange}
+                                    chapterId={module.id}
+                                    allArticles={allArticles}
+                                    allVideos={allVideos}
+
+                                quizContent={quiz[`${module.id}:${subtopic.id}`] || []}
+                                quizLoading={quizLoading}
+                                onRequestQuiz={() => onRequestQuiz(module.id, subtopic.id)}
+
+
+                                selectedTab={
+                                        selectedTab[`${module.id}:${subtopic.id}`] || 'explanation'
+                                    }
+                                    onTabChange={tabId =>
+                                        onTabChange(module.id, subtopic.id, tabId)
+                                    }
                                     noteContent={notes[`${module.id}:${subtopic.id}`] || ''}
                                     onSaveNote={content =>
                                         // console.log('Saving note for', module.id, subtopic.id)

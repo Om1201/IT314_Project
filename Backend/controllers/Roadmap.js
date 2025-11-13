@@ -98,7 +98,7 @@ export const generateRoadmap = async (req, res) => {
 export const generateQuiz = async (req, res) => {
     try {
         const {roadMapId, chapterId, subtopicId=null } = req.body;
-
+        console.log(req.body);
         if(!roadMapId ||  !chapterId){
             res.status(400).json({ success: false, message: "Invalid request" });
         }
@@ -109,8 +109,23 @@ export const generateQuiz = async (req, res) => {
         
         const prompt = quizPrompt(roadMap, chapterId, subtopicId);
         const quiz = await generateWithGemini(prompt);
-        const quizJson = JSON.parse(quiz);
         console.log("Quiz generated: ", quizJson); //remove the log later
+
+        const cleaned = quiz
+            .replace(/```json/gi, "")
+            .replace(/```/g, "")
+            .trim();
+
+        let quizJson;
+
+        try {
+            quizJson = JSON.parse(cleaned);
+        } catch (err) {
+            console.log("Cleaned Gemini output:", cleaned);
+            throw new Error("AI returned invalid JSON");
+        }
+
+        console.log("Quiz generated: ", quizJson); 
 
         return res.status(200).json({ success: true, data: quizJson, message: "Quiz generated successfully" });
 
