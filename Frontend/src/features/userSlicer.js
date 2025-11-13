@@ -103,6 +103,19 @@ export const googleAuth = createAsyncThunk('user/googleAuth', async (code, { rej
     }
 });
 
+export const githubAuth = createAsyncThunk('user/githubAuth', async (code, { rejectWithValue }) => {
+    try {
+        const response = await axios.post(
+            import.meta.env.VITE_BACKEND_URL + '/api/auth/oauth/github/callback',
+            { code },
+            { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+        );
+        return response.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+});
+
 const initialState = {
     username: '',
     email: '',
@@ -139,16 +152,25 @@ export const userSlice = createSlice({
                 state.authLoading = true;
             })
             .addCase(checkAuth.fulfilled, (state, action) => {
-                state.authLoading = false;
-                state.isLoggedin = true;
-                state.username = action.payload.user.name;
-                state.email = action.payload.user.email;
+                console.log(action.payload);
+                if (action.payload.success) {
+                    state.authLoading = false;
+                    state.isLoggedin = true;
+                    state.username = action.payload.user.name;
+                    state.email = action.payload.user.email;
+                }
             })
             .addCase(checkAuth.rejected, state => {
                 state.authLoading = false;
                 state.isLoggedin = false;
             })
             .addCase(googleAuth.fulfilled, (state, action) => {
+                state.authLoading = false;
+                state.isLoggedin = true;
+                state.username = action.payload.user.name;
+                state.email = action.payload.user.email;
+            })
+            .addCase(githubAuth.fulfilled, (state, action)=> {
                 state.authLoading = false;
                 state.isLoggedin = true;
                 state.username = action.payload.user.name;

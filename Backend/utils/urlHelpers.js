@@ -16,6 +16,15 @@ export const buildGoogleAuthUrl = () => {
     return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 };
 
+export const buildGithubAuthUrl = () => {
+    const params = new URLSearchParams({
+        client_id: process.env.GITHUB_CLIENT_ID,
+        redirect_uri: process.env.GITHUB_REDIRECT_URI,
+        scope: 'user:email',
+    });
+    return `https://github.com/login/oauth/authorize?${params.toString()}`;
+};
+
 export const buildGoogleTokenParams = code => {
     const params = new URLSearchParams();
     params.append('code', code);
@@ -25,3 +34,16 @@ export const buildGoogleTokenParams = code => {
     params.append('grant_type', 'authorization_code');
     return params;
 };
+
+export const buildGithubTokenParams = code=> {
+    const params = new URLSearchParams();
+    params.append('code', code);
+    params.append('client_id', process.env.GITHUB_CLIENT_ID);
+    params.append('client_secret', process.env.GITHUB_CLIENT_SECRET);
+    params.append('redirect_uri', process.env.GITHUB_REDIRECT_URI);
+    return params.toString();
+}
+
+export const buildEmailVerifyUrl = email => {
+    return `https://api.emailvalidation.io/v1/info?apikey=${process.env.EMAIL_VERIFICATION_KEY}&email=${email}`;
+}

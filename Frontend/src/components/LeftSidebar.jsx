@@ -1,4 +1,5 @@
 import { Clock, Zap, CheckCircle2, Play, Pause, RotateCcw } from 'lucide-react';
+import { useRef } from 'react';
 
 export default function LeftSidebar({
     roadmapTitle,
@@ -9,6 +10,7 @@ export default function LeftSidebar({
     timer,
     moduleProgress,
 }) {
+    const resetBtn = useRef();
     return (
         <aside className="w-80 bg-slate-900/40 backdrop-blur-xl -r border-blue-500/30 overflow-y-auto p-6">
             <div className="mb-8">
@@ -103,8 +105,10 @@ export default function LeftSidebar({
                             max="59"
                             value={timer.minutes}
                             onChange={async e => {
-                                timer.setMinutes(Math.max(0, Number.parseInt(e.target.value) || 0));
-                                // document.querySelector("#resetbtn").click();
+                                await timer.setMinutes(
+                                    Math.max(0, Number.parseInt(e.target.value) || 0)
+                                );
+                                resetBtn.current.click();
                             }}
                             disabled={timer.isRunning}
                             className="flex-1 bg-slate-800 text-white px-2 py-1 rounded text-center text-sm disabled:opacity-50"
@@ -147,7 +151,7 @@ export default function LeftSidebar({
                             </span>
                         </button>
                         <button
-                            id="resetbtn"
+                            ref={resetBtn}
                             onClick={timer.reset}
                             className="flex-1 flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg py-2 transition-colors"
                             title="Reset"

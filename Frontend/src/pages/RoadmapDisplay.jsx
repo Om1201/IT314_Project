@@ -26,16 +26,15 @@ export default function RoadmapDisplay() {
     const [isLoading, setisLoading] = useState(true);
     const [notfound, setNotfound] = useState(false);
     const { id } = useParams();
-    const [completedSubtopics, setCompletedSubtopics] = useState(new Set());
+    const [completedSubtopics, setCompletedSubtopics] = useState(new Map());
 
-    const [selectedTab, setSelectedTab] = useState('explanation');
+    const [selectedTab, setSelectedTab] = useState({});
     const [notes, setNotes] = useState({});
     const [quiz, setQuiz] = useState({});
     const { quizLoading } = useSelector((state) => state.roadmap);
     const [explanation, setExplanation] = useState({});
     const [expandedModules, setExpandedModules] = useState(new Set());
     const [expandedSubtopics, setExpandedSubtopics] = useState(new Map());
-
     const stopwatch = useStopwatch();
     const timer = useTimer();
 
@@ -44,31 +43,55 @@ export default function RoadmapDisplay() {
             if (id === undefined) return;
             let response = await dispatch(getUserRoadmapById(id));
             response = response.payload;
-            console.log(response);
             if (!response.success) {
                 setNotfound(true);
                 toast.error('Failed to fetch roadmap data');
                 setisLoading(false);
                 return;
             }
-            console.log('Fetched single roadmap:', response.roadmapData);
             setCurrRoadmap(response.data.roadmapData);
+            for (let i = 1; i <= response.data.roadmapData.chapters.length; i++) {
+                for (
+                    let j = 1;
+                    j <= response.data.roadmapData.chapters[i - 1].subtopics.length;
+                    j++
+                ) {
+                    setSelectedTab(prev => ({ ...prev, [`${i}:${j}`]: 'explanation' }));
+                }
+            }
             let notesResponse = await dispatch(fetchNotes(id));
             notesResponse = notesResponse.payload.data;
-            console.log('Fetched notes:', notesResponse);
-            console.log(response.data.roadmapData);
             setNotes(notesResponse);
 
-            dispatch(fetchNotes(id));
+            let progressResponse = await dispatch(fetchProgress({ roadmapId: id }));
+            progressResponse = new Set(progressResponse.payload.data);
+
+            setCompletedSubtopics(progressResponse);
+
+            let explanationResponse = await dispatch(fetchSubtopicExplanation({ roadmapId: id }));
+            explanationResponse = explanationResponse.payload.data;
+            setExplanation(explanationResponse);
             setisLoading(false);
         }
         fetchRoadmap();
     }, [id, dispatch]);
 
+    useEffect(() => {
+        if (!isLoading) {
+            const hash = location.hash?.slice(1);
+            if (hash) {
+                const el = document.getElementById(hash);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+    }, [isLoading, location.hash]);
+    
     const moduleProgress = useMemo(() => {
         return currRoadmap?.chapters?.map(module => {
             const completedCount = module.subtopics.filter(s =>
-                completedSubtopics.has(`${module.id}-${s.id}`)
+                completedSubtopics.has(`${module.id}:${s.id}`)
             ).length;
             return {
                 moduleId: module.id,
@@ -85,25 +108,22 @@ export default function RoadmapDisplay() {
         const completed = completedSubtopics.size;
         return Math.round((completed / total) * 100);
     }, [currRoadmap, completedSubtopics]);
-    const toggleSubtopicComplete = (moduleId, subtopicId) => {
+    const toggleSubtopicComplete = async (moduleId, subtopicId) => {
         const newCompleted = new Set(completedSubtopics);
-        if (newCompleted.has(`${moduleId}-${subtopicId}`)) {
-            newCompleted.delete(`${moduleId}-${subtopicId}`);
+        if (newCompleted.has(`${moduleId}:${subtopicId}`)) {
+            newCompleted.delete(`${moduleId}:${subtopicId}`);
         } else {
-            newCompleted.add(`${moduleId}-${subtopicId}`);
+            newCompleted.add(`${moduleId}:${subtopicId}`);
         }
-        // console.log(module);
         setCompletedSubtopics(newCompleted);
+
+        const response = await dispatch(
+            saveProgress({ roadmapId: id, chapterId: moduleId, subtopicId })
+        );
     };
 
     const saveNotes = async (moduleId, subtopicId, content) => {
         try {
-            console.log('Saving note:', {
-                roadmapId: id,
-                subtopicId: subtopicId,
-                moduleId: moduleId,
-                content,
-            });
             let response = await dispatch(
                 saveNote({ roadmapId: id, subtopicId: subtopicId, moduleId: moduleId, content })
             );
@@ -115,7 +135,9 @@ export default function RoadmapDisplay() {
             }
 
             await dispatch(fetchNotes(id));
+
             toast.success('Note saved successfully');
+            setNotes(prev => ({ ...prev, [`${moduleId}:${subtopicId}`]: content }));
         } catch (error) {
             toast.error(error.response.data.message);
         }
@@ -204,6 +226,11 @@ export default function RoadmapDisplay() {
         setExpandedSubtopics(newExpandedSubtopics);
     };
 
+    const handleChatClick = chapterId => {
+        const url = `${window.location.origin}/roadmap/${id}/chat/${chapterId}`;
+        window.open(url, '_blank');
+    };
+
     if (notfound) {
         return (
             <div className="flex items-center justify-center h-screen pt-16 bg-gradient-to-br from-slate-950 via-blue-950 to-black text-white overflow-hidden">
@@ -287,7 +314,11 @@ export default function RoadmapDisplay() {
 
                                     onSaveNote={saveNotes}
                                     selectedTab={selectedTab}
-                                    onTabChange={setSelectedTab}
+                                    onTabChange={onTabChange}
+                                    allArticles={currRoadmap.articles}
+                                    allVideos={currRoadmap.videos}
+                                    onRequestExplanation={onRequestExplanation}
+                                    onChatClick={handleChatClick}
                                 />
                             </div>
                         ))}

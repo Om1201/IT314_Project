@@ -2,11 +2,12 @@ import React, { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
-import { googleAuth } from '../features/userSlicer';
+import { googleAuth, githubAuth} from '../features/userSlicer';
 import toast from 'react-hot-toast';
 import Loader from './Loader';
+import { fetchUserRoadmaps } from '../features/roadmapSlicer';
 
-const Callback = () => {
+const Callback = ({provider}) => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -17,8 +18,11 @@ const Callback = () => {
     useEffect(() => {
         const exchangeCode = async () => {
             try {
-                const res = await dispatch(googleAuth(code));
+                const fun = provider === 'google' ? googleAuth : githubAuth;
+                const res = await dispatch(fun(code));
                 toast.success('Logged in successfully!');
+                await dispatch(fetchUserRoadmaps());
+
                 navigate('/'); // redirect after success
             } catch (err) {
                 console.error('Error during token exchange:', err);

@@ -24,6 +24,7 @@ Create a comprehensive learning roadmap for "${topic}". Return a JSON object wit
             "top-site1.org",
             "top-site2.com",
             "top-site3.dev"
+            (Include popular sites like GFG, w3School and documentations first, if relevent)
           ],
           "detailedExplanation": "<remain this field empty string>"
         }
@@ -168,3 +169,55 @@ export const getSubtopicSummaryPrompt = (subtopic, roadmapTitle, chapterTitle) =
 
 Begin the summary now.`;
 };
+
+export const getAnalysePrompt = (code) => {
+  return `You are an expert at analyzing code. You are given a piece of code to analyze its time and space complexity.
+
+Code:
+${code}
+
+Your task:
+1. If the code contains syntax errors or an infinite loop, explicitly mention it in the "compilationError" section.
+2. Analyze the time and space complexity of the given code carefully.
+3. Provide clear and detailed explanations for both.
+
+
+ Important Instructions:
+- Respond in **ONLY** the JSON format shown below.
+- Do **not** include any extra text, comments, or explanations outside of the JSON.
+
+{
+  "compilationError": <true | false>,
+  "errorExplanation": "<Explain the syntax or logical issue if any>",
+
+  "timeComplexity": "<Big O notation, e.g., O(n^2)>",
+  "timeExplanation": "<Explain the reasoning behind the time complexity wiht reasonable details.>",
+  
+  "spaceComplexity": "<Big O notation, e.g., O(1)>",
+  "spaceExplanation": "<Explain the reasoning behind the space complexity with reasonable details.>",
+}`
+};
+
+export const getTitlePrompt = (userDescription) => {
+  return `You are an AI chat assistant.
+  Given this user description or question: "${userDescription}".
+
+  1. Generate a concise and engaging title (max 5 words) that summarizes the user's description/question.
+  2. Generate a helpful and natural response to the user's description/question.
+
+  Respond strictly in the following JSON format (no extra text, no markdown, no explanations, no newlines):
+
+  {
+    "title": "<generated_title_here>",
+    "response": "<ai_response_here>"
+  }`;
+}
+
+
+export const getResponsePrompt = (userMessage, context) => {
+  return `You are an AI chat assistant.
+  Given this user message: "${userMessage}".
+  And this some last past conversation between you and user as context: "${context}". 
+  Generate a helpful and natural response to the user's message considering the provided context.
+  don't reply like this: "Given our previous back-and-forth or as the last thing we discussed was the or anything like as our conversation was...", you know the context is there, just use it to generate a better response. `;
+}

@@ -4,11 +4,16 @@ import jwt from 'jsonwebtoken';
 import transporter from '../config/mailer.js';
 import crypto from 'crypto';
 import { passwordResetEmail, verificationEmail } from '../utils/emailTemplates.js';
-import { buildResetPasswordUrl, buildVerifyAccountUrl } from '../utils/urlHelpers.js';
+import { buildEmailVerifyUrl, buildResetPasswordUrl, buildVerifyAccountUrl } from '../utils/urlHelpers.js';
 
 export const register = async (req, res) => {
     try {
         const { name, email, password } = req.validatedData;
+
+        // const response = await fetch(buildEmailVerifyUrl(email));
+        // if(response.reason != "valid_mailbox" || response.smtp_check != true || response.state != "deliverable"){
+        //     return res.status(400).json({ success: false, message: 'Email is not valid' });
+        // }
 
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
@@ -124,6 +129,7 @@ export const signIn = async (req, res) => {
     const { email, password } = req.validatedData;
     try {
         const user = await UserModel.findOne({ email });
+        console.log(user);
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }

@@ -17,6 +17,11 @@ import Loader from './components/Loader';
 import { useSelector } from 'react-redux';
 import Roadmaps from './pages/Roadmaps';
 import { fetchUserRoadmaps } from './features/roadmapSlicer';
+import OnlineIDE from './pages/OnlineIDE';
+import Search from './pages/Search.jsx';
+import ChatPage from './pages/ChatPage.jsx';
+
+
 
 function App() {
     const dispatch = useDispatch();
@@ -39,6 +44,14 @@ function App() {
             <Router>
                 <Routes>
                     <Route path="/" element={<Home />} />
+                     <Route
+                        path="/search"
+                        element={
+                            <ProtectedRoute>
+                                <Search />
+                            </ProtectedRoute>
+                        }
+                    />
                     <Route
                         path="/signin"
                         element={
@@ -57,7 +70,8 @@ function App() {
                     />
                     <Route path="/verifyaccount" element={<VerifyAccount />} />
                     <Route path="/passwordReset" element={<ResetPassword />} />
-                    <Route path="/oauth/google/callback" element={<Callback />} />
+                    <Route path="/oauth/google/callback" element={<Callback provider='google' />} />
+                    <Route path="/oauth/github/callback" element={<Callback provider='github' />} />
                     <Route
                         path="/roadmap/generate"
                         element={
@@ -75,6 +89,14 @@ function App() {
                         }
                     />
                     <Route
+                        path="/roadmap/:roadmapId/chat/:chapterId"
+                        element={
+                            <ProtectedRoute>
+                                <ChatPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
                         path="/roadmaps"
                         element={
                             <ProtectedRoute>
@@ -82,6 +104,7 @@ function App() {
                             </ProtectedRoute>
                         }
                     />
+                    <Route path="/ide/:id" element={<OnlineIDE />} />
                 </Routes>
             </Router>
         </>

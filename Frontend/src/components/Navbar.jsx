@@ -1,12 +1,17 @@
-import React from 'react';
-import { Code, Menu, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useDispatch } from 'react-redux';
-import { logoutUser } from '../features/userSlicer';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Code, Menu, X, Search as SearchIcon } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
+import { logoutUser } from '../features/userSlicer';
+import {
+    Navbar as UINavbar,
+    NavBody,
+    MobileNav,
+    MobileNavHeader,
+    MobileNavMenu,
+    NavbarButton,
+} from './ui/resizable-navbar';
 
 const navLinks = [
     { name: 'Home', href: '/' },
@@ -33,112 +38,175 @@ const Navbar = () => {
             console.error('Logout failed:', error);
         }
     };
+
     return (
-        <nav className="fixed top-0 w-full z-50 backdrop-blur-xl bg-slate-900/80 shadow-xl border-b border-slate-700/60 transition-colors duration-300">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-18 py-4">
-                    <div className="flex items-center space-x-3 group cursor-pointer">
-                        <div className="relative">
-                            <Code className="h-9 w-9 text-blue-300 drop-shadow-xl transition-transform duration-300 group-hover:scale-105" />
-                            <div className="absolute inset-0 h-9 w-9 bg-blue-400/30 rounded-lg blur-xl animate-pulse-slow opacity-70"></div>
-                        </div>
-                        <span className="text-3xl font-extrabold bg-gradient-to-r from-blue-300 to-white bg-clip-text text-transparent transition-colors duration-300 group-hover:from-blue-200">
-                            CodingLearning
-                        </span>
+        <UINavbar className="fixed mt-5 inset-x-0 top-0 z-50">
+            <NavBody className="px-4 py-2">
+                <Link to="/" className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1">
+                    <div className="relative">
+                        <Code className="h-8 w-8 text-blue-300" />
+                        <div className="absolute inset-0 h-8 w-8 bg-blue-400/30 rounded-lg blur-xl opacity-70"></div>
                     </div>
+                    <span className="text-xl font-bold bg-gradient-to-r from-blue-300 to-white bg-clip-text text-transparent">
+                        CodingLearning
+                    </span>
+                </Link>
 
-                    <div className="hidden md:flex items-center space-x-8">
-                        {navLinks.map(link => (
-                            <Link
-                                key={link.name}
-                                to={link.href}
-                                className="text-slate-300 text-md hover:text-blue-400 transition-all duration-300 relative group"
-                            >
-                                {link.name}
-                                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
-                            </Link>
-                        ))}
+                <div className="hidden lg:flex flex-1 items-center justify-center space-x-2 text-sm font-medium">
+                    {navLinks.map(link => (
+                        <Link
+                            key={link.name}
+                            to={link.href}
+                            className="relative px-4 py-2 text-neutral-300 rounded-full hover:bg-neutral-800 transition"
+                        >
+                            {link.name}
+                        </Link>
+                    ))}
+                </div>
 
-                        {!isLoggedin && (
-                            <Link
-                                to="/signin"
-                                className="px-6 py-2 border border-blue-600 text-blue-400 rounded-xl hover:bg-blue-900/50 transition-all duration-300 font-medium text-md hover:scale-[1.03]"
-                            >
-                                Sign In
-                            </Link>
-                        )}
+                {/* Desktop search + auth actions */}
+                <div className="hidden lg:flex items-center gap-6">
+                    {/* Search */}
+                    <form
+                        onSubmit={e => {
+                            e.preventDefault();
+                            const val = e.currentTarget.elements.search.value.trim();
+                            if (val) navigate(`/search?q=${encodeURIComponent(val)}`);
+                        }}
+                        className="relative"
+                    >
+                        <SearchIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                        <input
+                            name="search"
+                            type="search"
+                            placeholder="Search ( / )"
+                            className="w-50 pl-9 pr-3 py-1.5 rounded-3xl bg-[#020618] border border-slate-700 text-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+                            // className="w-50 pl-9 pr-3 py-2 rounded-lg bg-slate-800/60 border border-slate-700 text-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+                            onKeyDown={e => {
+                                if (e.key === '/' && e.currentTarget.value === '') {
+                                    e.preventDefault();
+                                    e.currentTarget.focus();
+                                }
+                            }}
+                        />
+                    </form>
 
-                        {!isLoggedin && (
-                            <Link
-                                to="/signup"
-                                className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:from-blue-600 hover:to-blue-800 transition-all duration-300 font-semibold text-md hover:scale-[1.03]"
-                            >
-                                Sign Up
-                            </Link>
-                        )}
-                        {isLoggedin && (
-                            <button
-                                className="px-6 py-2.5 cursor-pointer bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:from-blue-600 hover:to-blue-800 transition-all duration-300 font-semibold text-md hover:scale-[1.03]"
-                                onClick={handleLogout}
-                            >
-                                Logout
-                            </button>
-                        )}
-                    </div>
+                    {!isLoggedin && (
+                        <NavbarButton
+                            as={Link}
+                            to="/signin"
+                            variant="secondary"
+                            className=""
+                        >
+                            Sign In
+                        </NavbarButton>
+                    )}
+                    {!isLoggedin && (
+                        <NavbarButton as={Link} to="/signup" variant="gradient">
+                            Sign Up
+                        </NavbarButton>
+                    )}
+                    {isLoggedin && (
+                        <NavbarButton as="button" onClick={handleLogout} variant="dark">
+                            Logout
+                        </NavbarButton>
+                    )}
+                </div>
+            </NavBody>
 
+            <MobileNav>
+                <MobileNavHeader>
+                    <Link
+                        to="/"
+                        className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1"
+                    >
+                        <Code className="h-7 w-7 text-blue-300" />
+                        <span className="text-lg font-semibold">CodingLearning</span>
+                    </Link>
                     <button
-                        className="md:hidden text-slate-200 hover:text-blue-400 p-2 rounded-lg transition-colors duration-300"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         aria-label="Toggle mobile menu"
+                        className="p-2 rounded-md"
+                        onClick={() => setMobileMenuOpen(prev => !prev)}
                     >
                         {mobileMenuOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
                     </button>
-                </div>
+                </MobileNavHeader>
+                <MobileNavMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)}>
+                    {/* Mobile search */}
+                    <form
+                        onSubmit={e => {
+                            e.preventDefault();
+                            const val = e.currentTarget.elements.search.value.trim();
+                            if (val) {
+                                setMobileMenuOpen(false);
+                                navigate(`/search?q=${encodeURIComponent(val)}`);
+                            }
+                        }}
+                        className="relative w-full mb-2"
+                    >
+                        <SearchIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                        <input
+                            name="search"
+                            type="search"
+                            placeholder="Search ( / )"
+                            className="w-full pl-9 pr-3 py-2  bg-slate-800/60 border border-slate-700 text-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+                            onKeyDown={e => {
+                                if (e.key === '/' && e.currentTarget.value === '') {
+                                    e.preventDefault();
+                                    e.currentTarget.focus();
+                                }
+                            }}
+                        />
+                    </form>
 
-                {mobileMenuOpen && (
-                    <div className="md:hidden pb-6 pt-2 space-y-4 border-t border-slate-700/50 animate-slide-down">
-                        {[...navLinks].map(link => (
-                            <Link
-                                key={link.name}
-                                to={link.href}
-                                onClick={() => setMobileMenuOpen(false)} // Close menu on click
-                                className="block text-xl text-slate-300 hover:text-blue-400 transition-colors py-2 px-4 rounded-lg hover:bg-slate-800/50"
+                    {navLinks.map(link => (
+                        <Link
+                            key={link.name}
+                            to={link.href}
+                            className="px-2 py-2 text-lg rounded-md hover:bg-neutral-800 w-full"
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            {link.name}
+                        </Link>
+                    ))}
+                    <div className="pt-2 w-full">
+                        {!isLoggedin && (
+                            <NavbarButton
+                                as={Link}
+                                to="/signin"
+                                variant="secondary"
+                                className="w-full"
                             >
-                                {link.name}
-                            </Link>
-                        ))}
-
-                        <div className="pt-4 border-t border-slate-800">
-                            {!isLoggedin && (
-                                <Link
-                                    to="/signin"
-                                    className="block w-full px-6 py-2.5 border text-center border-blue-600 text-blue-400 rounded-xl hover:bg-blue-900/50 transition-all duration-300 font-medium text-md hover:scale-[1.03]"
-                                >
-                                    Sign In
-                                </Link>
-                            )}
-
-                            {!isLoggedin && (
-                                <Link
-                                    to="/signup"
-                                    className="block w-full text-center mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:from-blue-600 hover:to-blue-800 transition-all duration-300 font-semibold text-md hover:scale-[1.03]"
-                                >
-                                    Sign Up
-                                </Link>
-                            )}
-                            {isLoggedin && (
-                                <button
-                                    className="block w-full text-center mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:from-blue-600 hover:to-blue-800 transition-all duration-300 font-semibold text-md hover:scale-[1.03]"
-                                    onClick={handleLogout}
-                                >
-                                    Logout
-                                </button>
-                            )}
-                        </div>
+                                Sign In
+                            </NavbarButton>
+                        )}
+                        {!isLoggedin && (
+                            <NavbarButton
+                                as={Link}
+                                to="/signup"
+                                variant="gradient"
+                                className="w-full mt-2"
+                            >
+                                Sign Up
+                            </NavbarButton>
+                        )}
+                        {isLoggedin && (
+                            <NavbarButton
+                                as="button"
+                                onClick={() => {
+                                    setMobileMenuOpen(false);
+                                    handleLogout();
+                                }}
+                                variant="dark"
+                                className="w-full mt-2"
+                            >
+                                Logout
+                            </NavbarButton>
+                        )}
                     </div>
-                )}
-            </div>
-        </nav>
+                </MobileNavMenu>
+            </MobileNav>
+        </UINavbar>
     );
 };
 
