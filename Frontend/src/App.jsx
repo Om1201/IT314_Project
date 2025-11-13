@@ -20,7 +20,8 @@ import { fetchUserRoadmaps } from './features/roadmapSlicer';
 import OnlineIDE from './pages/OnlineIDE';
 import Search from './pages/Search.jsx';
 import ChatPage from './pages/ChatPage.jsx';
-
+import UserProfile from "./pages/UserProfile"
+import ChangePassword from "./pages/ChangePassword"
 
 
 function App() {
@@ -105,6 +106,8 @@ function App() {
                         }
                     />
                     <Route path="/ide/:id" element={<OnlineIDE />} />
+                    <Route path="/profile" element={<UserProfile />} />
+                    <Route path="/change-password" element={<ChangePassword />} />
                 </Routes>
             </Router>
         </>

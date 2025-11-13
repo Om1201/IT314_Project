@@ -9,6 +9,7 @@ import codeRoutes from './routes/codeRoutes.js';
 
 import S3Routes from './routes/S3Routes.js';
 import chatRoutes from './routes/chatRotutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 const app = express();
 
@@ -20,7 +21,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/roadmap', roadmapRouter);
 app.use('/api/code', codeRoutes);
 app.use('/api/chat', chatRoutes);
-
+app.use("/api/user", userRoutes);
 app.use('/api/s3', S3Routes); 
 app.get('/', (req, res) => {
     res.send('Server is healthy');
