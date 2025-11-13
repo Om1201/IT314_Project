@@ -291,8 +291,6 @@ export const fetchProgress = async (req, res) => {
 export const fetchSubtopicExplanation = async (req, res) => {
     try {
         const { roadmapId } = req.body;
-        console.log('Fetching explanations for roadmapId:', roadmapId);
-
         const roadmap = await RoadmapModel.findOne({ _id: roadmapId });
         
         const subtopicExplanation = {};

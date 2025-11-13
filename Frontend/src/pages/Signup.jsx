@@ -72,6 +72,10 @@ export default function Signup() {
         window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/oauth/google/login`;
     };
 
+    const handleOauthGithub = () => {
+        window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/oauth/github/login`;
+    };
+
     const RequirementItem = ({ met, text }) => (
         <div className="flex items-center gap-2.5">
             {met ? (
@@ -280,13 +284,21 @@ export default function Signup() {
                         <div className="flex-1 border-t border-slate-700/50"></div>
                     </div>
 
-                    {/* OAuth Button */}
+                    {/* OAuth Buttons */}
                     <button
                         onClick={handleOauthGoogle}
                         className="w-full cursor-pointer px-6 py-3 border border-slate-700/50 text-white hover:bg-slate-900/40 bg-slate-900/20 hover:border-blue-500/50 transition-all duration-300 rounded-lg hover:shadow-lg hover:shadow-blue-500/10 flex items-center justify-center font-medium text-sm backdrop-blur-sm"
                     >
                         <img src="images/google.png" className="h-4 pr-2" alt="google logo" />
                         Continue with Google
+                    </button>
+
+                    <button
+                        onClick={handleOauthGithub}
+                        className="w-full cursor-pointer px-6 py-3 border border-slate-700/50 text-white hover:bg-slate-900/40 bg-slate-900/20 hover:border-blue-500/50 transition-all duration-300 rounded-lg hover:shadow-lg hover:shadow-blue-500/10 flex items-center justify-center font-medium text-sm backdrop-blur-sm"
+                    >
+                        <img src="images/github.png" className="h-4 pr-2" alt="github logo" />
+                        Continue with GitHub
                     </button>
 
                     {/* Sign In Link */}

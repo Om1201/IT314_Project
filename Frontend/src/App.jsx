@@ -70,7 +70,8 @@ function App() {
                     />
                     <Route path="/verifyaccount" element={<VerifyAccount />} />
                     <Route path="/passwordReset" element={<ResetPassword />} />
-                    <Route path="/oauth/google/callback" element={<Callback />} />
+                    <Route path="/oauth/google/callback" element={<Callback provider='google' />} />
+                    <Route path="/oauth/github/callback" element={<Callback provider='github' />} />
                     <Route
                         path="/roadmap/generate"
                         element={
