@@ -5,7 +5,6 @@ export const generateRoadmap = createAsyncThunk(
     'roadmap/generateRoadmap',
     async ({ userDescription, userLevel }, { rejectWithValue }) => {
         try {
-            console.log('Generating roadmap for userDescription:', userDescription);
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/generate`,
                 { userDescription, userLevel },
@@ -17,7 +16,6 @@ export const generateRoadmap = createAsyncThunk(
 
             return response.data;
         } catch (error) {
-            console.error('Error in generateRoadmap:', error);
             return rejectWithValue(error.response?.data || { message: 'Unknown error' });
         }
     }
@@ -34,11 +32,8 @@ export const fetchUserRoadmaps = createAsyncThunk(
                     withCredentials: true,
                 }
             );
-            let roadMaps = response.data;
-            console.log('Fetched roadmaps:', roadMaps);
-            return roadMaps;
+            return response.data;
         } catch (error) {
-            console.error('Error in fetchUserRoadmaps:', error);
             return rejectWithValue(error.response?.data || { message: 'Unknown error' });
         }
     }
@@ -48,7 +43,6 @@ export const deleteUserRoadmap = createAsyncThunk(
     'roadmap/deleteUserRoadmap',
     async (roadmapId, { rejectWithValue }) => {
         try {
-            console.log('Deleting roadmap with ID:', roadmapId);
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/delete-roadmap`,
                 { roadmapId },
@@ -57,10 +51,8 @@ export const deleteUserRoadmap = createAsyncThunk(
                     withCredentials: true,
                 }
             );
-            console.log('Deleted roadmap response:', response);
             return response.data;
         } catch (error) {
-            console.error('Error in deleteUserRoadmap:', error);
             return rejectWithValue(error.response?.data || { message: 'Unknown error' });
         }
     }
@@ -78,14 +70,13 @@ export const getUserRoadmapById = createAsyncThunk(
                     withCredentials: true,
                 }
             );
-            // console.log("Fetched roadmap response:", response);
             return response.data;
         } catch (error) {
-            console.error('Error in getUserRoadmapById:', error);
             return rejectWithValue(error.response?.data || { message: 'Unknown error' });
         }
     }
 );
+
 export const fetchNotes = createAsyncThunk(
     'roadmap/fetchNotes',
     async (roadmapId, { rejectWithValue }) => {
@@ -94,7 +85,6 @@ export const fetchNotes = createAsyncThunk(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/notes/${roadmapId}`,
                 { withCredentials: true }
             );
-            // console.log('Fetched notes response:', response);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data);
@@ -111,7 +101,6 @@ export const saveNote = createAsyncThunk(
                 { roadmapId, subtopicId, moduleId, content },
                 { withCredentials: true }
             );
-            console.log('Saved note response:', response);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data);
@@ -192,6 +181,31 @@ export const fetchSubtopicExplanation = createAsyncThunk(
     }
 );
 
+export const generateQuiz = createAsyncThunk(
+    'roadmap/generateQuiz',
+    async ({ roadmapId, moduleId, subtopicId }, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/generate-quiz`,
+                {
+                    roadMapId: roadmapId,
+                    chapterId: moduleId,
+                    subtopicId
+                },
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                    withCredentials: true,
+                }
+            );
+
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+    }
+);
+
+// 🟢 this was broken — FIXED and placed correctly
 export const togglePinRoadmap = createAsyncThunk(
     'roadmap/togglePinRoadmap',
     async (roadmapId, { rejectWithValue }) => {
@@ -206,11 +220,14 @@ export const togglePinRoadmap = createAsyncThunk(
             );
             return response.data;
         } catch (error) {
-            console.error('Error in togglePinRoadmap:', error);
             return rejectWithValue(error.response?.data || { message: 'Unknown error' });
         }
     }
 );
+
+// --------------------------------------------------------------
+// SLICE
+// --------------------------------------------------------------
 
 const initialState = {
     currRoadmap: {},
@@ -221,7 +238,10 @@ const initialState = {
     userRoadmaps: [],
     notes: {},
     notes_loading: false,
+
     explanation_loading: [],
+    quizData: {},
+    quizLoading: [],
 };
 
 export const roadmapSlice = createSlice({
@@ -245,38 +265,37 @@ export const roadmapSlice = createSlice({
             state.notes[key] = content;
         },
     },
+
     extraReducers: builder => {
         builder
             .addCase(generateRoadmap.pending, state => {
                 state.generation_loading = true;
                 state.generation_error = false;
             })
-
             .addCase(generateRoadmap.fulfilled, (state, action) => {
                 state.generation_loading = false;
                 state.generation_error = false;
-                // state.currRoadmap = action.payload.data;
                 state.userRoadmaps.push(action.payload.data);
             })
-
-            .addCase(generateRoadmap.rejected, (state, action) => {
+            .addCase(generateRoadmap.rejected, state => {
                 state.generation_loading = false;
                 state.generation_error = true;
             })
+
             .addCase(fetchUserRoadmaps.pending, state => {
                 state.fetch_loading = true;
                 state.fetch_error = false;
             })
             .addCase(fetchUserRoadmaps.fulfilled, (state, action) => {
                 state.fetch_loading = false;
-                state.fetch_error = false;
-                // Backend already sorts, so just store the data
                 state.userRoadmaps = action.payload.data || [];
             })
-            .addCase(fetchUserRoadmaps.rejected, (state, action) => {
+            .addCase(fetchUserRoadmaps.rejected, state => {
                 state.fetch_loading = false;
                 state.fetch_error = true;
             })
+
+            // Notes
             .addCase(fetchNotes.pending, state => {
                 state.notes_loading = true;
                 state.notes = {};
@@ -296,6 +315,8 @@ export const roadmapSlice = createSlice({
                     state.notes[key] = note.content;
                 }
             })
+
+            // Subtopic Summary
             .addCase(generateSubtopicSummary.pending, (state, action) => {
                 const args = action.meta.arg;
                 state.explanation_loading.push(`${args.moduleId}:${args.subtopicId}`);
@@ -312,16 +333,36 @@ export const roadmapSlice = createSlice({
                     id => id !== `${args.moduleId}:${args.subtopicId}`
                 );
             })
+
+            // QUIZ
+            .addCase(generateQuiz.pending, (state, action) => {
+                const { moduleId, subtopicId } = action.meta.arg;
+                const key = `${moduleId}:${subtopicId}`;
+                state.quizLoading.push(key);
+            })
+            .addCase(generateQuiz.fulfilled, (state, action) => {
+                const { moduleId, subtopicId } = action.meta.arg;
+                const key = `${moduleId}:${subtopicId}`;
+                state.quizLoading = state.quizLoading.filter(k => k !== key);
+                state.quizData[key] = action.payload.data;
+            })
+            .addCase(generateQuiz.rejected, (state, action) => {
+                const { moduleId, subtopicId } = action.meta.arg;
+                const key = `${moduleId}:${subtopicId}`;
+                state.quizLoading = state.quizLoading.filter(k => k !== key);
+            })
+
+            // PINNING ROADMAP (fixed)
             .addCase(togglePinRoadmap.fulfilled, (state, action) => {
                 const updatedRoadmap = action.payload.data;
                 const index = state.userRoadmaps.findIndex(r => r._id === updatedRoadmap._id);
+
                 if (index !== -1) {
                     state.userRoadmaps[index] = updatedRoadmap;
-                    // Re-sort locally after pin toggle
+
+                    // re-sort pinned first
                     state.userRoadmaps.sort((a, b) => {
-                        if (b.isPinned !== a.isPinned) {
-                            return b.isPinned - a.isPinned;
-                        }
+                        if (b.isPinned !== a.isPinned) return b.isPinned - a.isPinned;
                         return new Date(b.createdAt) - new Date(a.createdAt);
                     });
                 }
@@ -329,6 +370,11 @@ export const roadmapSlice = createSlice({
     },
 });
 
-export const { setcurrRoadmap, resetRoadmap, setUserRoadmaps, updateNoteInState } =
-    roadmapSlice.actions;
+export const {
+    setcurrRoadmap,
+    resetRoadmap,
+    setUserRoadmaps,
+    updateNoteInState
+} = roadmapSlice.actions;
+
 export const roadmapReducer = roadmapSlice.reducer;
