@@ -1,6 +1,8 @@
-import { Save, CheckCircle2, Circle } from 'lucide-react';
+import { Save, CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import MDEditor from '@uiw/react-md-editor';
+import { useSelector } from 'react-redux';
+
 const tabs = [
     { id: 'explanation', label: 'Explanation' },
     { id: 'quiz', label: 'Quiz' },
@@ -10,18 +12,18 @@ const tabs = [
 ];
 
 export default function SubtopicPanel({
-    subtopic,
-    selectedTab,
-    onTabChange,
-    noteContent,
-    onSaveNote,
-    onRequestExplanation,
-    onRequestQuiz,
-    quizContent,
-    quizLoading,
-
+                                          subtopic,
+                                          selectedTab = 'explanation',
+                                          onTabChange = () => {},
+                                          noteContent = '',
+                                          onSaveNote = () => {},
+                                          onRequestExplanation = () => {},
+                                          onRequestQuiz = () => {},
+                                          quizContent = [],
+                                          quizLoading = [],
+                                          chapterId, // <-- important: must be provided by parent (ModuleCard)
                                       }) {
-    const { explanation_loading } = useSelector(state => state.roadmap);
+    const { explanation_loading } = useSelector(state => state.roadmap || {});
     const [editingNote, setEditingNote] = useState(noteContent || '');
     const [isSaving, setIsSaving] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
@@ -63,6 +65,12 @@ export default function SubtopicPanel({
         setIsSaving(false);
     };
 
+    // defensive helper for quiz loading state
+    const isQuizGenerating = () =>
+        Array.isArray(quizLoading) && chapterId !== undefined
+            ? quizLoading.includes(`${chapterId}:${subtopic.id}`)
+            : false;
+
     const renderContent = () => {
         switch (selectedTab) {
             case 'explanation':
@@ -71,23 +79,24 @@ export default function SubtopicPanel({
                         {subtopic.detailedExplanation}
                     </div>
                 );
+
             case 'quiz':
                 return (
                     <div className="space-y-4">
                         <p className="text-slate-300">Quiz for: {subtopic.title}</p>
 
-                        {quizContent.length > 0 ? (
+                        {Array.isArray(quizContent) && quizContent.length > 0 ? (
                             <div className="space-y-4 bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
 
                                 {quizContent.map((q, i) => {
-                                    const qKey = `${q.questionId}`;
+                                    const qKey = `${q.questionId ?? i}`;
                                     const selected = userAnswers[qKey]?.selected;
                                     const isSubmitted = userAnswers[qKey]?.submitted;
                                     const isCorrect = selected === q.correctAnswer;
 
                                     return (
                                         <div
-                                            key={i}
+                                            key={qKey}
                                             className="p-4 bg-slate-900/50 rounded-xl space-y-3 border border-slate-700"
                                         >
                                             {/* Question */}
@@ -97,7 +106,7 @@ export default function SubtopicPanel({
 
                                             {/* Options (radio buttons) */}
                                             <div className="space-y-2">
-                                                {Object.entries(q.options).map(([optKey, text]) => {
+                                                {Object.entries(q.options || {}).map(([optKey, text]) => {
                                                     const isSelected = selected === optKey;
                                                     const isCorrectOption =
                                                         isSubmitted && optKey === q.correctAnswer;
@@ -110,16 +119,16 @@ export default function SubtopicPanel({
                                                         <label
                                                             key={optKey}
                                                             className={`
-                                                    flex items-center gap-3 cursor-pointer p-2 rounded-lg 
-                                                    border transition 
-                                                    ${
+                                                                flex items-center gap-3 cursor-pointer p-2 rounded-lg 
+                                                                border transition 
+                                                                ${
                                                                 isCorrectOption
                                                                     ? 'border-green-500 bg-green-500/20'
                                                                     : isWrongOption
                                                                         ? 'border-red-500 bg-red-500/20'
                                                                         : 'border-slate-600 hover:bg-slate-700/40'
                                                             }
-                                                `}
+                                                            `}
                                                         >
                                                             <input
                                                                 type="radio"
@@ -138,11 +147,11 @@ export default function SubtopicPanel({
                                                                 }
                                                             />
                                                             <span className="text-slate-300">
-                                                    <span className="text-blue-400 font-semibold">
-                                                        {optKey.toUpperCase()}:
-                                                    </span>{' '}
+                                                                <span className="text-blue-400 font-semibold">
+                                                                    {optKey.toUpperCase()}:
+                                                                </span>{' '}
                                                                 {text}
-                                                </span>
+                                                            </span>
                                                         </label>
                                                     );
                                                 })}
@@ -179,9 +188,9 @@ export default function SubtopicPanel({
                                                     </p>
 
                                                     <p className="text-slate-300 text-sm">
-                                            <span className="text-blue-400 font-semibold">
-                                                Explanation:
-                                            </span>{' '}
+                                                        <span className="text-blue-400 font-semibold">
+                                                            Explanation:
+                                                        </span>{' '}
                                                         {q.explanation}
                                                     </p>
                                                 </div>
@@ -194,10 +203,19 @@ export default function SubtopicPanel({
                         ) : (
                             <button
                                 className="cursor-pointer disabled:cursor-not-allowed px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                                onClick={onRequestQuiz}
-                                disabled={quizLoading.includes(`${chapterId}:${subtopic.id}`)}
+                                onClick={() => {
+                                    // call parent request; parent may expect (moduleId, subtopicId) or no args
+                                    try {
+                                        // try sending both ids (if parent handles them)
+                                        onRequestQuiz(chapterId, subtopic.id);
+                                    } catch (err) {
+                                        // fallback
+                                        onRequestQuiz();
+                                    }
+                                }}
+                                disabled={isQuizGenerating()}
                             >
-                                {quizLoading.includes(`${chapterId}:${subtopic.id}`) ? (
+                                {isQuizGenerating() ? (
                                     <div className="flex gap-2 justify-center items-center">
                                         <Loader2 className="animate-spin" /> Generating quiz...
                                     </div>
@@ -208,6 +226,7 @@ export default function SubtopicPanel({
                         )}
                     </div>
                 );
+
             case 'notes':
                 return (
                     <div className="space-y-4" data-color-mode="dark">
@@ -266,6 +285,7 @@ export default function SubtopicPanel({
                         )}
                     </div>
                 );
+
             case 'videos':
                 return (
                     <div className="space-y-4">
@@ -277,6 +297,7 @@ export default function SubtopicPanel({
                         </div>
                     </div>
                 );
+
             case 'articles':
                 return (
                     <div className="space-y-4">
@@ -288,6 +309,7 @@ export default function SubtopicPanel({
                         </div>
                     </div>
                 );
+
             default:
                 return null;
         }

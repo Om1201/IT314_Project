@@ -109,7 +109,6 @@ export const generateQuiz = async (req, res) => {
         
         const prompt = quizPrompt(roadMap, chapterId, subtopicId);
         const quiz = await generateWithGemini(prompt);
-        console.log("Quiz generated: ", quizJson); //remove the log later
 
         const cleaned = quiz
             .replace(/```json/gi, "")

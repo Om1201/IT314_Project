@@ -89,12 +89,6 @@ export default function ModuleCard({
                                 onRequestQuiz={() => onRequestQuiz(module.id, subtopic.id)}
 
 
-                                selectedTab={
-                                        selectedTab[`${module.id}:${subtopic.id}`] || 'explanation'
-                                    }
-                                    onTabChange={tabId =>
-                                        onTabChange(module.id, subtopic.id, tabId)
-                                    }
                                     noteContent={notes[`${module.id}:${subtopic.id}`] || ''}
                                     onSaveNote={content =>
                                         // console.log('Saving note for', module.id, subtopic.id)
