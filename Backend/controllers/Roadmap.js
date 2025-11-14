@@ -24,7 +24,7 @@ export const generateRoadmap = async (req, res) => {
         const responseText = await generateWithGemini(prompt);
         console.log('Response size:', responseText.length);
 
-        // Parse the JSON response
+   
         let roadmapData;
         try {
             const cleanedText = responseText
@@ -48,7 +48,6 @@ export const generateRoadmap = async (req, res) => {
         const videos = await getVideos(roadmapData);
         roadmapData.videos = videos;
 
-        // Save to database
         const user = await UserModel.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
@@ -379,7 +378,7 @@ export const searchRoadmaps = async (req, res) => {
             }
         }
 
-        // Search notes by content (basic regex search)
+
         const noteMatches = await NoteModel.find({
             userId,
             content: { $regex: q, $options: 'i' },

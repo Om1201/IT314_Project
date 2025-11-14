@@ -95,9 +95,6 @@ export const loadProjectFiles = async (req, res) => {
   }
 };
 
-/**
- * Save file content to S3
- */
 export const saveToS3 = async (req, res) => {
   try {
     const { key, filePath, content } = req.body;
@@ -107,18 +104,16 @@ export const saveToS3 = async (req, res) => {
     }
 
     try {
-      await s3.send(new HeadObjectCommand({ Bucket: BUCKET, Key: filePath }));
-      // if no error -> file exists
+      await s3.send(new HeadObjectCommand({ Bucket: BUCKET, Key: `${key}${filePath}` }));
       return res.status(400).json({
         success: false,
         message: "File already exists at this path",
       });
-    } catch (err) {
-      if (err.name !== "NotFound") {
-        throw err; // some other error, rethrow it
-      }
-      // if NotFound -> proceed to upload
-    }
+    } catch (err) {}
+
+
+    console.log("Saving file to S3 at:", `${key}${filePath}`);
+    console.log("path is", filePath);
 
     await s3.send(new PutObjectCommand({
       Bucket: BUCKET,
@@ -128,8 +123,8 @@ export const saveToS3 = async (req, res) => {
     }));
 
     const node = {
-      id: `${key}${filePath}_${Math.random()}`,  // e.g. "s3_/file.cpp_0.591..."
-      name: filePath,                            // "/file.cpp"
+      id: `${key}${filePath}_${Math.random()}`,  
+      name: filePath,                            
       language: langMap[filePath.split('/').pop().split('.').pop()]||"plaintext", 
       code: content,
       input: "",
@@ -200,14 +195,12 @@ export const deleteS3Folder = async (req, res) => {
     const prefix = `${key}/${filePath.replace(/^\/+/, "")}`; 
     console.log("Deleting folder:", prefix);
 
-    // 1️⃣ List all objects under this prefix
     const listedObjects = await s3.send(new ListObjectsV2Command({
       Bucket: BUCKET,
       Prefix: prefix,
     }));
 
     if (!listedObjects.Contents || listedObjects.Contents.length === 0) {
-      // Try deleting the folder marker itself (just in case)
       await s3.send(new DeleteObjectCommand({
         Bucket: BUCKET,
         Key: prefix,
@@ -215,7 +208,6 @@ export const deleteS3Folder = async (req, res) => {
       return res.json({ success: true, message: "Folder deleted (empty or marker only)" });
     }
 
-    // 2️⃣ Delete all child objects
     await s3.send(new DeleteObjectsCommand({
       Bucket: BUCKET,
       Delete: {
@@ -223,7 +215,6 @@ export const deleteS3Folder = async (req, res) => {
       },
     }));
 
-    // 3️⃣ Explicitly delete the folder marker itself
     await s3.send(new DeleteObjectCommand({
       Bucket: BUCKET,
       Key: prefix.endsWith("/") ? prefix : `${prefix}/`,
@@ -303,5 +294,54 @@ export const renameS3Folder = async (req, res) => {
   } catch (error) {
     console.error("Error renaming folder:", error);
     return res.status(500).json({ success: false, message: "Error renaming folder" });
+  }
+};
+
+
+
+export const updateFile = async (req, res) => {
+  try {
+    const { key, filePath, content } = req.body;
+    
+    if (!key || !filePath || content === undefined) {
+      return res.status(400).json({ success: false, message: "key, filePath, and content are required" });
+    }
+
+    const s3Key = `${key}${filePath}`;
+
+    try {
+      await s3.send(new HeadObjectCommand({ Bucket: BUCKET, Key: s3Key }));
+    } catch (err) {
+      if (err.name === "NotFound") {
+        return res.status(404).json({ 
+          success: false,
+          message: "File not found. Cannot update.",
+        });
+      }
+      throw err; 
+    }
+
+    await s3.send(new PutObjectCommand({
+      Bucket: BUCKET,
+      Key: s3Key,
+      Body: content,
+      ContentType: 'text/plain',
+    }));
+
+    const node = {
+      id: `${s3Key}_${Math.random()}`, 
+      name: filePath,
+      language: langMap[filePath.split('/').pop().split('.').pop()] || "plaintext", 
+      code: content,
+      input: "",
+      output: "",
+      saved: true,
+    };
+
+    return res.json({ success: true, message: "File updated successfully", data: node });
+
+  } catch (error) {
+    console.error("Error updating file:", error);
+    return res.status(500).json({ success: false, message: "Error updating file" });
   }
 };

@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react"
+import { use, useEffect, useRef, useState } from "react"
 import Editor from "@monaco-editor/react"
 import {
   Play,
-  Plus,
   Save,
   FileText,
   Download,
@@ -16,16 +15,16 @@ import {
   Folder,
   File,
   Menu,
-  Trash2,
-  Edit,
   Loader2,
+  FilePlus,
+  FolderPlus,
 } from "lucide-react"
 import { useParams } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
-import { deleteFolder, deleteNode, fetchFiles, renameFolder, renameNode, saveNode } from "../features/ideSlicer"
+import { deleteFolder, deleteNode, fetchFiles, renameFolder, renameNode, saveNode, setCurrFile, setCurrFiles, updateFileContent, executeCode, setIsRunning } from "../features/ideSlicer"
 import Loader from "../components/Loader"
 import { createPortal } from "react-dom"
-import toast from 'react-hot-toast'
+import toast from "react-hot-toast"
 
 const languageOptions = [
   { label: "JavaScript", value: "javascript" },
@@ -110,9 +109,8 @@ print("Hello World")`,
   bash: `echo "Hello World"`,
 }
 
-const Modal = ({ isOpen, title, onClose, onConfirm, children, confirmText = "Create", loading=true }) => {
+const Modal = ({ isOpen, title, onClose, onConfirm, children, confirmText = "Create", loading = true }) => {
   if (!isOpen) return null
-  
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -124,8 +122,10 @@ const Modal = ({ isOpen, title, onClose, onConfirm, children, confirmText = "Cre
             Cancel
           </button>
           <button
-          disabled={loading}
-          onClick={onConfirm} className="px-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex justify-center items-center gap-2 py-2 rounded-md bg-blue-600 hover:bg-blue-700 transition">
+            disabled={loading}
+            onClick={onConfirm}
+            className="px-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex justify-center items-center gap-2 py-2 rounded-md bg-blue-600 hover:bg-blue-700 transition"
+          >
             {loading && <Loader2 className="h-5 w-5 animate-spin" />}
             {confirmText}
           </button>
@@ -135,8 +135,19 @@ const Modal = ({ isOpen, title, onClose, onConfirm, children, confirmText = "Cre
   )
 }
 
-
-const FileTree = ({ files, currentFileId, onSelectFile, isDark, onContextMenu, setShowRenameModalFile, setRenameValue,setSelectedItem,setShowDeleteModal, setShowCreateFileModal, setShowCreateFolderModal, setIsFolder, setShowRenameModalFolder }) => {
+const FileTree = ({
+  files,
+  onSelectFile,
+  setShowRenameModalFile,
+  setRenameValue,
+  setSelectedItem,
+  setShowDeleteModal,
+  setShowCreateFileModal,
+  setShowCreateFolderModal,
+  setIsFolder,
+  setShowRenameModalFolder,
+}) => {
+  const {currFile} = useSelector((state) => state.ide);
   const [expandedFolders, setExpandedFolders] = useState(new Set())
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, target: null })
   const menuRef = useRef(null)
@@ -165,43 +176,39 @@ const FileTree = ({ files, currentFileId, onSelectFile, isDark, onContextMenu, s
     if (!contextMenu.target) return
 
     if (contextMenu.target._file) {
-
       if (action === "rename") {
         setShowRenameModalFile(true)
-        setSelectedItem(contextMenu.target._file.name);
-        setRenameValue(contextMenu.target._file.name);
+        setSelectedItem(contextMenu.target._file.name)
+        setRenameValue(contextMenu.target._file.name)
       }
       if (action === "delete") {
         setShowDeleteModal(true)
-        // console.log("Delete file:", contextMenu.target._file)
-        setSelectedItem(contextMenu.target._file.name);
-
+        setSelectedItem(contextMenu.target._file.name)
       }
-      } else if (contextMenu.target.isFolder) {
-    
-    if (action === "rename") {
-      setIsFolder(true);
-      console.log("Rename folder:", contextMenu.target.path)
-      setShowRenameModalFolder(true)
-      setSelectedItem(contextMenu.target.path);
-      setRenameValue(contextMenu.target.path.split('/').pop());
+    } else if (contextMenu.target.isFolder) {
+      if (action === "rename") {
+        setIsFolder(true)
+        console.log("Rename folder:", contextMenu.target.path)
+        setShowRenameModalFolder(true)
+        setSelectedItem(contextMenu.target.path)
+        setRenameValue(contextMenu.target.path.split("/").pop())
       }
       if (action === "delete") {
-        setIsFolder(true);
+        setIsFolder(true)
         setShowDeleteModal(true)
-        setSelectedItem(contextMenu.target.path);
+        setSelectedItem(contextMenu.target.path)
         console.log("Delete folder:", contextMenu.target.path)
       }
       if (action === "createFile") {
-        setIsFolder(true);
-        setShowCreateFileModal(true);
-        setSelectedItem(contextMenu.target.path);
+        setIsFolder(true)
+        setShowCreateFileModal(true)
+        setSelectedItem(contextMenu.target.path)
         console.log("Create file in folder:", contextMenu.target.path)
       }
       if (action === "createFolder") {
-        setIsFolder(true);
-        setShowCreateFolderModal(true);
-        setSelectedItem(contextMenu.target.path);
+        setIsFolder(true)
+        setShowCreateFolderModal(true)
+        setSelectedItem(contextMenu.target.path)
         console.log("Create folder in folder:", contextMenu.target.path)
       }
     }
@@ -209,58 +216,31 @@ const FileTree = ({ files, currentFileId, onSelectFile, isDark, onContextMenu, s
     setContextMenu({ ...contextMenu, visible: false })
   }
 
-  //   const buildTree = () => {
-  //   const tree = {}
-
-  //   files.forEach((file) => {
-  //     const parts = file.name.split("/").filter((p) => p)
-  //     let current = tree
-
-  //     for (let i = 0; i < parts.length; i++) {
-  //       const part = parts[i]
-  //       const isFile = i === parts.length - 1
-
-  //       if (!current[part]) {
-  //         current[part] = isFile ? { _file: file } : {}
-  //       }
-  //       if (!isFile) {
-  //         current = current[part]
-  //       }
-  //     }
-  //   })
-
-  //   return tree
-  // }
   const buildTree = () => {
-  const tree = {}
+    const tree = {}
 
-  files.forEach((file) => {
-    // Remove empty segments, but keep info about trailing slash
-    const isFolder = file.name.endsWith("/")
-    const parts = file.name.split("/").filter((p) => p)
-    let current = tree
+    files.forEach((file) => {
+      const isFolder = file.name.endsWith("/")
+      const parts = file.name.split("/").filter((p) => p)
+      let current = tree
 
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i]
-      const isLast = i === parts.length - 1
-      const isFile = isLast && !isFolder
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i]
+        const isLast = i === parts.length - 1
+        const isFile = isLast && !isFolder
 
-      // Create node if not exist
-      if (!current[part]) {
-        current[part] = isFile ? { _file: file } : {}
+        if (!current[part]) {
+          current[part] = isFile ? { _file: file } : {}
+        }
+
+        if (!isFile) {
+          current = current[part]
+        }
       }
+    })
 
-      // Move deeper if folder
-      if (!isFile) {
-        current = current[part]
-      }
-    }
-  })
-
-  return tree
-}
-
-
+    return tree
+  }
 
   const tree = buildTree()
 
@@ -274,12 +254,11 @@ const FileTree = ({ files, currentFileId, onSelectFile, isDark, onContextMenu, s
         return (
           <div
             key={content._file.id}
-            onClick={() => onSelectFile(content._file.id)}
+            onClick={() => onSelectFile(content._file)
+            }
             onContextMenu={(e) => handleContextMenu(e, content)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer text-sm ${
-              content._file.id === currentFileId
-                ? "bg-blue-600/30 text-blue-400"
-                : "hover:bg-gray-700/50"
+              content._file.id === currFile.id ? "bg-blue-600/30 text-blue-400" : "hover:bg-gray-700/50"
             }`}
           >
             <File size={14} />
@@ -303,9 +282,7 @@ const FileTree = ({ files, currentFileId, onSelectFile, isDark, onContextMenu, s
             <Folder size={14} />
             <span className="truncate text-sm font-medium">{name}</span>
           </div>
-          {isExpanded && (
-            <div className="ml-5 border-l border-gray-700">{renderTree(content, fullPath)}</div>
-          )}
+          {isExpanded && <div className="ml-5 border-l border-gray-700">{renderTree(content, fullPath)}</div>}
         </div>
       )
     })
@@ -315,116 +292,93 @@ const FileTree = ({ files, currentFileId, onSelectFile, isDark, onContextMenu, s
     <div className="relative text-gray-200">
       {renderTree(tree)}
 
-      {/* ✅ Context Menu */}
-      {contextMenu.visible && createPortal(
-        <div
-          ref={menuRef}
-          className="absolute bg-gray-800 border border-gray-700 rounded shadow-lg text-sm w-40 py-1"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          {contextMenu.target?._file ? (
-            <>
-            <div className="">
-
-            
-              <div
-                className="px-3 py-1.5 text-white hover:bg-gray-700 cursor-pointer"
-                onClick={() => handleMenuAction("rename")}
-              >
-                Rename
-              </div>
-              <div
-                className="px-3 py-1.5 text-white hover:bg-gray-700 cursor-pointer"
-                onClick={() => handleMenuAction("delete")}
-              >
-                Delete
-              </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div
-                className="px-3 py-1.5 text-white hover:bg-gray-700 cursor-pointer"
-                onClick={() => handleMenuAction("rename")}
-              >
-                Rename
-              </div>
-              <div
-                className="px-3 py-1.5 text-white hover:bg-gray-700 cursor-pointer"
-                onClick={() => handleMenuAction("delete")}
-              >
-                Delete
-              </div>
-              <div
-                className="px-3 py-1.5 text-white hover:bg-gray-700 cursor-pointer"
-                onClick={() => handleMenuAction("createFile")}
-              >
-                Create File
-              </div>
-              <div
-                className="px-3 py-1.5 text-white hover:bg-gray-700 cursor-pointer"
-                onClick={() => handleMenuAction("createFolder")}
-              >
-                Create Folder
-              </div>
-            </>
-          )}
-        </div>,
-        document.body
-      )}
+      {contextMenu.visible &&
+        createPortal(
+          <div
+            ref={menuRef}
+            className="absolute bg-gray-800 border border-gray-700 rounded shadow-lg text-sm w-40 py-1"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+          >
+            {contextMenu.target?._file ? (
+              <>
+                <div className="">
+                  <div
+                    className="px-3 py-1.5 text-white hover:bg-gray-700 cursor-pointer"
+                    onClick={() => handleMenuAction("rename")}
+                  >
+                    Rename
+                  </div>
+                  <div
+                    className="px-3 py-1.5 text-white hover:bg-gray-700 cursor-pointer"
+                    onClick={() => handleMenuAction("delete")}
+                  >
+                    Delete
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div
+                  className="px-3 py-1.5 text-white hover:bg-gray-700 cursor-pointer"
+                  onClick={() => handleMenuAction("rename")}
+                >
+                  Rename
+                </div>
+                <div
+                  className="px-3 py-1.5 text-white hover:bg-gray-700 cursor-pointer"
+                  onClick={() => handleMenuAction("delete")}
+                >
+                  Delete
+                </div>
+                <div
+                  className="px-3 py-1.5 text-white hover:bg-gray-700 cursor-pointer"
+                  onClick={() => handleMenuAction("createFile")}
+                >
+                  Create File
+                </div>
+                <div
+                  className="px-3 py-1.5 text-white hover:bg-gray-700 cursor-pointer"
+                  onClick={() => handleMenuAction("createFolder")}
+                >
+                  Create Folder
+                </div>
+              </>
+            )}
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }
 
-
-
 export default function OnlineIDE() {
-  const makeId = (prefix = "f") => `${prefix}_${Date.now().toString(36)}_${Math.floor(Math.random() * 1000)}`
   const { id } = useParams()
-    const { loading_fetch, currFiles, loading_general } = useSelector((state) => state.ide)
-    const dispatch = useDispatch()
+  const { loading_fetch, currFiles, loading_general, currFile, is_saving, is_running } = useSelector((state) => state.ide)
+  const dispatch = useDispatch()
 
-    useEffect(() => {
-        async function fetchdata() {
-            if (id === undefined) return;
-            try {
-                console.log("sendgin", id)
-                let response = await dispatch(fetchFiles({ roadmapId: id }))
-                console.log("Fetched files:", response)
-            } catch (err) {
-                console.error("Error fetching files:", err)
-            }
-        }
+  const [openedFileIds, setOpenedFileIds] = useState(new Set())
 
-        fetchdata()
-    }, [id, dispatch])
+  useEffect(() => {
+    async function fetchdata() {
+      if (id === undefined) return
+      try {
+        console.log("sendgin", id)
+        let response = await dispatch(fetchFiles({ roadmapId: id }))
+        console.log("Fetched files:", response)
+      } catch (err) {
+        console.error("Error fetching files:", err)
+      }
+    }
 
-  const [files, setFiles] = useState(() => [
-    {
-      id: makeId("main"),
-      name: "/main.js",
-      language: "javascript",
-      code: defaultCodeSnippets.javascript,
-      input: "",
-      output: "",
-      saved: true,
-    },
-    {
-      id: makeId("file"),
-      name: "/folder/script.py",
-      language: "python",
-      code: defaultCodeSnippets.python,
-      input: "",
-      output: "",
-      saved: true,
-    },
-  ])
+    fetchdata()
+  }, [id, dispatch])
 
-  const [currentFileId, setCurrentFileId] = useState(files[0].id)
+
+
   const [filter, setFilter] = useState("")
   const [theme, setTheme] = useState("dark")
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [isRunning, setIsRunning] = useState(false)
+  // const [isRunning, setIsRunning] = useState(false)
   const editorRef = useRef(null)
   const tabContainerRef = useRef(null)
 
@@ -437,98 +391,94 @@ export default function OnlineIDE() {
   const [newFolderName, setNewFolderName] = useState("")
   const [renameValue, setRenameValue] = useState("")
   const [selectedItem, setSelectedItem] = useState(null)
-  const [isFolder, setIsFolder] = useState(false);
+  const [isFolder, setIsFolder] = useState(false)
+  const saveRef = useRef(null)
 
-  const currentFile = files.find((f) => f.id === currentFileId) || files[0]
 
-  function updateFile(fileId, patch) {
-    setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, ...patch } : f)))
-  }
+  const filesForSidebar = currFiles.filter((f) => f.name.toLowerCase().includes(filter.toLowerCase()))
+  const filesForTabs = currFiles.filter((f) => openedFileIds.has(f.id) && !f.name.endsWith("/"))
 
   async function handleCreateFile() {
     console.log("Create file:", newFileName)
-    let filePath = "";
-    if(selectedItem!==null && selectedItem!==undefined) filePath = "/"+selectedItem+"/"+newFileName;
-    else filePath = "/"+newFileName;
+    let filePath = ""
+    if (selectedItem !== null && selectedItem !== undefined) filePath = "/" + selectedItem + "/" + newFileName
+    else filePath = "/" + newFileName
     console.log("Selected path for new file:", filePath)
-    try{
-
-      let response = await dispatch(saveNode({roadmapId: id, filePath: filePath, content: ""}))
-      response = response.payload;
-      console.log(response);
-      if(!response.success){
-        toast.error("Failed to create file.")
+    try {
+      let response = await dispatch(saveNode({ roadmapId: id, filePath: filePath, content: "" }))
+      response = response.payload
+      console.log("creatingnngngngn", response)
+      if (!response.success) {
+        toast.error(response.message || "Failed to create file.")
+        return;
       }
-      toast.success(`${newFileName} created successfully.`);
-    }catch(error){
-      toast.error(error.message);
+      toast.success(`${newFileName} created successfully.`)
+    } catch (error) {
+      toast.error(error.message)
     }
-    if(isFolder){
-      setIsFolder(false);
+    if (isFolder) {
+      setIsFolder(false)
     }
-    setSelectedItem(null);  
+    setSelectedItem(null)
     setShowCreateFileModal(false)
     setNewFileName("")
   }
 
   async function handleCreateFolder() {
     console.log("Create folder:", newFolderName)
-    // TODO: Implement folder creation logic
 
-    let folderPath = "";
-    if(selectedItem!==null && selectedItem!==undefined) folderPath = "/"+selectedItem+"/"+newFolderName+"/";
-    else folderPath = "/"+newFolderName+"/";
+    let folderPath = ""
+    if (selectedItem !== null && selectedItem !== undefined) folderPath = "/" + selectedItem + "/" + newFolderName + "/"
+    else folderPath = "/" + newFolderName + "/"
     console.log("Selected path for new folder:", folderPath)
-    try{
-
-      let response = await dispatch(saveNode({roadmapId: id, filePath: folderPath, content: ""}))
-      response = response.payload;
-      console.log(response);
-      if(!response.success){
+    try {
+      let response = await dispatch(saveNode({ roadmapId: id, filePath: folderPath, content: "" }))
+      response = response.payload
+      console.log(response)
+      if (!response.success) {
         toast.error("Failed to create file.")
       }
-      toast.success(`${newFileName} created successfully.`);
-    }catch(error){
-      toast.error(error.message);
+      toast.success(`${newFileName} created successfully.`)
+    } catch (error) {
+      toast.error(error.message)
     }
 
-    if(isFolder){
-      setIsFolder(false);
+    if (isFolder) {
+      setIsFolder(false)
     }
-    setSelectedItem(null);  
+    setSelectedItem(null)
     setShowCreateFolderModal(false)
     setNewFolderName("")
   }
 
   async function handleDeleteFile() {
     console.log("Delete file:", selectedItem)
-    let filePath = selectedItem;
-    if(!filePath.startsWith('/')){
-      filePath = "/"+filePath;
+    let filePath = selectedItem
+    if (!filePath.startsWith("/")) {
+      filePath = "/" + filePath
     }
-    if(isFolder){
-      if(!filePath.endsWith('/')) filePath = filePath + '/';
+    if (isFolder) {
+      if (!filePath.endsWith("/")) filePath = filePath + "/"
     }
     console.log("Selected path for deletion:", filePath)
-    // TODO: Implement file deletion logic
-    try{
-      let response;
-      if(isFolder){
-        response = await dispatch(deleteFolder({roadmapId: id, filePath: filePath}))
-      }else{
-        response = await dispatch(deleteNode({roadmapId: id, filePath: filePath}))
+    try {
+      let response
+      if (isFolder) {
+        response = await dispatch(deleteFolder({ roadmapId: id, filePath: filePath }))
+      } else {
+        response = await dispatch(deleteNode({ roadmapId: id, filePath: filePath }))
       }
-      response = response.payload;
-      console.log(response);
-      if(!response.success){
+      response = response.payload
+      console.log(response)
+      if (!response.success) {
         toast.error("Failed to delete file.")
       }
-      toast.success(`${selectedItem.split('/').pop()} delete successfully.`);
-    }catch(error){
-      toast.error(error.message);
+      toast.success(`${selectedItem.split("/").pop()} delete successfully.`)
+    } catch (error) {
+      toast.error(error.message)
     }
-    if(isFolder){
-      setIsFolder(false);
+    if (isFolder) {
+      setIsFolder(false)
     }
     setShowDeleteModal(false)
     setSelectedItem(null)
@@ -537,112 +487,145 @@ export default function OnlineIDE() {
   async function handleRenameFile() {
     console.log("Rename to:", renameValue)
 
-    try{
-      const newpathArray = selectedItem.split('/');
-      newpathArray.pop();
-      const newpath = newpathArray.join('/') + '/' + renameValue;
+    try {
+      const newpathArray = selectedItem.split("/")
+      newpathArray.pop()
+      const newpath = newpathArray.join("/") + "/" + renameValue
 
-      console.log("Renaming:", selectedItem, "to", newpath);
-      let response = await dispatch(renameNode({roadmapId: id, oldFilePath: selectedItem, newFilePath: newpath}))
-      response = response.payload;
-      console.log(response);
-      if(!response.success){
+      console.log("Renaming:", selectedItem, "to", newpath)
+      let response = await dispatch(renameNode({ roadmapId: id, oldFilePath: selectedItem, newFilePath: newpath }))
+      response = response.payload
+      console.log(response)
+      if (!response.success) {
         toast.error("Failed to rename file.")
       }
-      toast.success(`${selectedItem.split('/').pop()} renamed successfully.`);
-    }catch(error){
-      toast.error(error.message);
+      toast.success(`${selectedItem.split("/").pop()} renamed successfully.`)
+    } catch (error) {
+      toast.error(error.message)
     }
-    
-    if(isFolder){
-      setIsFolder(false);
+
+    if (isFolder) {
+      setIsFolder(false)
     }
     setShowRenameModalFile(false)
     setRenameValue("")
     setSelectedItem(null)
   }
   async function handleRenameFolder() {
-
-    try{
-      const newpathArray = selectedItem.split('/');
-      newpathArray.pop();
-      let newpath = newpathArray.join('/') + '/' + renameValue;
-      if(!newpath.endsWith('/')){
-        newpath = newpath + '/';
+    try {
+      const newpathArray = selectedItem.split("/")
+      newpathArray.pop()
+      let newpath = newpathArray.join("/") + "/" + renameValue
+      if (!newpath.endsWith("/")) {
+        newpath = newpath + "/"
       }
-      if(!newpath.startsWith('/')){
-        newpath = "/"+newpath;
-      }
-
-      let oldpath = selectedItem;
-      if(!oldpath.startsWith('/')){
-        oldpath = "/"+oldpath;
-      }
-      if(!oldpath.endsWith('/')){
-        oldpath = oldpath + '/';
+      if (!newpath.startsWith("/")) {
+        newpath = "/" + newpath
       }
 
-      // console.log("Renaming:", oldpath, "to", newpath);
-      let response = await dispatch(renameFolder({roadmapId: id, oldFilePath: oldpath, newFilePath: newpath}))
-      response = response.payload;
-      console.log(response);
-      if(!response.success){
+      let oldpath = selectedItem
+      if (!oldpath.startsWith("/")) {
+        oldpath = "/" + oldpath
+      }
+      if (!oldpath.endsWith("/")) {
+        oldpath = oldpath + "/"
+      }
+
+      let response = await dispatch(renameFolder({ roadmapId: id, oldFilePath: oldpath, newFilePath: newpath }))
+      response = response.payload
+      console.log(response)
+      if (!response.success) {
         toast.error("Failed to rename folder.")
       }
-      toast.success(`${selectedItem.split('/').pop()} renamed successfully.`);
-    }catch(error){
-      toast.error(error.message);
+      toast.success(`${selectedItem.split("/").pop()} renamed successfully.`)
+    } catch (error) {
+      toast.error(error.message)
     }
-    
-    if(isFolder){
-      setIsFolder(false);
+
+    if (isFolder) {
+      setIsFolder(false)
     }
     setShowRenameModalFolder(false)
     setRenameValue("")
     setSelectedItem(null)
   }
 
-  function handleContextMenu(e, item) {
-    e.preventDefault()
-    setSelectedItem(item)
-    // Could implement context menu here or trigger modals
+
+  async function closeFile(fileId) {
+    const newOpened = new Set(openedFileIds)
+    newOpened.delete(fileId)
+    setOpenedFileIds(newOpened)
+
+    if (currFile.id === fileId) {
+      const remainingFiles = filesForTabs.filter((f) => f.id !== fileId)
+      if (remainingFiles.length > 0) {
+        await dispatch(setCurrFile(remainingFiles[remainingFiles.length-1]))
+      } else {
+        console.log(remainingFiles.length);
+        await dispatch(setCurrFile({code:"", id:"", input:"", language:"", name:"", output:"", saved: false}))
+      }
+    }
   }
 
-  function removeFile(fileId) {
-    const fileToRemove = files.find((f) => f.id === fileId)
-    if (!fileToRemove) return
-    const ok = window.confirm(`Delete '${fileToRemove.name}'?`)
-    if (!ok) return
-    setFiles((p) => p.filter((f) => f.id !== fileId))
-    if (currentFileId === fileId) setCurrentFileId(files[0]?.id || null)
+  async function handleSelectFileFromSidebar(fileId) {
+    const file_id = fileId.id
+    const file = currFiles.find((f) => f.id === file_id)
+    if (file && !file.name.endsWith("/")) {
+      console.log(fileId);
+      console.log(currFile)
+      await dispatch(setCurrFile(fileId));
+      setOpenedFileIds((prev) => new Set([...prev, file_id]))
+      // setCurrentFileId(file_id)
+    }
   }
 
-  function renameFile(fileId) {
-    const f = files.find((x) => x.id === fileId)
-    if (!f) return
-    const newName = window.prompt("Rename file", f.name)
-    if (newName && newName.trim()) updateFile(fileId, { name: newName.trim(), saved: false })
-  }
-
-  function changeLanguageForFile(fileId, language) {
-    updateFile(fileId, {
-      language,
-      code: defaultCodeSnippets[language] || "",
-      saved: false,
-    })
-  }
 
   function handleEditorChange(value) {
-    updateFile(currentFileId, { code: value || "", saved: false })
+    console.log(currFile.id);
+    console.log(currFiles);
+    dispatch(setCurrFiles(currFiles.map(file => {
+      if(file.id == currFile.id){
+        return {
+          ...file,
+          code: value,
+          saved: false
+        }
+      }
+      return file;
+    })))
+    dispatch(setCurrFile({...currFile, code: value}));
+
+    
   }
 
-  function handleInputChange(value) {
-    updateFile(currentFileId, { input: value || "", saved: false })
+  async function handleInputChange(e) {
+    await dispatch(setCurrFile({...currFile, input: e.target.value}))
+    dispatch(setCurrFiles(currFiles.map(file => {
+      if(file.id == currFile.id){
+        return {
+          ...file,
+          input: e.target.value,
+        }
+      }
+      return file;
+    })));
   }
 
-  function saveCurrentFile() {
-    if (!currentFile) return
-    updateFile(currentFile.id, { saved: true })
+  async function saveCurrentFile() {
+    if (!currFile) return
+    try{
+      console.log(currFile)
+      let response = await dispatch(updateFileContent({roadmapId: id, filePath: currFile.name, content: currFile.code}));
+      response = response.payload;
+      if(!response.success){
+        toast.error(response.message);
+        return;
+      }
+      toast.success("Files saved successfully");
+    }catch(error){
+      toast.error("Error in saving file");
+    }
+
   }
 
   function downloadFile(file) {
@@ -660,72 +643,55 @@ export default function OnlineIDE() {
   }
 
   async function runCode() {
-    if (!currentFile || !currentFile.code.trim()) {
-      alert("No code to run!")
-      return
+    if (!currFile || !currFile.code.trim()) {
+      toast.error("No code to run.")
+      return;
     }
 
-    setIsRunning(true)
-    updateFile(currentFile.id, { output: "Running..." })
+    await dispatch(setIsRunning(true));
+    try{
+      // const fileToBeExecuted = [
+      //   currFiles.find(f => f.id === currFile.id),
+      //   ...currFiles.filter(f => f.id !== currFile.id)
+      // ];
+      const fileToBeExecuted = [
+        {...currFile,name: currFile.name.split('/').pop()}
+      ];
 
-    try {
-      const response = await fetch("http://localhost:4000/api/code/execute", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          language: currentFile.language,
-          version: "latest",
-          files: [
-            {
-              name:
-                currentFile.name ||
-                `main.${
-                  currentFile.language === "python"
-                    ? "py"
-                    : currentFile.language === "javascript"
-                      ? "js"
-                      : currentFile.language === "java"
-                        ? "java"
-                        : "cpp"
-                }`,
-              content: currentFile.code,
-            },
-          ],
-          args: [],
-          stdin: currentFile.input || "",
-        }),
-      })
+      console.log("Files to be sent for execution:", fileToBeExecuted);
+      console.log("Executing file:", fileToBeExecuted);
+      let response = await dispatch(executeCode({language: currFile.language, files: fileToBeExecuted, stdin: currFile.input || "", }));
+      response = response.payload;
+      // console.log(response.data.run);
 
-      const data = await response.json()
-
-      if (!data.success) {
-        updateFile(currentFile.id, { output: `Error: ${data.message}` })
-      } else {
-        const pistonResult = data.data?.run || {}
-        const finalOutput = pistonResult.output || pistonResult.stderr || "(no output)"
-        updateFile(currentFile.id, { output: finalOutput })
+      await dispatch(setCurrFile({...currFile, output: response.data.run.output || ""}))
+    dispatch(setCurrFiles(currFiles.map(file => {
+      if(file.id == currFile.id){
+        return {
+          ...file,
+          output: response.data.run.output || "",
+        }
       }
-    } catch (err) {
-      updateFile(currentFile.id, { output: "Execution failed: " + err.message })
-    } finally {
-      setIsRunning(false)
+      return file;
+    })));
+
+
+    }catch(error){
+      toast.error("Error in running code"); 
     }
+    await dispatch(setIsRunning(false));
   }
 
   useEffect(() => {
     const handler = (e) => {
-      const modKey = e.ctrlKey || e.metaKey
-      if (modKey && e.key.toLowerCase() === "s") {
+      if (e.ctrlKey  && e.key.toLowerCase() === "s") {
         e.preventDefault()
-        saveCurrentFile()
+        saveRef.current.click();
       }
     }
     window.addEventListener("keydown", handler)
     return () => window.removeEventListener("keydown", handler)
-  }, [currentFileId, files])
+  })
 
   const toggleTheme = () => setTheme((prev) => (prev === "dark" ? "light" : "dark"))
 
@@ -736,43 +702,90 @@ export default function OnlineIDE() {
   const hoverBg = isDark ? "hover:bg-gray-800" : "hover:bg-gray-100"
 
 
-  if(loading_fetch===true){      return <Loader />
+  // useEffect(() => {
+  //       const onKey = e => {
+  //           if (e.ctrlKey && e.key.toLowerCase() === 's') {
+  //             if(currFile){
+  //               e.preventDefault();
+  //               dispatch(saveCurrentFile());
+  //             }
+  //           }
+
+  //       };
+  //       window.addEventListener("keydown", onKey);
+  //       return () => window.removeEventListener("keydown", onKey);
+  //   });
+
+  if (loading_fetch === true) {
+    return <Loader />
   }
 
   return (
     <div
-      className={`min-h-screen ${isDark ? "bg-gray-950 text-white" : "bg-gray-50 text-gray-900"} 
-      p-4 grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 transition-colors duration-300`}
+      /* CHANGE 1: changed min-h-screen to h-screen and added w-full overflow-hidden */
+      className={`h-screen w-full overflow-hidden ${
+        isDark ? "bg-gray-950 text-white" : "bg-gray-50 text-gray-900"
+      } p-4 grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 transition-colors duration-300`}
     >
-      <div className={`transition-all duration-300 ${sidebarOpen ? "w-64" : "w-0"} overflow-hidden`}>
+      {/* Sidebar Wrapper */}
+      {/* CHANGE 2: Added h-full to ensure it respects parent grid height */}
+      <div
+        className={`h-full transition-all duration-300 ${
+          sidebarOpen ? "w-64" : "w-0"
+        } overflow-hidden`}
+      >
         <aside
           className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-3 flex flex-col gap-3 h-full transition-all duration-300`}
         >
-          <div className="flex items-center justify-between pb-2 border-b border-gray-700">
+          {/* ... Sidebar Header ... */}
+          <div className="flex items-center justify-between pb-2 border-b border-gray-700 shrink-0">
             <div className="flex items-center gap-2">
               <Code2 size={20} className="text-blue-500" />
               <h2 className="font-semibold text-lg">Web IDE</h2>
             </div>
-            <button onClick={toggleTheme} className={`p-2 rounded-md ${hoverBg} transition`}>
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-md ${hoverBg} transition`}
+            >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
           </div>
 
-          <div className="flex items-center justify-between">
+          {/* ... File Actions ... */}
+          <div className="flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <FileText size={18} />
-              <h3 className={`uppercase text-xs font-semibold tracking-wider ${textMuted}`}>Files</h3>
+              <h3
+                className={`uppercase text-xs font-semibold tracking-wider ${textMuted}`}
+              >
+                Files
+              </h3>
             </div>
-            <button
-              onClick={() => setShowCreateFileModal(true)}
-              title="New file"
-              className="p-2 rounded-md bg-green-600 hover:bg-green-700 active:scale-95 transition-transform"
-            >
-              <Plus size={16} />
-            </button>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowCreateFileModal(true)}
+                title="New file"
+                className="p-1 cursor-pointer rounded-md bg-slate-600 hover:bg-slate-700 active:scale-95 transition-transform"
+              >
+                <FilePlus size={16} />
+              </button>
+              <button
+                onClick={() => setShowCreateFolderModal(true)}
+                title="New folder"
+                className="p-1 cursor-pointer rounded-md bg-slate-600 hover:bg-slate-700 active:scale-95 transition-transform"
+              >
+                <FolderPlus size={16} />
+              </button>
+            </div>
           </div>
 
-          <div className={`flex items-center gap-2 ${isDark ? "bg-gray-800" : "bg-gray-100"} rounded-md px-2 py-1`}>
+          {/* ... Search ... */}
+          <div
+            className={`flex items-center gap-2 shrink-0 ${
+              isDark ? "bg-gray-800" : "bg-gray-100"
+            } rounded-md px-2 py-1`}
+          >
             <Search size={16} className={textMuted} />
             <input
               placeholder="Search files..."
@@ -782,13 +795,12 @@ export default function OnlineIDE() {
             />
           </div>
 
-          <div className="flex-1 overflow-auto mt-1">
+          {/* ... File Tree ... */}
+          {/* CHANGE 3: This needs min-h-0 to scroll internally */}
+          <div className="flex-1 overflow-auto mt-1 min-h-0 custom-scrollbar">
             <FileTree
-              files={currFiles}
-              currentFileId={currentFileId}
-              onSelectFile={setCurrentFileId}
-              isDark={isDark}
-              onContextMenu={handleContextMenu}
+              files={filesForSidebar}
+              onSelectFile={handleSelectFileFromSidebar}
               setShowRenameModalFile={setShowRenameModalFile}
               setRenameValue={setRenameValue}
               setSelectedItem={setSelectedItem}
@@ -799,94 +811,104 @@ export default function OnlineIDE() {
               setShowRenameModalFolder={setShowRenameModalFolder}
             />
           </div>
-
-          <div className="flex gap-2 pt-2 border-t border-gray-700">
-            <button
-              onClick={() => setShowCreateFolderModal(true)}
-              className="flex-1 py-2 px-3 text-sm rounded-md bg-blue-600 hover:bg-blue-700 transition flex items-center justify-center gap-2"
-            >
-              <Folder size={14} />
-              Folder
-            </button>
-          </div>
         </aside>
       </div>
 
-      <div className="flex flex-col gap-4">
+      {/* Main Content Column */}
+      {/* CHANGE 4: Added h-full and min-h-0 overflow-hidden */}
+      <div className="flex flex-col gap-4 h-full min-h-0 overflow-hidden">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className={`${bgPanel} ${borderColor} border p-2 rounded-lg w-fit`}
+          className={`${bgPanel} ${borderColor} border p-2 rounded-lg w-fit flex-shrink-0`}
         >
           <Menu size={20} />
         </button>
 
-        {/* Main Part */}
-        <main className="flex flex-col gap-3 overflow-hidden">
-          {/* Tabs */}
-          <div className={`flex items-center justify-between gap-3 flex-shrink-0 border-b ${borderColor} pb-1`}>
+        {/* CHANGE 5: main needs flex-1 and min-h-0 */}
+        <main className="flex flex-col gap-3 flex-1 min-h-0 overflow-hidden">
+          {/* Top Bar (Tabs + Buttons) */}
+          <div
+            className={`flex items-center justify-between gap-3 flex-shrink-0 border-b ${borderColor} pb-1`}
+          >
             <div
               ref={tabContainerRef}
               className="flex items-center gap-1 overflow-x-auto scrollbar-hide scroll-smooth flex-1"
             >
-              {currFiles.map((f) => (
+              {filesForTabs.map((f) => (
                 <div
                   key={f.id}
+                  ref={saveRef}
+                  onClick={async () => {
+                    await dispatch(setCurrFile(f));
+                    console.log("clicked", currFile);
+                  }}
                   className={`flex items-center gap-2 px-3 py-2 text-sm font-medium border-b-2 transition-all duration-150 ${
-                    f.id === currentFileId
+                    f.id === currFile.id
                       ? "border-blue-400 bg-blue-500/10"
                       : "border-transparent hover:bg-gray-200/20"
                   } rounded-t-md cursor-pointer flex-shrink-0`}
                 >
-                  <button onClick={() => setCurrentFileId(f.id)} className="flex items-center gap-2">
+                  <button className="flex cursor-pointer items-center gap-2">
                     <span>{f.name}</span>
-                    {!f.saved && <span className="text-xs text-yellow-500">•</span>}
+                    {!f.saved && (
+                      <span className="text-xs text-yellow-500">•</span>
+                    )}
                   </button>
-                  {currFiles.length > 1 && (
-                    <button
-                      onClick={() => removeFile(f.id)}
-                      title="Close file"
-                      className="hover:text-red-400 text-gray-400"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeFile(f.id);
+                    }}
+                    title="Close file"
+                    className="
+                        cursor-pointer rounded-md px-1 py-0.5
+                        text-gray-400
+                        transition-colors
+                        hover:text-red-500 hover:bg-red-500/10"
+                  >
+                    <X size={14} />
+                  </button>
                 </div>
               ))}
             </div>
 
             <div className="flex items-center gap-2 flex-shrink-0">
-              <select
-                value={currentFile?.language || "javascript"}
-                onChange={(e) => changeLanguageForFile(currentFile.id, e.target.value)}
+              <div
                 className={`${bgPanel} ${borderColor} border font-medium px-3 py-2 rounded-lg text-sm`}
               >
-                {languageOptions.map((l) => (
-                  <option key={l.value} value={l.value}>
-                    {l.label}
-                  </option>
-                ))}
-              </select>
+                {currFile?.language || "None"}
+              </div>
 
               <button
                 onClick={saveCurrentFile}
-                className={`${bgPanel} ${borderColor} border flex items-center gap-2 px-3 py-2 rounded-lg hover:scale-95 active:scale-90 transition`}
+                disabled={is_saving}
+                className={`${bgPanel} ${borderColor} cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none border flex items-center gap-2 px-3 py-2 rounded-lg hover:scale-95 active:scale-90 transition`}
               >
-                <Save size={14} /> Save
+                {is_saving ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Save size={14} />
+                )}
+                {is_saving ? "Saving" : "Save"}
               </button>
 
               <button
                 onClick={runCode}
                 title="Run code"
-                disabled={isRunning}
+                disabled={is_running}
                 className={`${bgPanel} ${borderColor} border flex items-center gap-2 px-3 py-2 rounded-lg
-                            ${isRunning ? "opacity-70 cursor-wait" : "hover:scale-95 transition"}`}
+                            ${
+                              is_running
+                                ? "opacity-70 cursor-wait"
+                                : "hover:scale-95 transition"
+                            }`}
               >
                 <Play size={16} />
-                {isRunning ? "Running..." : "Run"}
+                {is_running ? "Running..." : "Run"}
               </button>
 
               <button
-                onClick={() => downloadFile(currentFile)}
+                onClick={() => downloadFile(currFile)}
                 title="Download file"
                 className={`${bgPanel} ${borderColor} border flex items-center justify-center px-3 h-[40px] rounded-lg hover:scale-95 transition`}
               >
@@ -895,25 +917,23 @@ export default function OnlineIDE() {
             </div>
           </div>
 
-          {/* Editor and Console */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 overflow-hidden">
-            {/* Editor Section */}
+          {/* Editor & Console Grid */}
+          {/* CHANGE 6: Added flex-1, min-h-0 to ensure grid doesn't overflow main */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0 overflow-hidden">
             <div
-              className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-4 flex flex-col overflow-hidden transition-all duration-300`}
+              className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-4 flex flex-col h-full overflow-hidden transition-all duration-300`}
             >
-              <div className="flex items-center justify-between pb-2 border-b border-gray-700">
+              <div className="flex items-center justify-between pb-2 border-b border-gray-700 shrink-0">
                 <h2 className="text-lg font-semibold">Editor</h2>
-                <div className={`text-sm ${textMuted}`}>
-                  {currentFile?.name} ({currentFile?.language})
-                </div>
+                <div className={`text-sm ${textMuted}`}>{currFile?.name}</div>
               </div>
 
-              <div className="flex-1 mt-2">
+              <div className="flex-1 mt-2 min-h-0">
                 <Editor
                   height="100%"
                   theme={isDark ? "vs-dark" : "light"}
-                  language={currentFile?.language || "javascript"}
-                  value={currentFile?.code}
+                  language={currFile?.language || "javascript"}
+                  value={currFile.code}
                   onChange={handleEditorChange}
                   options={{
                     fontSize: 14,
@@ -928,33 +948,31 @@ export default function OnlineIDE() {
 
             {/* Console Section */}
             <div
-              className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-4 flex flex-col overflow-hidden transition-all duration-300`}
+              className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-4 flex flex-col h-full overflow-hidden transition-all duration-300`}
             >
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-3 shrink-0">
                 <h2 className="text-lg font-semibold">Console</h2>
                 <div className="flex gap-3 text-sm text-blue-400">
                   <button
                     className="hover:underline"
-                    onClick={() => navigator.clipboard.writeText(currentFile.input || "")}
+                    onClick={() =>
+                      navigator.clipboard.writeText(currFile?.input || "")
+                    }
                   >
                     Copy
                   </button>
-                  <button
-                    className="hover:underline"
-                    onClick={() => updateFile(currentFile.id, { input: "", output: "" })}
-                  >
-                    Clear
-                  </button>
+                  <button className="hover:underline">Clear</button>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 flex-1 min-h-[400px]">
-                <div className="flex flex-col h-[40%]">
-                  <h3 className="text-sm font-semibold mb-1">Input</h3>
+              {/* Console Content */}
+              <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden">
+                <div className="flex flex-col h-[40%] min-h-0">
+                  <h3 className="text-sm font-semibold mb-1 shrink-0">Input</h3>
                   <textarea
                     placeholder="Enter input here..."
-                    value={currentFile?.input}
-                    onChange={(e) => handleInputChange(e.target.value)}
+                    value={currFile?.input}
+                    onChange={(e) => handleInputChange(e)}
                     className={`flex-1 w-full p-2 rounded-md font-mono text-sm outline-none resize-none
                       ${
                         isDark
@@ -964,8 +982,10 @@ export default function OnlineIDE() {
                   />
                 </div>
 
-                <div className="flex flex-col h-[60%]">
-                  <h3 className="text-sm font-semibold mb-1">Output</h3>
+                <div className="flex flex-col h-[60%] min-h-0">
+                  <h3 className="text-sm font-semibold mb-1 shrink-0">
+                    Output
+                  </h3>
                   <div
                     className={`flex-1 w-full p-2 rounded-md font-mono text-sm overflow-auto
                       ${
@@ -974,7 +994,10 @@ export default function OnlineIDE() {
                           : "bg-gray-50 text-green-700 border border-gray-300"
                       }`}
                   >
-                    {currentFile.output ? currentFile.output : "(no output yet)"}
+                    <pre>
+
+                    {currFile?.output ? currFile.output : "(no output yet)"}
+                    </pre>
                   </div>
                 </div>
               </div>
@@ -983,10 +1006,14 @@ export default function OnlineIDE() {
         </main>
       </div>
 
+      {/* Modals remain unchanged, just rendering them here for completeness */}
       <Modal
         isOpen={showCreateFileModal}
         title="Create New File"
-        onClose={() => {setIsFolder(false);setShowCreateFileModal(false)}}
+        onClose={() => {
+          setIsFolder(false);
+          setShowCreateFileModal(false);
+        }}
         onConfirm={handleCreateFile}
         confirmText="Create"
         loading={loading_general}
@@ -1000,28 +1027,14 @@ export default function OnlineIDE() {
           autoFocus
         />
       </Modal>
-      {/* <Modal
-        isOpen={showRenameModalFile}
-        title="Rename File"
-        onClose={() => setShowRenameModalFile(false)}
-        onConfirm={handleRenameFile}
-        confirmText="Rename"
-      >
-        <input
-          type="text"
-          placeholder="e.g., script.js"
-          value={newFileName}
-          onChange={(e) => setNewFileName(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-          autoFocus
-        />
-      </Modal> */}
-      
 
       <Modal
         isOpen={showCreateFolderModal}
         title="Create New Folder"
-        onClose={() => {setIsFolder(false);setShowCreateFolderModal(false)}}
+        onClose={() => {
+          setIsFolder(false);
+          setShowCreateFolderModal(false);
+        }}
         onConfirm={handleCreateFolder}
         confirmText="Create"
         loading={loading_general}
@@ -1039,7 +1052,10 @@ export default function OnlineIDE() {
       <Modal
         isOpen={showRenameModalFile}
         title="Rename File"
-        onClose={() => {setIsFolder(false);setShowRenameModalFile(false)}}
+        onClose={() => {
+          setIsFolder(false);
+          setShowRenameModalFile(false);
+        }}
         onConfirm={handleRenameFile}
         confirmText="Rename"
         loading={loading_general}
@@ -1047,7 +1063,7 @@ export default function OnlineIDE() {
         <input
           type="text"
           placeholder="New name"
-          value={renameValue.split('/').pop()}
+          value={renameValue.split("/").pop()}
           onChange={(e) => setRenameValue(e.target.value)}
           className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
           autoFocus
@@ -1056,7 +1072,10 @@ export default function OnlineIDE() {
       <Modal
         isOpen={showRenameModalFolder}
         title="Rename Folder"
-        onClose={() => {setIsFolder(false);setShowRenameModalFolder(false)}}
+        onClose={() => {
+          setIsFolder(false);
+          setShowRenameModalFolder(false);
+        }}
         onConfirm={handleRenameFolder}
         confirmText="Rename"
         loading={loading_general}
@@ -1064,7 +1083,7 @@ export default function OnlineIDE() {
         <input
           type="text"
           placeholder="New name"
-          value={renameValue.split('/').pop()}
+          value={renameValue.split("/").pop()}
           onChange={(e) => setRenameValue(e.target.value)}
           className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
           autoFocus
@@ -1074,46 +1093,22 @@ export default function OnlineIDE() {
       <Modal
         isOpen={showDeleteModal}
         title="Confirm Delete"
-        onClose={() => {setIsFolder(false);setShowDeleteModal(false)}}
+        onClose={() => {
+          setIsFolder(false);
+          setShowDeleteModal(false);
+        }}
         onConfirm={handleDeleteFile}
         confirmText="Delete"
         loading={loading_general}
       >
         <p className="text-gray-300">
-          Are you sure you want to delete <span className="font-semibold">{selectedItem?.split('/')?.pop()}</span>?
-          {/* Are you sure you want to delete <span className="font-semibold"></span>? */}
+          Are you sure you want to delete{" "}
+          <span className="font-semibold">
+            {selectedItem?.split("/")?.pop()}
+          </span>
+          ?
         </p>
       </Modal>
     </div>
   )
 }
-
-// // {
-// //     "files": [
-// //         {
-// //             "id": "s3_/file.cpp_0.5910843932213732",
-// //             "name": "/file.cpp",
-// //             "language": "cpp",
-// //             "code": "#include <iostream>",
-// //             "input": "",
-// //             "output": "",
-// //             "saved": true
-// //         },
-// //         {
-// //             "id": "s3_/newfolder/file.py_0.17666537575322538",
-// //             "name": "/newfolder/file.py",
-// //             "language": "python",
-// //             "code": "print('Hello world!')",
-// //             "input": "",
-// //             "output": "",
-// //             "saved": true
-// //         }
-// //     ]
-// // }
-
-
-// // {
-// //   "key": "project/roadmapid",
-// //   "filePath": "/newfolder/file.py",
-// //   "content" : "print('Hello world!')"
-// // }

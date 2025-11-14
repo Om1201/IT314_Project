@@ -36,7 +36,7 @@ authRouter.post('/reset-password', validate(resetPassSchema), resetPassword);
 authRouter.get('/oauth/google/login', googleLogin);
 authRouter.post('/oauth/google/callback', googleVerifyToken);
 
-//github auth
+
 authRouter.get('/oauth/github/login', githubLogin);
 authRouter.post('/oauth/github/callback', githubVerifyToken);
 

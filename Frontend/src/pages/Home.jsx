@@ -19,7 +19,7 @@ export default function Home() {
             <LampContainer>
                 <motion.h1
                     initial={{ opacity: 0.5, y: 400 }}
-                    whileInView={{ opacity: 1, y: 160 }}
+                    whileInView={{ opacity: 1, y: 110 }}
                     transition={{
                         delay: 0.3,
                         duration: 0.8,

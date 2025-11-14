@@ -2,7 +2,12 @@ import { z } from 'zod';
 
 const fileSchema = z.object({
     name: z.string().min(1, 'File name is required'),
-    content: z.string().min(1, 'File content is required'),
+    code: z.string(),
+    id: z.string().optional(),
+    input:  z.string().optional(),
+    language: z.string().optional(),
+    output: z.string().optional(),
+    saved: z.boolean().optional(),
 });
 
 export const codeExecutionSchema = z.object({
@@ -10,9 +15,6 @@ export const codeExecutionSchema = z.object({
         .string()
         .min(1, 'Language is required')
         .toLowerCase(),
-    version: z
-        .string()
-        .min(1, 'Version is required'),
     files: z
         .array(fileSchema)
         .min(1, 'At least one file is required'),

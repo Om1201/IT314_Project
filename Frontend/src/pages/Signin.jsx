@@ -195,7 +195,7 @@ export default function Signin() {
                             >
                                 <img
                                     src="images/github.png"
-                                    className="h-4 pr-2"
+                                    className="h-4 pr-2 invert"
                                     alt="github logo"
                                 />
                                 Continue with Github

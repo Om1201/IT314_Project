@@ -99,19 +99,66 @@ export const renameFolder = createAsyncThunk(
     }
 );
 
+export const updateFileContent = createAsyncThunk(
+    'ide/updateFileContent',
+    async ({ roadmapId, filePath, content }, { rejectWithValue }) => {
+        try {
+            console.log(roadmapId)
+            console.log(filePath)
+            console.log(content)
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/s3/file-update`,
+                { key: `project/${roadmapId}`, filePath, content },
+                { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }   
+    }
+);
+
+export const executeCode = createAsyncThunk(
+    'ide/runCode',
+    async ({ language, files, args = [], stdin = '' }, { rejectWithValue }) => {
+        try {
+            console.log("In ideSlice executeCode:", language, files, args, stdin);
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/code/execute`,
+                { language, files, args, stdin },
+                { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+            );
+            console.log("Execute code response:", response);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }   
+    }
+);
+
 const initialState = {
     loading_fetch: false,
     currFiles: [],
     loading_general: false,
+    currFile: {code:"", id:"", input:"", language:"", name:"", output:"", saved: false},
+    is_saving: false,
+    is_running: false, 
 };
 
 const ideSlice = createSlice({
     name: 'ideSlice',
     initialState,
-    reducer: {
+    reducers: {
         setCurrFiles: (state, action) => {
             state.currFiles = action.payload;
         },
+        setCurrFile: (state, action) => {
+            state.currFile = action.payload;
+        },
+        setIsRunning: (state, action) => {
+            console.log('Setting is_running to', action.payload);
+            state.is_running = action.payload;
+        }
     },
     extraReducers: builder => {
         builder
@@ -184,10 +231,33 @@ const ideSlice = createSlice({
             })
             .addCase(renameFolder.rejected, (state, action) => {
                 state.loading_general = false;
-            });
+            })
+            .addCase(updateFileContent.pending, (state, action) => {
+                state.is_saving = true;
+            })
+            .addCase(updateFileContent.fulfilled, (state, action) => {
+                state.is_saving = false;
+                const args = action.meta.arg;
+                console.log('Updating file content in state for', args.filePath);
+                state.currFiles = state.currFiles.map(file => {
+                    if (file.name === args.filePath) {
+                        return {
+                            ...file,
+                            saved: true,
+                        };
+                    }
+                    return file;
+                });
+                if(state.currFile.name === args.filePath){
+                    state.currFile.saved = true;
+                }                
+            })
+            .addCase(updateFileContent.rejected, (state, action) => {
+                state.is_saving = false;
+            })
     },
 });
 
-export const { setCurrFiles } = ideSlice.actions;
+export const { setCurrFiles, setCurrFile, setIsRunning } = ideSlice.actions;
 
 export const ideReducer = ideSlice.reducer;

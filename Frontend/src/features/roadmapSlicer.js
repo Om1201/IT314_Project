@@ -205,7 +205,6 @@ export const generateQuiz = createAsyncThunk(
     }
 );
 
-// 🟢 this was broken — FIXED and placed correctly
 export const togglePinRoadmap = createAsyncThunk(
     'roadmap/togglePinRoadmap',
     async (roadmapId, { rejectWithValue }) => {
@@ -225,9 +224,7 @@ export const togglePinRoadmap = createAsyncThunk(
     }
 );
 
-// --------------------------------------------------------------
-// SLICE
-// --------------------------------------------------------------
+
 
 const initialState = {
     currRoadmap: {},
