@@ -5,6 +5,7 @@ import { roadmapReducer } from '../features/roadmapSlicer.js';
 import { chatReducer } from '../features/chatSlicer.js';
 import { searchReducer } from '../features/searchSlicer.js';
 import { ideReducer } from '../features/ideSlicer.js';
+import { profileReducer } from '../features/profileSlicer.js';
 
 
 const store = configureStore({
@@ -14,6 +15,7 @@ const store = configureStore({
         chat: chatReducer,
         search: searchReducer,
         ide: ideReducer,
+        profile: profileReducer,
     },
 });
 

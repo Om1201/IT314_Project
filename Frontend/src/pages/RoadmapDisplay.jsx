@@ -77,16 +77,40 @@ export default function RoadmapDisplay() {
     }, [id, dispatch]);
 
     useEffect(() => {
-        if (!isLoading) {
-            const hash = location.hash?.slice(1);
-            if (hash) {
+        if (isLoading) return;
+        const hash = window.location.hash?.slice(1);
+        if (!hash) return;
+
+        const subMatch = hash.match(/^subtopic-(\d+)-(\d+)$/);
+        if (subMatch) {
+            const chapterId = Number(subMatch[1]);
+            const subtopicId = Number(subMatch[2]);
+
+            setExpandedModules(prev => {
+                const next = new Set(prev);
+                next.add(chapterId);
+                return next;
+            });
+            setExpandedSubtopics(prev => {
+                const next = new Map(prev);
+                const set = new Set(next.get(chapterId) || []);
+                set.add(`${chapterId}:${subtopicId}`);
+                next.set(chapterId, set);
+                return next;
+            });
+
+            setTimeout(() => {
                 const el = document.getElementById(hash);
-                if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+            return;
         }
-    }, [isLoading, location.hash]);
+
+        if (hash.startsWith('chapter-')) {
+            const el = document.getElementById(hash);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [isLoading]);
 
     const moduleProgress = useMemo(() => {
         return currRoadmap?.chapters?.map(module => {

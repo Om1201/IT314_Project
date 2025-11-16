@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     githubId: {
         type: String,
         unique: true,
-        required : false,
+        required: false,
     },
     name: {
         type: String,
@@ -38,6 +38,54 @@ const userSchema = new mongoose.Schema({
     resetTokenExpireAt: {
         type: Number,
         default: 0,
+    },
+    title: {
+        type: String,
+        default: ''
+    },
+    bio: {
+        type: String,
+        default: ''
+    },
+    location: {
+        type: String,
+        default: ''
+    },
+    avatar: {
+        type: String,
+        default: ''
+    },
+    avatarPublicId: {
+        type: String,
+        default: '',
+    },
+    github: {
+        type: String,
+        default: ''
+    },
+    linkedin: {
+        type: String,
+        default: ''
+    },
+    twitter: {
+        type: String,
+        default: ''
+    },
+    lastLoginDate: {
+        type: Date,
+        default: null,
+    },
+    streakCount: {
+        type: Number,
+        default: 1,
+    },
+    maxStreak: {
+        type: Number,
+        default: 1,
+    },
+    loginDates: {
+        type: [Date], 
+        default: [],
     },
 });
 

@@ -1,7 +1,7 @@
-"use client"
-
 import { useState } from "react"
 import { Eye, EyeOff, Lock, X } from "lucide-react"
+import axios from "axios"
+import { toast } from "react-hot-toast"
 
 export default function ChangePassword({ open, onOpenChange }) {
   const [oldPassword, setOldPassword] = useState("")
@@ -28,22 +28,30 @@ export default function ChangePassword({ open, onOpenChange }) {
     }
 
     if (newPassword !== confirmPassword) {
-      setError("New passwords and old password don't match.")
+      setError("New passwords do not match.")
       return
     }
 
     setLoading(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      setSuccess(true)
+      const res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/user/change-password`,
+        { oldPassword, newPassword },
+        { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+      )
+      if (res.data?.success) {
+        setSuccess(true)
+        toast.success("Password updated")
+      }
       setOldPassword("")
       setNewPassword("")
       setConfirmPassword("")
 
       setTimeout(() => onOpenChange(false), 1200)
     } catch (err) {
-      setError("Something went wrong. Please try again.")
+      const msg = err?.response?.data?.message || "Something went wrong. Please try again."
+      setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
@@ -121,7 +129,7 @@ export default function ChangePassword({ open, onOpenChange }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-medium py-2.5 rounded-lg transition disabled:opacity-50"
+              className="w-full mt-4 bg-linear-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-medium py-2.5 rounded-lg transition disabled:opacity-50"
           >
             {loading ? "Updating Password..." : "Update Password"}
           </button>
