@@ -76,6 +76,84 @@ export const executeCode = async (req, res) => {
     }
 };
 
+// Tried to execute multiple files with handling imports but piston API seems to not support it well.
+// const LANG_EXTENSIONS = {
+//   javascript: ['.js'],   
+//   typescript: ['.ts'],      
+//   python: ['.py'],
+//   java: ['.java'],
+//   c: ['.c', '.h'],
+//   cpp: ['.cpp', '.cxx', '.h', '.hpp'], // Note: Added header files too
+//   csharp: ['.cs'],
+//   go: ['.go'],
+//   rust: ['.rs'],
+//   ruby: ['.rb'],
+//   php: ['.php'],
+//   swift: ['.swift'],
+//   kotlin: ['.kt', '.kts'],
+//   r: ['.r'],               
+//   scala: ['.scala', '.sc'],
+//   perl: ['.pl', '.pm'],
+//   haskell: ['.hs'],
+//   lua: ['.lua'],
+//   dart: ['.dart'],
+//   bash: ['.sh']
+// };
+
+// export const executeCode = async (req, res) => {
+//     try {
+//         const { language, files, args = [], stdin = '' } = req.validatedData;
+//         // console.log("asdfafas", language);
+
+//         const allowedExtensions = LANG_EXTENSIONS[language] || [];
+
+//         const filesArray = files
+//             .filter(file => 
+//                 !file.name.endsWith("/") &&
+//                 // Check if the file name ends with any of the allowed extensions
+//                 allowedExtensions.some(ext => file.name.endsWith(ext))
+//             )   
+//             .map(file => ({
+//                 name: file.name.startsWith("/") ? file.name.slice(1) : file.name,
+//                 content: file.code
+//             }));
+//             console.log("Files after filtering:", filesArray);
+
+//         const payload = {
+//             language,
+//             version : LANGUAGE_VERSIONS[language],
+//             files: filesArray,
+//             args: Array.isArray(args) ? args : [],
+//             stdin: stdin || '',
+//         };
+
+//         // console.log(`Executing code in ${language}...`);
+//         // console.log(`Main file: ${filesArray[0].name}`);
+//         // if (filesArray.length > 1) {
+//         //     console.log(`Linked files: ${filesArray.slice(1).map(f => f.name).join(', ')}`);
+//         // }
+
+//         const response = await axios.post(process.env.PISTON_API_URL, payload, {
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             timeout: 10000,
+//         });
+
+//         return res.status(200).json({
+//             success: true,
+//             data: response.data,
+//             message: 'Code executed successfully',
+//         });
+//     } catch (error) {
+//         console.error('Error executing code:', error);
+//         return res.status(500).json({
+//             success: false,
+//             message: error.message,
+//         });
+//     }
+// };
+
 export const analyse = async (req, res) => {
     try {
         const code = req.body.content;

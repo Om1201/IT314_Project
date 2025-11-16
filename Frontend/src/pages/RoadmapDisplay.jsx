@@ -151,10 +151,10 @@ export default function RoadmapDisplay() {
         }));
     };
 
-    const onRequestExplanation = async (moduleId, subtopicId) => {
+    const onRequestExplanation = async (moduleId, subtopicId, personalization = '') => {
         try {
             let response = await dispatch(
-                generateSubtopicSummary({ roadmapId: id, moduleId, subtopicId })
+                generateSubtopicSummary({ roadmapId: id, moduleId, subtopicId, personalization })
             );
             response = response.payload;
             console.log('Generated explanation:', response);

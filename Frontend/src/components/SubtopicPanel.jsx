@@ -26,7 +26,7 @@ export default function SubtopicPanel({
                                           onTabChange = () => {},
                                           noteContent = '',
                                           onSaveNote = () => {},
-                                          onRequestExplanation = () => {},
+                                          onRequestExplanation = () => {}, // <-- This prop will now be called with an argument
                                           onRequestQuiz = () => {},
                                           quizContent = [],
                                           quizLoading = [],
@@ -48,6 +48,7 @@ export default function SubtopicPanel({
     const editorRef = useRef(null);
     const modalRef = useRef(null);
     const [userAnswers, setUserAnswers] = useState({});
+    const [personalizationInput, setPersonalizationInput] = useState("");
 
     /** Update note content when parent changes it */
     useEffect(() => {
@@ -178,19 +179,39 @@ export default function SubtopicPanel({
                                 source={explanationContent}
                             />
                         ) : (
-                            <button
-                                className="cursor-pointer disabled:cursor-not-allowed px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                                onClick={() => onRequestExplanation()}
-                                disabled={explanation_loading.includes(`${chapterId}:${subtopic.id}`)}
-                            >
-                                {explanation_loading.includes(`${chapterId}:${subtopic.id}`) ? (
-                                    <div className="flex gap-2 justify-center items-center">
-                                        <Loader2 className="animate-spin" /> Generating explanation...
-                                    </div>
-                                ) : (
-                                    "Generate Explanation"
-                                )}
-                            </button>
+                            <div className="space-y-4 p-4">
+                                <p className="text-sm text-slate-400">
+                                    Click generate to get an AI-powered explanation for: {subtopic.title}
+                                </p>
+
+                                <div>
+                                    <label htmlFor={`personalization-${subtopic.id}`} className="block text-sm font-medium text-slate-300 mb-2">
+                                        Personalize (Optional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id={`personalization-${subtopic.id}`}
+                                        value={personalizationInput}
+                                        onChange={(e) => setPersonalizationInput(e.target.value)}
+                                        placeholder="e.g., 'explain like I'm 10' or 'focus on Python examples'"
+                                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                
+                                <button
+                                    className="cursor-pointer disabled:cursor-not-allowed px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors w-full"
+                                    onClick={() => onRequestExplanation(personalizationInput)} 
+                                    disabled={explanation_loading.includes(`${chapterId}:${subtopic.id}`)}
+                                >
+                                    {explanation_loading.includes(`${chapterId}:${subtopic.id}`) ? (
+                                        <div className="flex gap-2 justify-center items-center">
+                                            <Loader2 className="animate-spin" /> Generating explanation...
+                                        </div>
+                                    ) : (
+                                        "Generate Explanation"
+                                    )}
+                                </button>
+                            </div>
                         )}
                     </div>
                 );

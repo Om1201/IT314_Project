@@ -145,11 +145,11 @@ export const fetchProgress = createAsyncThunk(
 
 export const generateSubtopicSummary = createAsyncThunk(
     'roadmap/generateSubtopicSummary',
-    async ({ roadmapId, moduleId, subtopicId }, { rejectWithValue }) => {
+    async ({ roadmapId, moduleId, subtopicId, personalization }, { rejectWithValue }) => {
         try {
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/generate-subtopic-summary`,
-                { roadmapId, chapterId: moduleId, subtopicId },
+                { roadmapId, chapterId: moduleId, subtopicId, personalization },
                 {
                     headers: { 'Content-Type': 'application/json' },
                     withCredentials: true,
