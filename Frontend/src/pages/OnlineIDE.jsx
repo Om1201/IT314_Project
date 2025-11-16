@@ -682,6 +682,69 @@ export default function OnlineIDE() {
     await dispatch(setIsRunning(false));
   }
 
+  // async function runCode() {
+  //   if (!currFile || !currFile.code.trim()) {
+  //     toast.error("No code to run.");
+  //     return;
+  //   }
+
+  //   await dispatch(setIsRunning(true));
+  //   try{
+  //     // --- START OF FIX ---
+
+  //     // 1. Get the current file, ensuring its name is just the base name.
+  //     // This will be the main entry point for execution.
+  //     const mainFile = {
+  //       name: currFile.name.split('/').pop(),
+  //       code: currFile.code
+  //     };
+
+  //     // 2. Get all *other* files from your project.
+  //     // We filter out the current file (to avoid duplicates) and any folders.
+  //     const otherFiles = currFiles
+  //       .filter(f => f.id !== currFile.id && !f.name.endsWith('/'))
+  //       .map(f => ({
+  //         name: f.name.split('/').pop(), // Use base name for imports
+  //         code: f.code
+  //       }));
+
+  //     // 3. Combine them, with the mainFile *first* in the array.
+  //     const filesToSend = [mainFile, ...otherFiles];
+      
+  //     // --- END OF FIX ---
+
+  //     console.log("Files to be sent for execution:", filesToSend.map(f => f.name)); // Better logging
+      
+  //     let response = await dispatch(executeCode({
+  //       language: currFile.language, 
+  //       files: filesToSend, // Send the complete array
+  //       stdin: currFile.input || "", 
+  //     }));
+      
+  //     response = response.payload;
+      
+  //     // Prioritize stderr for displaying compile/runtime errors
+  //     const output = (response.data?.run?.stderr || response.data?.run?.output) || "";
+
+  //     // Update the state with the output
+  //     await dispatch(setCurrFile({...currFile, output: output}))
+  //     dispatch(setCurrFiles(currFiles.map(file => {
+  //       if(file.id == currFile.id){
+  //         return {
+  //           ...file,
+  //           output: output,
+  //         }
+  //       }
+  //       return file;
+  //     })));
+
+  //   }catch(error){
+  //     console.error("Error running code:", error); // Good to log the full error
+  //     toast.error("Error in running code"); 
+  //   }
+  //   await dispatch(setIsRunning(false));
+  // }
+
   useEffect(() => {
     const handler = (e) => {
       if (e.ctrlKey  && e.key.toLowerCase() === "s") {

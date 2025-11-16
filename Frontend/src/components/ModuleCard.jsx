@@ -115,8 +115,9 @@ export default function ModuleCard({
                                         // console.log('Saving note for', module.id, subtopic.id)
                                         onSaveNote(module.id, subtopic.id, content)
                                     }
-                                    onRequestExplanation={() =>
-                                        onRequestExplanation(module.id, subtopic.id)
+                                    
+                                    onRequestExplanation={(personalization) =>
+                                        onRequestExplanation(module.id, subtopic.id, personalization)
                                     }
                                 />
                             )}

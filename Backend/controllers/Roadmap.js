@@ -5,13 +5,28 @@ import {quizPrompt} from '../utils/prompt.js';
 import { getArticles } from '../utils/search.js';
 import { getVideos } from '../utils/search.js';
 import NoteModel from '../models/NoteModel.js';
-import { getSubtopicSummaryPrompt } from '../utils/prompt.js';
+import { getSubtopicSummaryPrompt, getTopicGuardPrompt} from '../utils/prompt.js';
 import { generateWithGemini } from '../utils/generate.js';
 
 export const generateRoadmap = async (req, res) => {
     try {
         const { userDescription, userLevel } = req.validatedData;
         const userId = req.userId;
+
+        
+        console.log(`Validating topic: ${userDescription}`);
+        const guardPrompt = getTopicGuardPrompt(userDescription);
+        const validationResponse = await generateWithGemini(guardPrompt);
+        const isValid = validationResponse.trim().toLowerCase() === 'true';
+
+        if (!isValid) {
+            console.warn(`Invalid topic rejected: ${userDescription}`);
+            return res.status(400).json({
+                success: false,
+                message: 'The requested topic does not seem to be related to programming or technology.',
+            });
+        }
+        
 
         const initTime = new Date().toLocaleString();
         console.log(
@@ -206,7 +221,7 @@ export const saveNote = async (req, res) => {
 export const generateSubtopicSummary = async (req, res) => {
     try {
 
-        const { roadmapId, subtopicId, chapterId } = req.body;
+        const { roadmapId, subtopicId, chapterId , personalization } = req.body;
 
         if (!roadmapId || !subtopicId || !chapterId) {
             return res.status(400).json({
@@ -235,8 +250,9 @@ export const generateSubtopicSummary = async (req, res) => {
 
         const chapterTitle = roadmap.roadmapData.chapters[chapterIdNum - 1].title;
         const subtopicTitle = roadmap.roadmapData.chapters[chapterIdNum - 1].subtopics[subtopicIdNum - 1].title;
-        const prompt = getSubtopicSummaryPrompt(subtopicTitle, roadmapTitle, chapterTitle);
-        const summaryText = await generateWithGemini(prompt);
+    const prompt = getSubtopicSummaryPrompt(subtopicTitle, roadmapTitle, chapterTitle, personalization);
+    const summaryText = await generateWithGemini(prompt);
+
 
         roadmap.roadmapData.chapters[chapterIdNum - 1].subtopics[subtopicIdNum - 1].detailedExplanation = summaryText;
 

@@ -103,7 +103,7 @@ export const quizPrompt = (roadMap, chapterId, subtopicId) => {
 };
 
 
-export const getSubtopicSummaryPrompt = (subtopic, roadmapTitle, chapterTitle) => {
+export const getSubtopicSummaryPrompt = (subtopic, roadmapTitle, chapterTitle, personalization) => {
 
   return `You are an expert tutor and technical writer. Your task is to generate a detailed summary for a specific technical subtopic.
 
@@ -112,6 +112,7 @@ export const getSubtopicSummaryPrompt = (subtopic, roadmapTitle, chapterTitle) =
 * **Roadmap Title:** "${roadmapTitle}"
 * **Chapter Title:** "${chapterTitle}"
 * **Subtopic to Summarize:** "${subtopic}"
+* **Personalization:** "${personalization}"
 ---
 
 **Strict Instructions:**
@@ -123,6 +124,9 @@ export const getSubtopicSummaryPrompt = (subtopic, roadmapTitle, chapterTitle) =
     * Do NOT include any external links, advertisements, or recommendations for videos or articles.
     * Do NOT write a conversational intro or outro (e.g., "Certainly! Here is...", "I hope this helps!"). Start directly with the Markdown-formatted summary.
     * Keep the summary focused and ideally upto 1500 words.
+6.  Generate the summary considering the following personalization from the user: "${personalization}".
+
+**Begin the detailed summary for the subtopic "${subtopic}" now.**
 
 Begin the summary now.`;
 };
@@ -178,3 +182,16 @@ export const getResponsePrompt = (userMessage, context) => {
   Generate a helpful and natural response to the user's message considering the provided context.
   don't reply like this: "Given our previous back-and-forth or as the last thing we discussed was the or anything like as our conversation was...", you know the context is there, just use it to generate a better response. `;
 }
+
+
+export const getTopicGuardPrompt = (topic) => {
+  return `
+    You are a topic classifier for a programming education platform.
+    The topic must be related to programming, software engineering, computer science, data science, or IT.
+    
+    Topic: "${topic}"
+    
+    Is this topic valid for a programming learning platform?
+    Respond with only the single word "true" or "false".
+  `;
+};
