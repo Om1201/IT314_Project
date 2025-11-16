@@ -95,6 +95,53 @@ export const register = async (req, res) => {
     }
 };
 
+async function updateLoginStreak(user) {
+    try {
+        const today = new Date();
+        const todayUTC = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+        const todayMid = new Date(todayUTC);
+
+        if (!user.lastLoginDate) {
+            user.streakCount = 1;
+        } else {
+            const last = new Date(user.lastLoginDate);
+            const lastUTC = Date.UTC(last.getUTCFullYear(), last.getUTCMonth(), last.getUTCDate());
+            const diffDays = Math.floor((todayUTC - lastUTC) / (1000 * 60 * 60 * 24));
+            if (diffDays === 0) {
+            } else if (diffDays === 1) {
+                user.streakCount = user.streakCount + 1;
+            } else {
+                user.streakCount = 1;
+            }
+        }
+
+        user.lastLoginDate = today;
+        if ((user.maxStreak) < (user.streakCount)) {
+            user.maxStreak = user.streakCount;
+        }
+
+        if (!Array.isArray(user.loginDates)) {
+            user.loginDates = [];
+        }
+        const hasToday = user.loginDates.some(d => {
+            const dd = new Date(d);
+            return dd.getUTCFullYear() === today.getUTCFullYear() && dd.getUTCMonth() === today.getUTCMonth() && dd.getUTCDate() === today.getUTCDate();
+        });
+        if (!hasToday) {
+            user.loginDates.push(todayMid);
+            if (user.loginDates.length > 730) {
+                user.loginDates = user.loginDates.slice(-730);
+            }
+        }
+
+        await user.save();
+        return user;
+    } catch (err) {
+        console.error('updateLoginStreak error:', err);
+        return user;
+    }
+}
+
 export const verifyAccount = async (req, res) => {
     const { token } = req.validatedData;
 
@@ -158,6 +205,12 @@ export const signIn = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
+        try {
+            await updateLoginStreak(user);
+        } catch (e) {
+            console.error('Streak update failed during signin:', e);
+        }
+
         return res.status(200).json({ success: true, message: 'Signin successful', user: user });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
@@ -180,8 +233,25 @@ export const logout = async (req, res) => {
 export const isAuthenticated = async (req, res) => {
     try {
         const userId = req.userId;
-        const user = await UserModel.findById(userId).select('name email');
-        return res.status(200).json({ success: true, user });
+        let user = await UserModel.findById(userId);
+
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+        try {
+            user = await updateLoginStreak(user);
+        } catch (err) {
+            console.error('Streak update failed during isAuthenticated:', err);
+        }
+
+        const safe = {
+            name: user.name,
+            email: user.email,
+            streakCount: user.streakCount,
+            lastLoginDate: user.lastLoginDate,
+            maxStreak: user.maxStreak,
+            loginDates: Array.isArray(user.loginDates) ? user.loginDates : [],
+        };
+        return res.status(200).json({ success: true, user: safe });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }

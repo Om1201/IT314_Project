@@ -41,11 +41,13 @@ export const generateRoadmap = async (req, res) => {
         }
 
         console.log(`Fetching articles... ${new Date().toLocaleString()}`);
-        const articles = await getArticles(roadmapData);
+        // const articles = await getArticles(roadmapData);
+        const articles = [];
         roadmapData.articles = articles;
 
         console.log(`Fetching videos... ${new Date().toLocaleString()}`);
-        const videos = await getVideos(roadmapData);
+        // const videos = await getVideos(roadmapData);
+        const videos = [];
         roadmapData.videos = videos;
 
         const user = await UserModel.findById(userId);
