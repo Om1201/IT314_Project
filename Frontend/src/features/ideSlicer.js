@@ -21,11 +21,11 @@ export const fetchFiles = createAsyncThunk(
 
 export const saveNode = createAsyncThunk(
     'ide/saveFile',
-    async ({ roadmapId, filePath, content }, { rejectWithValue }) => {
+    async ({ roadmapId, name, filePath, content }, { rejectWithValue }) => {
         try {
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/s3/save`,
-                { key: `project/${roadmapId}`, filePath, content },
+                { key: `project/${roadmapId}`, name, filePath, content },
                 { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );
             console.log('werajlfjasljf', response);
@@ -69,11 +69,11 @@ export const deleteFolder = createAsyncThunk(
 
 export const renameNode = createAsyncThunk(
     'ide/renameNode',
-    async ({ roadmapId, oldFilePath, newFilePath }, { rejectWithValue }) => {
+    async ({ roadmapId, name, oldFilePath, newFilePath }, { rejectWithValue }) => {
         try {
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/s3/rename-file`,
-                { key: `project/${roadmapId}`, oldFilePath, newFilePath },
+                { key: `project/${roadmapId}`, name, oldFilePath, newFilePath },
                 { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );
             return response.data;
@@ -84,12 +84,12 @@ export const renameNode = createAsyncThunk(
 );
 export const renameFolder = createAsyncThunk(
     'ide/renameFolder',
-    async ({ roadmapId, oldFilePath, newFilePath }, { rejectWithValue }) => {
+    async ({ roadmapId, name, oldFilePath, newFilePath }, { rejectWithValue }) => {
         try {
             console.log('In ideSlice renameFolder:', oldFilePath, newFilePath);
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/s3/rename-folder`,
-                { key: `project/${roadmapId}`, oldFilePath, newFilePath },
+                { key: `project/${roadmapId}`, name, oldFilePath, newFilePath },
                 { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );
             return response.data;

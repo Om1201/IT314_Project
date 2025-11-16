@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { searchAll, setQuery } from '../features/searchSlicer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import GridBackground from '../components/ui/GridBackground';
+import { ArrowBigLeft } from 'lucide-react';
+import Navbar from '../components/Navbar';
 
 export default function Search() {
     const dispatch = useDispatch();
@@ -24,7 +26,7 @@ export default function Search() {
         e.preventDefault();
         const q = localQuery.trim();
         if (!q) return;
-        navigate(`/search?q=${encodeURIComponent(q)}`);
+        navigate(`/search?q=${encodeURIComponent(q)}`, { replace: true });
         dispatch(setQuery(q));
         dispatch(searchAll({ query: q }));
     };
@@ -35,6 +37,7 @@ export default function Search() {
 
     return (
         <GridBackground className="min-h-screen pt-24 px-4" containerClassName="max-w-5xl mx-auto">
+            <Navbar/>
                 <form onSubmit={onSubmit} className="mb-6">
                     <input
                         value={localQuery}

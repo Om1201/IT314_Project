@@ -151,6 +151,7 @@ const FileTree = ({
   const [expandedFolders, setExpandedFolders] = useState(new Set())
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, target: null })
   const menuRef = useRef(null)
+  
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -393,6 +394,7 @@ export default function OnlineIDE() {
   const [selectedItem, setSelectedItem] = useState(null)
   const [isFolder, setIsFolder] = useState(false)
   const saveRef = useRef(null)
+  const [tempState, setTempState] = useState(false);
 
 
   const filesForSidebar = currFiles.filter((f) => f.name.toLowerCase().includes(filter.toLowerCase()))
@@ -405,7 +407,7 @@ export default function OnlineIDE() {
     else filePath = "/" + newFileName
     console.log("Selected path for new file:", filePath)
     try {
-      let response = await dispatch(saveNode({ roadmapId: id, filePath: filePath, content: "" }))
+      let response = await dispatch(saveNode({ roadmapId: id, name: newFileName, filePath: filePath, content: "" }))
       response = response.payload
       console.log("creatingnngngngn", response)
       if (!response.success) {
@@ -432,11 +434,11 @@ export default function OnlineIDE() {
     else folderPath = "/" + newFolderName + "/"
     console.log("Selected path for new folder:", folderPath)
     try {
-      let response = await dispatch(saveNode({ roadmapId: id, filePath: folderPath, content: "" }))
+      let response = await dispatch(saveNode({ roadmapId: id, name: newFolderName, filePath: folderPath, content: "" }))
       response = response.payload
-      console.log(response)
       if (!response.success) {
-        toast.error("Failed to create file.")
+        toast.error(response.message || "Failed to create folder.")
+        return;
       }
       toast.success(`${newFileName} created successfully.`)
     } catch (error) {
@@ -484,7 +486,7 @@ export default function OnlineIDE() {
     setSelectedItem(null)
   }
 
-  async function handleRenameFile() {
+  async function handleRenameFile(setTempState) {
     console.log("Rename to:", renameValue)
 
     try {
@@ -493,13 +495,15 @@ export default function OnlineIDE() {
       const newpath = newpathArray.join("/") + "/" + renameValue
 
       console.log("Renaming:", selectedItem, "to", newpath)
-      let response = await dispatch(renameNode({ roadmapId: id, oldFilePath: selectedItem, newFilePath: newpath }))
+      let response = await dispatch(renameNode({ roadmapId: id, name: renameValue, oldFilePath: selectedItem, newFilePath: newpath }))
       response = response.payload
       console.log(response)
       if (!response.success) {
-        toast.error("Failed to rename file.")
+        toast.error(response.message || "Failed to rename file.")
+        return;
       }
       toast.success(`${selectedItem.split("/").pop()} renamed successfully.`)
+      setTempState(false);
     } catch (error) {
       toast.error(error.message)
     }
@@ -511,7 +515,7 @@ export default function OnlineIDE() {
     setRenameValue("")
     setSelectedItem(null)
   }
-  async function handleRenameFolder() {
+  async function handleRenameFolder(setTempState) {
     try {
       const newpathArray = selectedItem.split("/")
       newpathArray.pop()
@@ -531,13 +535,15 @@ export default function OnlineIDE() {
         oldpath = oldpath + "/"
       }
 
-      let response = await dispatch(renameFolder({ roadmapId: id, oldFilePath: oldpath, newFilePath: newpath }))
+      let response = await dispatch(renameFolder({ roadmapId: id, name: renameValue, oldFilePath: oldpath, newFilePath: newpath }))
       response = response.payload
       console.log(response)
       if (!response.success) {
-        toast.error("Failed to rename folder.")
+        toast.error(response.message || "Failed to rename folder.")
+        return;
       }
       toast.success(`${selectedItem.split("/").pop()} renamed successfully.`)
+      setTempState(false);
     } catch (error) {
       toast.error(error.message)
     }
@@ -1118,16 +1124,20 @@ export default function OnlineIDE() {
         onClose={() => {
           setIsFolder(false);
           setShowRenameModalFile(false);
+          setTempState(false);
         }}
-        onConfirm={handleRenameFile}
+        onConfirm={()=>handleRenameFile(setTempState)}
         confirmText="Rename"
         loading={loading_general}
       >
         <input
           type="text"
           placeholder="New name"
-          value={renameValue.split("/").pop()}
-          onChange={(e) => setRenameValue(e.target.value)}
+          value={tempState?renameValue:renameValue.split("/").pop()}
+          onChange={(e) => {
+            setTempState(true);
+            setRenameValue(e.target.value)
+          }}
           className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
           autoFocus
         />
@@ -1138,16 +1148,20 @@ export default function OnlineIDE() {
         onClose={() => {
           setIsFolder(false);
           setShowRenameModalFolder(false);
+          setTempState(false);
         }}
-        onConfirm={handleRenameFolder}
+        onConfirm={()=>{handleRenameFolder(()=>setTempState)}}
         confirmText="Rename"
         loading={loading_general}
       >
         <input
           type="text"
           placeholder="New name"
-          value={renameValue.split("/").pop()}
-          onChange={(e) => setRenameValue(e.target.value)}
+          value={tempState?renameValue:renameValue.split("/").pop()}
+          onChange={(e) => {
+            setTempState(true);
+            setRenameValue(e.target.value)
+          }}
           className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
           autoFocus
         />

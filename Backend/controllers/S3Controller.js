@@ -97,9 +97,10 @@ export const loadProjectFiles = async (req, res) => {
 
 export const saveToS3 = async (req, res) => {
   try {
-    const { key, filePath, content } = req.body;
+    const { key, filePath, content } = req.validatedData;
     
-    if (!key || !filePath || content === undefined) {
+    
+    if (!key || !filePath || (content === undefined)) {
       return res.status(400).json({ success: false, message: "key, filePath, and content are required" });
     }
 
@@ -230,7 +231,7 @@ export const deleteS3Folder = async (req, res) => {
 
 export const renameS3File = async (req, res) => {
   try {
-    const { key, oldFilePath, newFilePath } = req.body;
+    const { key, oldFilePath, newFilePath } = req.validatedData;
     if (!key || !oldFilePath || !newFilePath) {
       return res.status(400).json({ success: false, message: "key, oldFilePath, and newFilePath are required" });
     }
@@ -260,7 +261,7 @@ export const renameS3File = async (req, res) => {
 
 export const renameS3Folder = async (req, res) => {
   try {
-    const { key, oldFilePath, newFilePath } = req.body;
+    const { key, oldFilePath, newFilePath } = req.validatedData;
     const prefix = `${key}${oldFilePath}`;
     console.log("Renaming folder from", prefix, "to", `${key}${newFilePath}`);
 

@@ -117,6 +117,7 @@ export const renameChat = createAsyncThunk(
 
 const initialState = {
     chats: {}, // Structure: { "chapterId": { chats: [{ id, chatId, title, messages: [] }], activeChatId: null } }
+    temp_msg: '',
 };
 
 export const chatSlice = createSlice({
@@ -134,6 +135,13 @@ export const chatSlice = createSlice({
     },
     extraReducers: builder => {
         builder
+        
+            .addCase(createChat.pending, (state, action) => {
+                state.temp_msg = action.meta.arg.userMessage;
+                
+                // Chat creation triggers fetchChatsForChapter which will add the chat with proper chatId
+                // We just mark that we need to refresh
+            })
             .addCase(createChat.fulfilled, (state, action) => {
                 // Chat creation triggers fetchChatsForChapter which will add the chat with proper chatId
                 // We just mark that we need to refresh

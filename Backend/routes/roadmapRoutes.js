@@ -12,7 +12,8 @@ import {
     fetchProgress,
     fetchSubtopicExplanation,
     searchRoadmaps,
-    togglePinRoadmap,  // Add this import
+    togglePinRoadmap,
+    getQuizzes,  // Add this import
 } from '../controllers/Roadmap.js';
 import userAuth from '../middlewares/userAuth.js';
 import { validate } from '../middlewares/validate.js';
@@ -28,6 +29,7 @@ router.post('/get-roadmap-by-id', userAuth, getRoadmapById);
 router.get('/notes/:roadmapId', userAuth, getNotesForRoadmap);
 router.post('/notes/save', userAuth, saveNote);
 router.post('/generate-quiz', userAuth, generateQuiz);
+router.post('/get-quizzes', userAuth, getQuizzes);
 router.post('/save-progress', userAuth, saveProgress);
 router.post('/fetch-progress', userAuth, fetchProgress);
 

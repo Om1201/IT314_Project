@@ -25,11 +25,11 @@ function DeleteConfirmationModal({ isOpen, onConfirm, onCancel, title }) {
                         exit={{ opacity: 0, scale: 0.9 }}
                         className="fixed inset-0 flex items-center justify-center z-[201] p-4"
                     >
-                        <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-xl max-w-sm w-full p-6 border border-neutral-200 dark:border-neutral-800">
-                            <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
+                        <div className="bg-neutral-900 rounded-lg shadow-xl max-w-sm w-full p-6 border border-neutral-800">
+                            <h2 className="text-lg font-bold text-white mb-2">
                                 Delete Roadmap?
                             </h2>
-                            <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+                            <p className="text-neutral-400 mb-6">
                                 Are you sure you want to delete{' '}
                                 <span className="font-semibold">"{title}"</span>? This action cannot
                                 be undone.
@@ -37,7 +37,7 @@ function DeleteConfirmationModal({ isOpen, onConfirm, onCancel, title }) {
                             <div className="flex gap-3 justify-end">
                                 <button
                                     onClick={onCancel}
-                                    className="px-4 cursor-pointer py-2 rounded-lg font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                                    className="px-4 cursor-pointer py-2 rounded-lg font-medium bg-neutral-800 text-white hover:bg-neutral-700 transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -182,7 +182,7 @@ export function ExpandableCardDemo() {
                         <motion.div
                             layoutId={`card-${active.title}-${id}`}
                             ref={ref}
-                            className="w-full max-w-2xl h-full md:h-fit md:max-h-[90vh] flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-hidden"
+                            className="w-full max-w-2xl h-full md:h-fit md:max-h-[90vh] flex flex-col bg-neutral-900 sm:rounded-3xl overflow-hidden"
                         >
                             <motion.div layoutId={`image-${active.title}-${id}`}>
                                 <img
@@ -199,13 +199,13 @@ export function ExpandableCardDemo() {
                                     <div className="">
                                         <motion.h3
                                             layoutId={`title-${active.title}-${id}`}
-                                            className="font-bold text-neutral-700 dark:text-neutral-200"
+                                            className="font-bold text-neutral-200"
                                         >
                                             {active.title}
                                         </motion.h3>
                                         <motion.p
                                             layoutId={`description-${active.description}-${id}`}
-                                            className="text-neutral-600 dark:text-neutral-400"
+                                            className="text-neutral-400"
                                         >
                                             {active.description}
                                         </motion.p>
@@ -271,7 +271,7 @@ export function ExpandableCardDemo() {
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
-                                        className="text-neutral-600 text-xs md:text-sm lg:text-base h-40 md:h-fit pb-10 flex flex-col items-start gap-4 overflow-auto dark:text-neutral-400 [mask:linear-gradient(to_bottom,white,white,transparent)] [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch]"
+                                        className="text-xs md:text-sm lg:text-base h-40 md:h-fit pb-10 flex flex-col items-start gap-4 overflow-auto text-neutral-400 [mask:linear-gradient(to_bottom,white,white,transparent)] [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch]"
                                     >
                                         {typeof active.content === 'function'
                                             ? active.content()
@@ -291,7 +291,7 @@ export function ExpandableCardDemo() {
                                 layoutId={`card-${card.title}-${id}`}
                                 key={`card-${card.title}-${id}`}
                                 onClick={() => setActive(card)}
-                                className="group flex flex-col h-full bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border border-neutral-200 dark:border-neutral-800 relative"
+                                className="group flex flex-col h-full bg-neutral-900 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border border-neutral-800 relative"
                             >
                                 {/* Pin button */}
                                 <motion.button
@@ -336,7 +336,7 @@ export function ExpandableCardDemo() {
                                 
                                 <motion.div
                                     layoutId={`image-${card.title}-${id}`}
-                                    className="overflow-hidden h-48 md:h-40 bg-neutral-100 dark:bg-neutral-800"
+                                    className="overflow-hidden h-48 md:h-40 bg-neutral-800"
                                 >
                                     <img
                                         width={300}
@@ -350,13 +350,13 @@ export function ExpandableCardDemo() {
                                 <div className="flex flex-col flex-1 p-4 md:p-5">
                                     <motion.h3
                                         layoutId={`title-${card.title}-${id}`}
-                                        className="font-bold text-lg text-neutral-800 dark:text-neutral-200 line-clamp-2"
+                                        className="font-bold text-lg text-neutral-200 line-clamp-2"
                                     >
                                         {card.title}
                                     </motion.h3>
                                     <p
                                         layoutId={`description-${card.description}-${id}`}
-                                        className="text-sm text-neutral-600 dark:text-neutral-400 pb-5 pt-1 line-clamp-1"
+                                        className="text-sm text-neutral-400 pb-5 pt-1 line-clamp-1"
                                     >
                                         {card.description}
                                     </p>

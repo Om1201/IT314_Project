@@ -11,6 +11,7 @@ import MDEditor from '@uiw/react-md-editor';
 import { useSelector } from 'react-redux';
 import YoutubeThumbnail from './youtube';
 import ReactDOM from 'react-dom';
+import { fetchQuizzes } from '../features/roadmapSlicer';
 
 const tabs = [
     { id: 'explanation', label: 'Explanation' },
@@ -28,6 +29,7 @@ export default function SubtopicPanel({
                                           onSaveNote = () => {},
                                           onRequestExplanation = () => {}, // <-- This prop will now be called with an argument
                                           onRequestQuiz = () => {},
+                                          handleFetchquizzes = () => {},
                                           quizContent = [],
                                           quizLoading = [],
                                           chapterId,
@@ -37,7 +39,7 @@ export default function SubtopicPanel({
                                           allVideos = [],
                                           explanationContent = "",
                                       }) {
-    const { explanation_loading } = useSelector(state => state.roadmap || {});
+    const { explanation_loading, is_quiz_fetching, curr_quizzes } = useSelector(state => state.roadmap || {});
 
     const [editingNote, setEditingNote] = useState(noteContent || "");
     const [isSaving, setIsSaving] = useState(false);
@@ -49,6 +51,8 @@ export default function SubtopicPanel({
     const modalRef = useRef(null);
     const [userAnswers, setUserAnswers] = useState({});
     const [personalizationInput, setPersonalizationInput] = useState("");
+    const [activeTab, setActiveTab] = useState('generate');
+    const [activePastQuizTab, setActivePastQuizTab] = useState(0);
 
     /** Update note content when parent changes it */
     useEffect(() => {
@@ -176,7 +180,7 @@ export default function SubtopicPanel({
                         {explanationContent ? (
                             <MDEditor.Markdown
                                 className="px-8 py-5"
-                                source={explanationContent}
+                                source={explanationContent.slice(3, 11)==="markdown" ? explanationContent.slice(11) : (explanationContent.slice(3, 5)==="md" ? explanationContent.slice(5) : explanationContent)}
                             />
                         ) : (
                             <div className="space-y-4 p-4">
@@ -218,129 +222,315 @@ export default function SubtopicPanel({
 
             /* QUIZ TAB --------------------------------------------------------- */
             case "quiz":
+              
+return (
+    <div className="space-y-4">
+      <p className="text-slate-300">Quiz for: {subtopic.title}</p>
+
+      <div className="flex gap-2 border-b border-slate-700">
+        <button
+          onClick={() => setActiveTab('generate')}
+          className={`px-4 py-2 cursor-pointer font-semibold transition-colors ${
+            activeTab === 'generate'
+              ? 'text-blue-400 border-b-2 border-blue-500'
+              : 'text-slate-400 hover:text-slate-300'
+          }`}
+        >
+          Generate Quiz
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab('past')
+            handleFetchquizzes();
+        }}
+          className={`px-4 py-2 cursor-pointer font-semibold transition-colors ${
+            activeTab === 'past'
+              ? 'text-blue-400 border-b-2 border-blue-500'
+              : 'text-slate-400 hover:text-slate-300'
+          }`}
+        >
+          Past Quizzes
+        </button>
+      </div>
+
+      {activeTab === 'generate' ? (
+        // Generate Quiz Tab
+        <>
+          {quizContent.length > 0 ? (
+            <div className="space-y-4 bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
+                
+              {quizContent.map((q, i) => {
+                const qKey = `${q.questionId ?? i}`;
+                const selected = userAnswers[qKey]?.selected;
+                const isSubmitted = userAnswers[qKey]?.submitted;
+                const isCorrect = selected === q.correctAnswer;
+
                 return (
-                    <div className="space-y-4">
-                        <p className="text-slate-300">Quiz for: {subtopic.title}</p>
+                  <div
+                    key={qKey}
+                    className="p-4 bg-slate-900/50 rounded-xl space-y-3 border border-slate-700"
+                  >
+                    <p className="font-semibold text-blue-300">
+                      Q{i + 1}: {q.question}
+                    </p>
 
-                        {quizContent.length > 0 ? (
-                            <div className="space-y-4 bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
-                                {quizContent.map((q, i) => {
-                                    const qKey = `${q.questionId ?? i}`;
-                                    const selected = userAnswers[qKey]?.selected;
-                                    const isSubmitted = userAnswers[qKey]?.submitted;
-                                    const isCorrect = selected === q.correctAnswer;
+                    <div className="space-y-2">
+                      {Object.entries(q.options || {}).map(([optKey, text]) => {
+                        const isSelected = selected === optKey;
+                        const correctOption =
+                          isSubmitted && optKey === q.correctAnswer;
+                        const wrongOption =
+                          isSubmitted && isSelected && optKey !== q.correctAnswer;
 
-                                    return (
-                                        <div
-                                            key={qKey}
-                                            className="p-4 bg-slate-900/50 rounded-xl space-y-3 border border-slate-700"
-                                        >
-                                            <p className="font-semibold text-blue-300">
-                                                Q{i + 1}: {q.question}
-                                            </p>
-
-                                            <div className="space-y-2">
-                                                {Object.entries(q.options || {}).map(([optKey, text]) => {
-                                                    const isSelected = selected === optKey;
-                                                    const correctOption =
-                                                        isSubmitted && optKey === q.correctAnswer;
-                                                    const wrongOption =
-                                                        isSubmitted && isSelected && optKey !== q.correctAnswer;
-
-                                                    return (
-                                                        <label
-                                                            key={optKey}
-                                                            className={`flex items-center gap-3 cursor-pointer p-2 rounded-lg border transition ${
-                                                                correctOption
-                                                                    ? "border-green-500 bg-green-500/20"
-                                                                    : wrongOption
-                                                                        ? "border-red-500 bg-red-500/20"
-                                                                        : "border-slate-600 hover:bg-slate-700/40"
-                                                            }`}
-                                                        >
-                                                            <input
-                                                                type="radio"
-                                                                name={`q-${qKey}`}
-                                                                value={optKey}
-                                                                checked={isSelected}
-                                                                disabled={isSubmitted}
-                                                                onChange={() =>
-                                                                    setUserAnswers(prev => ({
-                                                                        ...prev,
-                                                                        [qKey]: {
-                                                                            selected: optKey,
-                                                                            submitted: false,
-                                                                        },
-                                                                    }))
-                                                                }
-                                                            />
-                                                            <span className="text-slate-300">
-                                                                <span className="text-blue-400 font-semibold">
-                                                                    {optKey.toUpperCase()}:
-                                                                </span>{" "}
-                                                                {text}
-                                                            </span>
-                                                        </label>
-                                                    );
-                                                })}
-                                            </div>
-
-                                            {!isSubmitted && (
-                                                <button
-                                                    onClick={() =>
-                                                        setUserAnswers(prev => ({
-                                                            ...prev,
-                                                            [qKey]: {
-                                                                selected,
-                                                                submitted: true,
-                                                            },
-                                                        }))
-                                                    }
-                                                    disabled={!selected}
-                                                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:bg-slate-600 disabled:cursor-not-allowed"
-                                                >
-                                                    Submit Answer
-                                                </button>
-                                            )}
-
-                                            {isSubmitted && (
-                                                <div className="space-y-2">
-                                                    <p
-                                                        className={`font-semibold ${
-                                                            isCorrect ? "text-green-400" : "text-red-400"
-                                                        }`}
-                                                    >
-                                                        {isCorrect ? "Correct!" : "Incorrect!"}
-                                                    </p>
-                                                    <p className="text-slate-300 text-sm">
-                                                        <span className="text-blue-400 font-semibold">
-                                                            Explanation:
-                                                        </span>{" "}
-                                                        {q.explanation}
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <button
-                                className="cursor-pointer disabled:cursor-not-allowed px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                                onClick={() => onRequestQuiz()}
-                                disabled={isQuizGenerating()}
-                            >
-                                {isQuizGenerating() ? (
-                                    <div className="flex gap-2 justify-center items-center">
-                                        <Loader2 className="animate-spin" /> Generating quiz...
-                                    </div>
-                                ) : (
-                                    "Generate Quiz"
-                                )}
-                            </button>
-                        )}
+                        return (
+                          <label
+                            key={optKey}
+                            className={`flex items-center gap-3 cursor-pointer p-2 rounded-lg border transition ${
+                              correctOption
+                                ? 'border-green-500 bg-green-500/20'
+                                : wrongOption
+                                  ? 'border-red-500 bg-red-500/20'
+                                  : 'border-slate-600 hover:bg-slate-700/40'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name={`q-${qKey}`}
+                              value={optKey}
+                              checked={isSelected}
+                              disabled={isSubmitted}
+                              onChange={() =>
+                                setUserAnswers(prev => ({
+                                  ...prev,
+                                  [qKey]: {
+                                    selected: optKey,
+                                    submitted: false,
+                                  },
+                                }))
+                              }
+                            />
+                            <span className="text-slate-300">
+                              <span className="text-blue-400 font-semibold">
+                                {optKey.toUpperCase()}:
+                              </span>{' '}
+                              {text}
+                            </span>
+                          </label>
+                        );
+                      })}
                     </div>
+
+                    {!isSubmitted && (
+                      <button
+                        onClick={() =>
+                          setUserAnswers(prev => ({
+                            ...prev,
+                            [qKey]: {
+                              selected,
+                              submitted: true,
+                            },
+                          }))
+                        }
+                        disabled={!selected}
+                        className="px-3 py-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:bg-slate-600 disabled:cursor-not-allowed"
+                      >
+                        Submit Answer
+                      </button>
+                    )}
+
+                    {isSubmitted && (
+                      <div className="space-y-2">
+                        <p
+                          className={`font-semibold ${
+                            isCorrect ? 'text-green-400' : 'text-red-400'
+                          }`}
+                        >
+                          {isCorrect ? 'Correct!' : 'Incorrect!'}
+                        </p>
+                        <p className="text-slate-300 text-sm">
+                          <span className="text-blue-400 font-semibold">
+                            Explanation:
+                          </span>{' '}
+                          {q.explanation}
+                        </p>
+                      </div>
+                    )}
+                    
+                  </div>
+                  
+
                 );
+              })}
+              <button
+              className="cursor-pointer disabled:cursor-not-allowed px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              onClick={() => onRequestQuiz()}
+              disabled={isQuizGenerating()}
+            >
+              {isQuizGenerating() ? (
+                <div className="flex gap-2 justify-center items-center">
+                  <Loader2 className="animate-spin" /> Generating quiz...
+                </div>
+              ) : (
+                'Generate New quiz'
+              )}
+            </button>
+            </div>
+          ) : (
+            <button
+              className="cursor-pointer disabled:cursor-not-allowed px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              onClick={() => onRequestQuiz()}
+              disabled={isQuizGenerating()}
+            >
+              {isQuizGenerating() ? (
+                <div className="flex gap-2 justify-center items-center">
+                  <Loader2 className="animate-spin" /> Generating quiz...
+                </div>
+              ) : (
+                'Generate Quiz'
+              )}
+            </button>
+          )}
+        </>
+      ) : (
+        // Past Quizzes Tab
+        <div className="space-y-4">
+          {is_quiz_fetching ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="animate-spin text-blue-400" size={32} />
+            </div>
+          ) : curr_quizzes && curr_quizzes.length > 0 ? (
+            <>
+              <div className="flex gap-2 border-b border-slate-700 overflow-x-auto">
+                {curr_quizzes.map((_, quizIndex) => (
+                  <button
+                    key={quizIndex}
+                    onClick={() => setActivePastQuizTab(quizIndex)}
+                    className={`px-4 py-2 font-semibold transition-colors whitespace-nowrap ${
+                      activePastQuizTab === quizIndex
+                        ? 'text-blue-400 border-b-2 border-blue-500'
+                        : 'text-slate-400 hover:text-slate-300'
+                    }`}
+                  >
+                    Quiz {quizIndex + 1}
+                  </button>
+                ))}
+              </div>
+
+              <div className="bg-slate-800/50 rounded-lg p-4 border border-blue-500/20 space-y-4">
+                {curr_quizzes[activePastQuizTab]?.map((q, qIndex) => {
+                  const qKey = `past-${activePastQuizTab}-${q.questionId ?? qIndex}`;
+                  const selected = userAnswers[qKey]?.selected;
+                  const isSubmitted = userAnswers[qKey]?.submitted;
+                  const isCorrect = selected === q.correctAnswer;
+
+                  return (
+                    <div
+                      key={qKey}
+                      className="p-4 bg-slate-900/50 rounded-xl space-y-3 border border-slate-700"
+                    >
+                      <p className="font-semibold text-blue-300">
+                        Q{qIndex + 1}: {q.question}
+                      </p>
+
+                      <div className="space-y-2">
+                        {Object.entries(q.options || {}).map(
+                          ([optKey, text]) => {
+                            const isSelected = selected === optKey;
+                            const correctOption =
+                              isSubmitted && optKey === q.correctAnswer;
+                            const wrongOption =
+                              isSubmitted &&
+                              isSelected &&
+                              optKey !== q.correctAnswer;
+
+                            return (
+                              <label
+                                key={optKey}
+                                className={`flex items-center gap-3 cursor-pointer p-2 rounded-lg border transition ${
+                                  correctOption
+                                    ? 'border-green-500 bg-green-500/20'
+                                    : wrongOption
+                                      ? 'border-red-500 bg-red-500/20'
+                                      : 'border-slate-600 hover:bg-slate-700/40'
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name={`q-${qKey}`}
+                                  value={optKey}
+                                  checked={isSelected}
+                                  disabled={isSubmitted}
+                                  onChange={() =>
+                                    setUserAnswers(prev => ({
+                                      ...prev,
+                                      [qKey]: {
+                                        selected: optKey,
+                                        submitted: false,
+                                      },
+                                    }))
+                                  }
+                                />
+                                <span className="text-slate-300">
+                                  <span className="text-blue-400 font-semibold">
+                                    {optKey.toUpperCase()}:
+                                  </span>{' '}
+                                  {text}
+                                </span>
+                              </label>
+                            );
+                          }
+                        )}
+                      </div>
+
+                      {!isSubmitted && (
+                        <button
+                          onClick={() =>
+                            setUserAnswers(prev => ({
+                              ...prev,
+                              [qKey]: {
+                                selected,
+                                submitted: true,
+                              },
+                            }))
+                          }
+                          disabled={!selected}
+                          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:bg-slate-600 disabled:cursor-not-allowed"
+                        >
+                          Submit Answer
+                        </button>
+                      )}
+
+                      {isSubmitted && (
+                        <div className="space-y-2">
+                          <p
+                            className={`font-semibold ${
+                              isCorrect ? 'text-green-400' : 'text-red-400'
+                            }`}
+                          >
+                            {isCorrect ? 'Correct!' : 'Incorrect!'}
+                          </p>
+                          <p className="text-slate-300 text-sm">
+                            <span className="text-blue-400 font-semibold">
+                              Explanation:
+                            </span>{' '}
+                            {q.explanation}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <p className="text-slate-400 text-center py-8">
+              No past quizzes available
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
 
             /* NOTES TAB -------------------------------------------------------- */
             case "notes":
@@ -465,10 +655,10 @@ export default function SubtopicPanel({
                     <button
                         key={tab.id}
                         onClick={() => handleTabClick(tab.id)}
-                        className={`px-4 py-2 text-sm font-semibold whitespace-nowrap rounded-lg transition-all ${
+                        className={`px-4 cursor-pointer py-2 text-sm font-semibold whitespace-nowrap rounded-lg transition-all ${
                             selectedTab === tab.id
                                 ? "bg-blue-600 text-white"
-                                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                                : "text-slate-400 hover:text-white hover:bg-slate-900/50"
                         }`}
                     >
                         {tab.label}
@@ -498,7 +688,7 @@ export default function SubtopicPanel({
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={toggleFullscreen}
-                                        className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                                        className="p-2 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
                                     >
                                         {isFullscreen ? (
                                             <Minimize2 className="h-5 w-5" />
@@ -508,7 +698,7 @@ export default function SubtopicPanel({
                                     </button>
                                     <button
                                         onClick={handleCloseModal}
-                                        className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                                        className="p-2 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
                                     >
                                         <X className="h-5 w-5" />
                                     </button>

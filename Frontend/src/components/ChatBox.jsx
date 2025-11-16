@@ -28,7 +28,6 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
   const chapterChats = useSelector((state) => state.chat.chats?.[chatKey] || { chats: [], activeChatId: null })
   const activeChat = chapterChats.chats.find((c) => c.id === chapterChats.activeChatId)
 
-  // Fetch chats when component mounts or when chapterId changes
   useEffect(() => {
     if (roadmapId && chapterId) {
       dispatch(fetchChatsForChapter({ roadmapId, moduleId: chapterId }))
@@ -228,7 +227,7 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
 
           {/* Chat Content Area */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            {!activeChat ? (
+            {!activeChat && !isSending ? (
               <div className="flex-1 flex items-center justify-center p-4">
                 <div className="text-center">
                   <MessageSquare className="h-12 w-12 text-slate-600 mx-auto mb-4 animate-pulse" />
@@ -238,7 +237,7 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
               </div>
             ) : (
               <div className="flex-1 overflow-y-auto">
-                {activeChat.messages.length === 0 ? (
+                {activeChat && activeChat.messages.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
                       <p className="text-slate-400 text-sm mb-2">Start a conversation about this chapter</p>
@@ -248,32 +247,9 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
                 ) : (
                   <>
                   <div>
-                    {isSending && (
-                      <div className="flex gap-3 p-4 animate-in fade-in duration-300">
-                        {/* Animated glowing avatar */}
-                        <div className="flex-shrink-0">
-                          <div className="relative w-8 h-8">
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse shadow-lg shadow-blue-500/50"></div>
-                            <div className="absolute inset-1 rounded-full bg-slate-800 flex items-center justify-center">
-                              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-pulse"></div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Glowing thinking text with animated dots */}
-                        <div className="flex items-center gap-2 py-2">
-                          <span className="text-sm font-medium bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent animate-pulse">Thinking</span>
-                          <div className="flex gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-bounce" style={{ animationDelay: "0ms" }}></span>
-                            <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-bounce" style={{ animationDelay: "150ms" }}></span>
-                            <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-bounce" style={{ animationDelay: "300ms" }}></span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                   <ChatMessageArea>
-                   <ChatMessageAreaContent messages={activeChat.messages} isSending={isSending} shouldStream={shouldStream} setShouldStream={setShouldStream}/>
+                   <ChatMessageAreaContent needsNewChat={!chapterChats.activeChatId || !activeChat || !activeChat.chatId} messages={activeChat?.messages || []} isSending={isSending} shouldStream={shouldStream} setShouldStream={setShouldStream}/>
                     
                     {/* Add animated loading indicator for AI response */}
                     

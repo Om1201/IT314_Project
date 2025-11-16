@@ -3,6 +3,7 @@ import { StickToBottom } from "use-stick-to-bottom"
 import { cn } from "../../lib/utils"
 import { User, Bot, Copy, Check } from "lucide-react"
 import MDEditor from "@uiw/react-md-editor"
+import { useSelector } from "react-redux"
 
 export function ChatMessageArea({ className, ...props }) {
   return (
@@ -15,12 +16,13 @@ export function ChatMessageArea({ className, ...props }) {
   )
 }
 
-export function ChatMessageAreaContent({ className, messages = [], shouldStream, setShouldStream, isSending, ...props }) {
+export function ChatMessageAreaContent({ className, messages = [], needsNewChat ,shouldStream, setShouldStream, isSending, ...props }) {
   const [copiedIndex, setCopiedIndex] = useState(null)
   const contentRef = useRef(null)
   const [streamedContent, setStreamedContent] = useState({})
   const [isStreaming, setIsStreaming] = useState(false)
   const messagesContainerRef = useRef(null)
+  const {temp_msg} = useSelector(state => state.chat)
 
 
   const scrollToBottom = (smooth = true) => {
@@ -34,43 +36,93 @@ export function ChatMessageAreaContent({ className, messages = [], shouldStream,
     setTimeout(() => scrollToBottom(false), 0)
   }, [])
 
-  useEffect(() => {
-    if (messages.length === 0) return
+  // useEffect(() => {
+  //   if (messages.length === 0) return
     
-    if(!shouldStream) return;
-    const lastMessage = messages[messages.length - 1]
-    const messageKey = `${messages.length - 1}`
+  //   if(!shouldStream) return;
+  //   const lastMessage = messages[messages.length - 1]
+  //   const messageKey = `${messages.length - 1}`
     
     
-    if (lastMessage.role === 'ai' && lastMessage.content && !streamedContent[messageKey]) {
-      setIsStreaming(true)
-      const fullContent = lastMessage.content
-      let currentIndex = 0
+  //   if (lastMessage.role === 'ai' && lastMessage.content && !streamedContent[messageKey]) {
+  //     setIsStreaming(true)
+  //     const fullContent = lastMessage.content
+  //     let currentIndex = 0
       
-      const streamInterval = setInterval(() => {
-        if (currentIndex < fullContent.length) {
-          const charsToAdd = Math.min(10, fullContent.length - currentIndex) 
-          currentIndex += charsToAdd
+  //     const streamInterval = setInterval(() => {
+  //       if (currentIndex < fullContent.length) {
+  //         const charsToAdd = Math.min(10, fullContent.length - currentIndex) 
+  //         currentIndex += charsToAdd
           
-          setStreamedContent(prev => ({
-            ...prev,
-            [messageKey]: fullContent.slice(0, currentIndex)
-          }))
+  //         setStreamedContent(prev => ({
+  //           ...prev,
+  //           [messageKey]: fullContent.slice(0, currentIndex)
+  //         }))
           
           
-          const scrollContainer = contentRef.current?.closest(".overflow-y-auto")
-          if (scrollContainer) {
-            scrollContainer.scrollTop = scrollContainer.scrollHeight
+  //         const scrollContainer = contentRef.current?.closest(".overflow-y-auto")
+  //         if (scrollContainer) {
+  //           scrollContainer.scrollTop = scrollContainer.scrollHeight
+  //         }
+  //       } else {
+  //         clearInterval(streamInterval)
+  //         setIsStreaming(false)
+  //       }
+  //     }, 100) 
+  //     setShouldStream(false)
+  //     return () => clearInterval(streamInterval)
+  //   }
+  // }, [messages])
+  useEffect(() => {
+  if (messages.length === 0) return;
+  if (!shouldStream) return;
+
+  const lastMessage = messages[messages.length - 1];
+  const messageKey = `${messages.length - 1}`;
+
+  if (lastMessage.role === "ai" && lastMessage.content && !streamedContent[messageKey]) {
+    setIsStreaming(true);
+    const fullContent = lastMessage.content;
+    let currentIndex = 0;
+
+    const streamInterval = setInterval(() => {
+      if (currentIndex < fullContent.length) {
+        const charsToAdd =
+          Math.min(10, fullContent.length - currentIndex);
+        currentIndex += charsToAdd;
+
+        setStreamedContent((prev) => ({
+          ...prev,
+          [messageKey]: fullContent.slice(0, currentIndex),
+        }));
+
+        const scrollContainer =
+          contentRef.current?.closest(".overflow-y-auto");
+
+        if (scrollContainer) {
+          const threshold = 80; // px from bottom to allow autoscroll
+          const distanceFromBottom =
+            scrollContainer.scrollHeight -
+            (scrollContainer.scrollTop + scrollContainer.clientHeight);
+
+          const shouldAutoScroll = distanceFromBottom < threshold;
+
+          if (shouldAutoScroll) {
+            scrollContainer.scrollTop = scrollContainer.scrollHeight;
           }
-        } else {
-          clearInterval(streamInterval)
-          setIsStreaming(false)
         }
-      }, 100) 
-      setShouldStream(false)
-      return () => clearInterval(streamInterval)
-    }
-  }, [messages])
+      } else {
+        clearInterval(streamInterval);
+        setIsStreaming(false);
+      }
+    }, 100);
+
+    setShouldStream(false);
+    return () => clearInterval(streamInterval);
+  }
+}, [messages]);
+
+
 
   useEffect(() => {
   if (isSending){const scrollContainer = contentRef.current?.closest(".overflow-y-auto")
@@ -108,7 +160,6 @@ export function ChatMessageAreaContent({ className, messages = [], shouldStream,
       msg.role === "user" ? "justify-end" : "justify-start"
     )}
   >
-    {/* AI icon — top-left */}
 
     {msg.role === "ai"  && (
       <div className="flex-shrink-0 bg-[#4B61F5] rounded-full w-9 h-9 flex items-center justify-center">
@@ -120,7 +171,6 @@ export function ChatMessageAreaContent({ className, messages = [], shouldStream,
       </div>
     )}
 
-    {/* Message bubble */}
     <div
       className={cn(
         "flex flex-col gap-1 relative",
@@ -129,7 +179,7 @@ export function ChatMessageAreaContent({ className, messages = [], shouldStream,
     >
       <div
         className={cn(
-          "rounded-lg transition-all prose dark:prose-invert prose-sm max-w-none",
+          "rounded-lg transition-all prose-invert prose-sm max-w-none",
           msg.role === "user"
             ? "bg-primary bg-[#333C4D] text-primary-foreground rounded-br-none"
             : "bg-card text-card-foreground rounded-bl-none"
@@ -137,14 +187,12 @@ export function ChatMessageAreaContent({ className, messages = [], shouldStream,
       >
         <div className="rounded-2xl overflow-hidden">
           <MDEditor.Markdown
-            // style={{ backgroundColor: "#252B37", padding: "0.5rem 1.7rem" }}
             style={{ backgroundColor: "transparent", padding: "0.5rem 1.7rem", fontSize: "1.1rem" }}
             source={displayContent}
             />
           </div>
           </div>
 
-          {/* Timestamp + copy button */}
       <div
         className={cn(
           "flex items-center ml-6 gap-2 text-xs transition-opacity opacity-0 group-hover:opacity-100",
@@ -187,6 +235,69 @@ export function ChatMessageAreaContent({ className, messages = [], shouldStream,
           )
         })}
 
+        {needsNewChat && isSending && 
+        <div
+   ref={contentRef} 
+   key={-1}
+    className={cn(
+      "flex items-start gap-3 group justify-end",
+    )}
+  >
+
+
+
+    <div
+      className={cn(
+        "flex flex-col gap-1 relative max-w-xl items-end",
+      )}
+    >
+      <div
+        className={cn(
+          "rounded-lg transition-all prose-invert prose-sm max-w-none bg-primary bg-[#333C4D] text-primary-foreground rounded-br-none",
+        )}
+      >
+        <div className="rounded-2xl overflow-hidden">
+          <MDEditor.Markdown
+            style={{ backgroundColor: "transparent", padding: "0.5rem 1.7rem", fontSize: "1.1rem" }}
+            source={temp_msg}
+            />
+          </div>
+          </div>
+
+      <div
+        className={cn(
+          "flex items-center ml-6 gap-2 text-xs transition-opacity opacity-0 group-hover:opacity-100 justify-end pr-1",
+        )}
+
+      >
+        <span className="text-muted-foreground">
+          {new Date(Date.now()).toLocaleTimeString()}
+        </span>
+        <button
+          onClick={() => {handleCopy(temp_msg, -1)}}
+          className={cn(
+            "p-1 rounded cursor-pointer hover:bg-muted transition-colors text-primary-foreground hover:bg-primary/20",
+          )}
+          title="Copy message"
+          aria-label="Copy message"
+        >
+          {copiedIndex === -1 ? (
+            <Check size={14} className="text-green-500" />
+          ) : (
+            <Copy size={14} />
+          )}
+        </button>
+      </div>
+    </div>
+
+    {/* User icon — top-right */}
+      <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center">
+        <div className="bg-[#4B61F5] w-8 h-8 rounded-full flex items-center justify-center">
+          <User size={18} className="text-primary-foreground" />
+        </div>
+      </div>
+  </div>  
+        }
       {/* AI Thinking Indicator */}
       {isSending && (
         <div className="flex items-start gap-3 animate-in fade-in duration-300">

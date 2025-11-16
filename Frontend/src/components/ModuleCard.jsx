@@ -1,4 +1,4 @@
-import { ChevronDown, MessageCircle } from 'lucide-react';
+import { ChevronDown, Code, MessageCircle } from 'lucide-react';
 import SubtopicCard from './SubtopicCard';
 import SubtopicPanel from './SubtopicPanel';
 
@@ -22,8 +22,10 @@ export default function ModuleCard({
                                        onRequestExplanation,
                                        onChatClick,
                                        onRequestQuiz,
+                                       handleFetchquizzes,
                                        quiz,
                                        quizLoading,
+                                       onIdeClick
                                    }) {
     return (
         <div
@@ -31,7 +33,7 @@ export default function ModuleCard({
             className="bg-gradient-to-br from-slate-900/40 to-blue-900/20 backdrop-blur-xl border border-blue-500/30 rounded-2xl overflow-hidden hover:border-blue-400/50 transition-all duration-300">
             <button
                 onClick={onToggle}
-                className="w-full flex items-center justify-between p-6 hover:bg-blue-500/10 transition-colors group"
+                className="w-full cursor-pointer flex items-center justify-between p-6 hover:bg-blue-500/10 transition-colors group"
             >
                 <div className="flex items-center gap-4 text-left flex-1">
                     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/30 flex-shrink-0">
@@ -48,9 +50,19 @@ export default function ModuleCard({
                     <button
                         onClick={e => {
                             e.stopPropagation();
+                            onIdeClick();
+                        }}
+                        className="p-2 cursor-pointer rounded-lg hover:bg-blue-500/20 transition-colors group/chat"
+                        title="Open IDE"
+                    >
+                        <Code className="h-5 w-5 text-slate-400 group-hover/chat:text-blue-400 transition-colors" />
+                    </button>
+                    <button
+                        onClick={e => {
+                            e.stopPropagation();
                             onChatClick?.(module.id);
                         }}
-                        className="p-2 rounded-lg hover:bg-blue-500/20 transition-colors group/chat"
+                        className="p-2 cursor-pointer rounded-lg hover:bg-blue-500/20 transition-colors group/chat"
                         title="Open chat"
                     >
                         <MessageCircle className="h-5 w-5 text-slate-400 group-hover/chat:text-blue-400 transition-colors" />
@@ -102,6 +114,7 @@ export default function ModuleCard({
                                     quizContent={quiz[`${module.id}:${subtopic.id}`] || []}
                                     quizLoading={quizLoading}
                                     onRequestQuiz={() => onRequestQuiz(module.id, subtopic.id)}
+                                    handleFetchquizzes={() => handleFetchquizzes(module.id, subtopic.id)}
 
 
 

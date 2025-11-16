@@ -18,6 +18,7 @@ export default function PasswordReset() {
         confirmPassword: '',
     });
     const [token, setToken] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const tempemail = useSelector(state => state.user.tempemail);
@@ -66,6 +67,7 @@ export default function PasswordReset() {
 
     const handleSubmit = async e => {
         e.preventDefault();
+        setIsLoading(true);
 
         if (formData.password !== formData.confirmPassword) {
             toast.error('Password do not match');
@@ -84,13 +86,14 @@ export default function PasswordReset() {
             toast.success('Password reset successfully');
 
             setTimeout(() => {
-                navigate('/', { replace: true });
-            }, 1000);
+                navigate('/signin', { replace: true });
+            }, 500);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Password reset failed');
             setStatus('verified');
             setMessage('Link verified successfully. Please enter your new password.');
         }
+        setIsLoading(false);
     };
 
     const handleRetry = () => {
@@ -99,148 +102,137 @@ export default function PasswordReset() {
         window.location.reload();
     };
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-black flex items-center justify-center p-4 relative overflow-hidden">
-            <div className="w-full max-w-md relative z-10">
-                <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-blue-900/20 hover:shadow-blue-900/30 transition-all duration-500 p-8">
-                    <div className="space-y-1 text-center mb-8">
-                        <div className="flex items-center justify-center space-x-2 mb-6">
-                            <div className="relative">
-                                <Shield className="h-10 w-10 text-blue-400 drop-shadow-lg" />
-                                <div className="absolute inset-0 h-10 w-10 bg-blue-400/20 rounded-lg blur-xl animate-pulse"></div>
-                            </div>
-                            <span className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-white bg-clip-text text-transparent">
-                                CodeLearn
-                            </span>
+return (
+    <div className="min-h-screen bg-gradient-to-tr from-slate-800 via-cyan-900 to-slate-600 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+            <div className="bg-slate-950/50 border border-slate-800/50 backdrop-blur-sm rounded-2xl shadow-2xl p-8 space-y-8">
+                <div className="space-y-3 text-center">
+                    <div className="flex cursor-pointer items-center justify-center space-x-2 mb-6">
+                        <div className="p-2 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg">
+                            <Shield className="h-5 w-5 text-white" />
                         </div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Reset Password</h1>
-                        <p className="text-slate-300">
-                            {status === 'loading'
-                                ? 'Verifying reset link...'
-                                : status === 'verified'
-                                  ? 'Enter your new password'
-                                  : 'Password Reset'}
-                        </p>
+                        <span className="text-xl font-semibold text-white tracking-tight">CodeLearn</span>
                     </div>
 
-                    <div className="space-y-6">
-                        <div className="flex flex-col items-center space-y-4">
-                            {status === 'loading' && (
-                                <div className="flex items-center space-x-3">
-                                    <Loader2 className="h-8 w-8 text-blue-400 animate-spin" />
-                                    <span className="text-slate-300">Verifying reset link...</span>
-                                </div>
-                            )}
+                    <h1 className="text-3xl font-bold text-white leading-tight">Reset Password</h1>
 
-                            {status === 'success' && (
-                                <div className="flex items-center space-x-3">
-                                    <CheckCircle className="h-8 w-8 text-green-400" />
-                                    <span className="text-green-400 font-semibold">
-                                        Password Reset Successful!
-                                    </span>
-                                </div>
-                            )}
+                    <p className="text-sm text-gray-400">
+                        {status === 'loading'
+                            ? 'Verifying reset link...'
+                            : status === 'verified'
+                            ? 'Enter your new password'
+                            : 'Password Reset'}
+                    </p>
+                </div>
 
-                            {status === 'error' && (
-                                <div className="flex items-center space-x-3">
-                                    <XCircle className="h-8 w-8 text-red-400" />
-                                    <span className="text-red-400 font-semibold">Reset Failed</span>
-                                </div>
-                            )}
-                        </div>
+                <div className="space-y-6">
+                    <div className="flex flex-col items-center space-y-4">
+                        {status === 'loading' && (
+                            <div className="flex items-center space-x-3">
+                                <Loader2 className="h-6 w-6 text-blue-400 animate-spin" />
+                                <span className="text-gray-300 text-sm">Verifying reset link...</span>
+                            </div>
+                        )}
 
-                        <div className="text-center">
-                            <p className="text-slate-300">{message}</p>
-                        </div>
-
-                        {status === 'verified' && (
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div>
-                                    <label
-                                        htmlFor="password"
-                                        className="block text-sm font-medium text-slate-300 mb-2"
-                                    >
-                                        New Password
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            id="password"
-                                            name="password"
-                                            type={showPassword ? 'text' : 'password'}
-                                            value={formData.password}
-                                            onChange={handleInputChange}
-                                            required
-                                            className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                                            placeholder="Enter new password"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white transition-colors"
-                                        >
-                                            {showPassword ? (
-                                                <EyeOff className="h-5 w-5" />
-                                            ) : (
-                                                <Eye className="h-5 w-5" />
-                                            )}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label
-                                        htmlFor="confirmPassword"
-                                        className="block text-sm font-medium text-slate-300 mb-2"
-                                    >
-                                        Confirm New Password
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            id="confirmPassword"
-                                            name="confirmPassword"
-                                            type={showConfirmPassword ? 'text' : 'password'}
-                                            value={formData.confirmPassword}
-                                            onChange={handleInputChange}
-                                            required
-                                            className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                                            placeholder="Confirm new password"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setShowConfirmPassword(!showConfirmPassword)
-                                            }
-                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white transition-colors"
-                                        >
-                                            {showConfirmPassword ? (
-                                                <EyeOff className="h-5 w-5" />
-                                            ) : (
-                                                <Eye className="h-5 w-5" />
-                                            )}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    className="w-full cursor-pointer px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                                >
-                                    Submit
-                                </button>
-                            </form>
+                        {status === 'success' && (
+                            <div className="flex items-center space-x-3">
+                                <CheckCircle className="h-6 w-6 text-green-400" />
+                                <span className="text-green-400 font-semibold text-sm">Password Reset Successful!</span>
+                            </div>
                         )}
 
                         {status === 'error' && (
-                            <button
-                                onClick={handleRetry}
-                                className="w-full cursor-pointer px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 transform active:scale-95"
-                            >
-                                Try Again
-                            </button>
+                            <div className="flex items-center space-x-3">
+                                <XCircle className="h-6 w-6 text-red-400" />
+                                <span className="text-red-400 font-semibold text-sm">Reset Failed</span>
+                            </div>
                         )}
                     </div>
+
+                    <div className="text-center">
+                        <p className="text-gray-300 text-sm">{message}</p>
+                    </div>
+
+                    {status === 'verified' && (
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div className="space-y-2">
+                                <label htmlFor="password" className="block text-xs font-semibold text-gray-200 uppercase tracking-wide">
+                                    New Password
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        id="password"
+                                        name="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                        required
+                                        placeholder="••••••••"
+                                        className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-lg text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:outline-none pr-12 transition-all duration-200 hover:border-slate-600/50 text-sm"
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors duration-200 p-1"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    >
+                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="confirmPassword" className="block text-xs font-semibold text-gray-200 uppercase tracking-wide">
+                                    Confirm New Password
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        id="confirmPassword"
+                                        name="confirmPassword"
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        value={formData.confirmPassword}
+                                        onChange={handleInputChange}
+                                        required
+                                        placeholder="••••••••"
+                                        className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/50 rounded-lg text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 focus:outline-none pr-12 transition-all duration-200 hover:border-slate-600/50 text-sm"
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors duration-200 p-1"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:shadow-none cursor-pointer px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-blue-50 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 transform active:scale-95 text-sm mt-1"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <div className="flex justify-center items-center gap-1">
+                                        <Loader2 className="h-5 w-5 animate-spin" /> Submitting...
+                                    </div>
+                                ) : (
+                                    <>Submit</>
+                                )}
+                            </button>
+                        </form>
+                    )}
+
+                    {status === 'error' && (
+                        <button
+                            onClick={handleRetry}
+                            className="w-full cursor-pointer px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-blue-50 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 transform active:scale-95 text-sm"
+                        >
+                            Try Again
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
-    );
+    </div>
+);
+
 }

@@ -205,6 +205,25 @@ export const generateQuiz = createAsyncThunk(
     }
 );
 
+export const fetchQuizzes = createAsyncThunk(
+    'roadmap/fetchQuizzes',
+    async ({ roadmapId, chapterId, subtopicId }, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/get-quizzes`,
+                { roadmapId, chapterId, subtopicId },
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                    withCredentials: true,
+                }
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+    }
+);
+
 export const togglePinRoadmap = createAsyncThunk(
     'roadmap/togglePinRoadmap',
     async (roadmapId, { rejectWithValue }) => {
@@ -239,6 +258,9 @@ const initialState = {
     explanation_loading: [],
     quizData: {},
     quizLoading: [],
+
+    curr_quizzes: [],
+    is_quiz_fetching: false,
 };
 
 export const roadmapSlice = createSlice({
@@ -363,6 +385,21 @@ export const roadmapSlice = createSlice({
                         return new Date(b.createdAt) - new Date(a.createdAt);
                     });
                 }
+            })
+
+            .addCase(fetchQuizzes.pending, (state, action) => {
+                state.is_quiz_fetching = true;
+            })
+            .addCase(fetchQuizzes.fulfilled, (state, action) => {
+                console.log('Fetched quizzes payload:', action.payload);
+                state.curr_quizzes = [];
+                for (const ele of action.payload.data){
+                    state.curr_quizzes.push(ele.quiz);
+                }
+                state.is_quiz_fetching = false;
+            })
+            .addCase(fetchQuizzes.rejected, (state, action) => {
+                state.is_quiz_fetching = false;
             });
     },
 });

@@ -12,7 +12,7 @@ export default function LeftSidebar({
 }) {
     const resetBtn = useRef();
     return (
-        <aside className="w-80 bg-slate-900/40 backdrop-blur-xl -r border-blue-500/30 overflow-y-auto p-6">
+        <aside className="w-80 bg-slate-900/40 backdrop-blur-xl border-blue-500/30 overflow-y-auto p-6">
             <div className="mb-8">
                 <h2 className="text-2xl font-bold text-white mb-6">{roadmapTitle}</h2>
 
@@ -69,7 +69,7 @@ export default function LeftSidebar({
                     <div className="flex gap-2">
                         <button
                             onClick={stopwatch.toggle}
-                            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 transition-colors"
+                            className="flex-1 cursor-pointer flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 transition-colors"
                             title={stopwatch.isRunning ? 'Pause' : 'Start'}
                         >
                             {stopwatch.isRunning ? (
@@ -83,7 +83,7 @@ export default function LeftSidebar({
                         </button>
                         <button
                             onClick={stopwatch.reset}
-                            className="flex-1 flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg py-2 transition-colors"
+                            className="flex-1 cursor-pointer flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg py-2 transition-colors"
                             title="Reset"
                         >
                             <RotateCcw className="h-4 w-4" />
@@ -137,7 +137,7 @@ export default function LeftSidebar({
                     <div className="flex gap-2">
                         <button
                             onClick={timer.toggle}
-                            className="flex-1 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-2 transition-colors disabled:opacity-50"
+                            className="flex-1 flex cursor-pointer items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-2 transition-colors disabled:opacity-50"
                             disabled={timer.totalSeconds === 0}
                             title={timer.isRunning ? 'Pause' : 'Start'}
                         >
@@ -153,7 +153,7 @@ export default function LeftSidebar({
                         <button
                             ref={resetBtn}
                             onClick={timer.reset}
-                            className="flex-1 flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg py-2 transition-colors"
+                            className="flex-1 flex cursor-pointer items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg py-2 transition-colors"
                             title="Reset"
                         >
                             <RotateCcw className="h-4 w-4" />

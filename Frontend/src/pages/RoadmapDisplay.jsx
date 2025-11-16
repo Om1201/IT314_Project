@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import {
     fetchNotes,
     fetchProgress,
+    fetchQuizzes,
     fetchSubtopicExplanation, generateQuiz,
     generateSubtopicSummary,
     getUserRoadmapById,
@@ -19,9 +20,11 @@ import Loader from '../components/Loader.jsx';
 import Navbar from '../components/Navbar.jsx';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function RoadmapDisplay() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [currRoadmap, setCurrRoadmap] = useState({});
     const [isLoading, setisLoading] = useState(true);
     const [notfound, setNotfound] = useState(false);
@@ -255,6 +258,25 @@ export default function RoadmapDisplay() {
         window.open(url, '_blank');
     };
 
+    const handleFetchquizzes = async (chapterId, subtopicId) => {
+        try{
+            let response = await dispatch(fetchQuizzes({ roadmapId: id, chapterId, subtopicId }));
+            response = response.payload;
+            console.log('Fetched quiz:', response);
+            if (!response.success) {
+                toast.error('Failed to fetch quiz');
+                return;
+            }
+        }catch(error){
+            toast.error('Failed to fetch quiz', error.message);
+        }
+
+    }
+
+    const onIdeClick = () => {
+        window.open(`/ide/${id}`, "_blank");
+    }
+
     if (notfound) {
         return (
             <div className="flex items-center justify-center h-screen pt-16 bg-gradient-to-br from-slate-950 via-blue-950 to-black text-white overflow-hidden">
@@ -334,6 +356,7 @@ export default function RoadmapDisplay() {
                                     quiz={quiz}
                                     quizLoading={quizLoading}
                                     onRequestQuiz={onRequestQuiz}
+                                    handleFetchquizzes={handleFetchquizzes}
 
 
                                     onSaveNote={saveNotes}
@@ -343,6 +366,7 @@ export default function RoadmapDisplay() {
                                     allVideos={currRoadmap.videos}
                                     onRequestExplanation={onRequestExplanation}
                                     onChatClick={handleChatClick}
+                                    onIdeClick={onIdeClick}
                                 />
                             </div>
                         ))}

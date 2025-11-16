@@ -12,6 +12,7 @@ export default function Signin() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [is_sending, setIs_sending] = useState(false);    
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -54,6 +55,7 @@ export default function Signin() {
 
     const handleforgotpass = async e => {
         e.preventDefault();
+        setIs_sending(true);
 
         try {
             let response = await dispatch(forgotPassword({ email }));
@@ -66,6 +68,7 @@ export default function Signin() {
         } catch (err) {
             toast.error(err.response.data.message);
         }
+        setIs_sending(false);
     };
 
     return (
@@ -147,7 +150,8 @@ export default function Signin() {
                                 <button
                                     onClick={handleforgotpass}
                                     type="button"
-                                    className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                                    disabled={is_sending || !email}
+                                    className="text-sm disabled:cursor-not-allowed cursor-pointer text-blue-400 hover:text-blue-300 font-medium transition-colors"
                                 >
                                     Forgot password?
                                 </button>

@@ -50,16 +50,16 @@ export default function VerifyAccount() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-black flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-cyan-900 via-slate-900 to-black flex items-center justify-center p-4 relative overflow-hidden">
             <div className="w-full max-w-md relative z-10">
-                <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-blue-900/20 hover:shadow-blue-900/30 transition-all duration-500 p-8">
+                <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl shadow-cyan-900/20 hover:shadow-cyan-900/30 transition-all duration-500 p-8">
                     <div className="space-y-1 text-center mb-8">
                         <div className="flex items-center justify-center space-x-2 mb-6">
                             <div className="relative">
-                                <Shield className="h-10 w-10 text-blue-400 drop-shadow-lg" />
-                                <div className="absolute inset-0 h-10 w-10 bg-blue-400/20 rounded-lg blur-xl animate-pulse"></div>
+                                <Shield className="h-10 w-10 text-cyan-400 drop-shadow-lg" />
+                                <div className="absolute inset-0 h-10 w-10 bg-cyan-400/20 rounded-lg blur-xl animate-pulse"></div>
                             </div>
-                            <span className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-white bg-clip-text text-transparent">
+                            <span className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-white bg-clip-text text-transparent">
                                 CodeLearn
                             </span>
                         </div>
@@ -71,7 +71,7 @@ export default function VerifyAccount() {
                         <div className="flex flex-col items-center space-y-4">
                             {status === 'loading' && (
                                 <div className="flex items-center space-x-3">
-                                    <Loader2 className="h-8 w-8 text-blue-400 animate-spin" />
+                                    <Loader2 className="h-8 w-8 text-cyan-400 animate-spin" />
                                     <span className="text-slate-300">
                                         Verifying your account...
                                     </span>
@@ -104,7 +104,7 @@ export default function VerifyAccount() {
                         {status === 'error' && (
                             <button
                                 onClick={handleRetry}
-                                className="w-full cursor-pointer px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 transform active:scale-95"
+                                className="w-full cursor-pointer px-6 py-3 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white font-semibold rounded-xl hover:from-cyan-700 hover:to-cyan-800 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25 transform active:scale-95"
                             >
                                 Try Again
                             </button>

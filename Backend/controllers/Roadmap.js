@@ -7,6 +7,7 @@ import { getVideos } from '../utils/search.js';
 import NoteModel from '../models/NoteModel.js';
 import { getSubtopicSummaryPrompt, getTopicGuardPrompt} from '../utils/prompt.js';
 import { generateWithGemini } from '../utils/generate.js';
+import QuizModel from '../models/QuizModel.js';
 
 export const generateRoadmap = async (req, res) => {
     try {
@@ -56,13 +57,11 @@ export const generateRoadmap = async (req, res) => {
         }
 
         console.log(`Fetching articles... ${new Date().toLocaleString()}`);
-        // const articles = await getArticles(roadmapData);
-        const articles = [];
+        const articles = await getArticles(roadmapData);
         roadmapData.articles = articles;
 
         console.log(`Fetching videos... ${new Date().toLocaleString()}`);
-        // const videos = await getVideos(roadmapData);
-        const videos = [];
+        const videos = await getVideos(roadmapData);
         roadmapData.videos = videos;
 
         const user = await UserModel.findById(userId);
@@ -121,6 +120,14 @@ export const generateQuiz = async (req, res) => {
         }
 
         console.log("Quiz generated: ", quizJson);
+        const newQuiz = new QuizModel({
+            email: req.email,
+            roadmapIp: roadMapId,
+            chapterId: chapterId,
+            subtopicId: subtopicId || "general",
+            quiz: quizJson,
+        });
+        await newQuiz.save();
 
         return res.status(200).json({ success: true, data: quizJson, message: "Quiz generated successfully" });
 
@@ -130,11 +137,27 @@ export const generateQuiz = async (req, res) => {
     }
 }
 
+export const getQuizzes = async(req, res) => {
+    try {
+        const {email} = req;
+        const { roadmapId, chapterId, subtopicId } = req.body;
+        const quizzes = await QuizModel.find({
+            email,
+            roadmapId: roadmapId,
+            chapterId,
+            subtopicId: subtopicId,
+        });
+        return res.status(200).json({ success: true, data: quizzes, message: "Quizzes fetched successfully" });
+    }catch(error){
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
+
 export const getUserRoadmaps = async (req, res) => {
     try {
         const { email } = req;
         const roadmaps = await RoadmapModel.find({ email })
-            .sort({ isPinned: -1, createdAt: -1 });  // Sort by pinned first, then by creation date
+            .sort({ isPinned: -1, createdAt: -1 });  
 
         return res
             .status(200)

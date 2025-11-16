@@ -28,12 +28,12 @@ export const register = async (req, res) => {
                 const verifyUrl = buildVerifyAccountUrl(verifyToken);
                 await existingUser.save();
 
-                const { subject, text } = verificationEmail(email, verifyUrl);
+                const { subject, html } = verificationEmail(email, verifyUrl);
                 const mailOptions = {
-                    from: process.env.SENDER_EMAIL,
+                    from: process.env.GMAIL_USER,
                     to: email,
                     subject,
-                    text,
+                    html,
                 };
                 try {
                     await transporter.sendMail(mailOptions);
@@ -64,13 +64,13 @@ export const register = async (req, res) => {
         const verifyUrl = buildVerifyAccountUrl(verifyToken);
         await user.save();
 
-        const { subject, text } = verificationEmail(email, verifyUrl);
+        const { subject, html } = verificationEmail(email, verifyUrl);
 
         const mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: email,
             subject,
-            text,
+            html,
         };
 
         try {
@@ -200,8 +200,8 @@ export const signIn = async (req, res) => {
         const token = jwt.sign({ id: user._id, email: user.email}, process.env.JWT_SECRET, { expiresIn: '7d' });
         res.cookie('token', token, {
             httpOnly: true,
-            // secure: true,
-            // sameSite: "None",
+            secure: true,
+            sameSite: "None",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
@@ -221,8 +221,8 @@ export const logout = async (req, res) => {
     try {
         res.clearCookie('token', {
             httpOnly: true,
-            // secure: true,
-            // sameSite: "None",
+            secure: true,
+            sameSite: "None",
         });
         return res.status(200).json({ success: true, message: 'Logged out' });
     } catch (error) {
@@ -276,13 +276,13 @@ export const sendResetToken = async (req, res) => {
 
         const resetUrl = buildResetPasswordUrl(resetToken);
 
-        const { subject, text } = passwordResetEmail(email, resetUrl);
+        const { subject, html } = passwordResetEmail(email, resetUrl);
 
         const mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: email,
             subject,
-            text,
+            html,
         };
 
         try {
