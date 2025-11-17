@@ -28,7 +28,6 @@ export const saveNode = createAsyncThunk(
                 { key: `project/${roadmapId}`, name, filePath, content },
                 { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );
-            console.log('werajlfjasljf', response);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -86,7 +85,6 @@ export const renameFolder = createAsyncThunk(
     'ide/renameFolder',
     async ({ roadmapId, name, oldFilePath, newFilePath }, { rejectWithValue }) => {
         try {
-            console.log('In ideSlice renameFolder:', oldFilePath, newFilePath);
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/s3/rename-folder`,
                 { key: `project/${roadmapId}`, name, oldFilePath, newFilePath },
@@ -103,9 +101,6 @@ export const updateFileContent = createAsyncThunk(
     'ide/updateFileContent',
     async ({ roadmapId, filePath, content }, { rejectWithValue }) => {
         try {
-            console.log(roadmapId)
-            console.log(filePath)
-            console.log(content)
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/s3/file-update`,
                 { key: `project/${roadmapId}`, filePath, content },
@@ -122,13 +117,11 @@ export const executeCode = createAsyncThunk(
     'ide/runCode',
     async ({ language, files, args = [], stdin = '' }, { rejectWithValue }) => {
         try {
-            console.log("In ideSlice executeCode:", language, files, args, stdin);
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/code/execute`,
                 { language, files, args, stdin },
                 { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );
-            console.log("Execute code response:", response);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -156,7 +149,6 @@ const ideSlice = createSlice({
             state.currFile = action.payload;
         },
         setIsRunning: (state, action) => {
-            console.log('Setting is_running to', action.payload);
             state.is_running = action.payload;
         }
     },
@@ -200,7 +192,6 @@ const ideSlice = createSlice({
                 state.loading_general = true;
             })
             .addCase(saveNode.fulfilled, (state, action) => {
-                console.log('This isisisis', action);
                 state.currFiles.push(action.payload.data);
                 state.loading_general = false;
             })
@@ -215,7 +206,6 @@ const ideSlice = createSlice({
                 let oldPrefix = args.oldFilePath;
                 const newPrefix = args.newFilePath;
 
-                console.log('Renaming folder in state from', oldPrefix, 'to', newPrefix);
 
                 state.currFiles = state.currFiles.map(file => {
                     if (file.name.startsWith(oldPrefix)) {
@@ -238,7 +228,6 @@ const ideSlice = createSlice({
             .addCase(updateFileContent.fulfilled, (state, action) => {
                 state.is_saving = false;
                 const args = action.meta.arg;
-                console.log('Updating file content in state for', args.filePath);
                 state.currFiles = state.currFiles.map(file => {
                     if (file.name === args.filePath) {
                         return {

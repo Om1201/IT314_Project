@@ -188,7 +188,7 @@ export const generateQuiz = createAsyncThunk(
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/generate-quiz`,
                 {
-                    roadMapId: roadmapId,
+                    roadmapId,
                     chapterId: moduleId,
                     subtopicId
                 },
@@ -391,7 +391,6 @@ export const roadmapSlice = createSlice({
                 state.is_quiz_fetching = true;
             })
             .addCase(fetchQuizzes.fulfilled, (state, action) => {
-                console.log('Fetched quizzes payload:', action.payload);
                 state.curr_quizzes = [];
                 for (const ele of action.payload.data){
                     state.curr_quizzes.push(ele.quiz);

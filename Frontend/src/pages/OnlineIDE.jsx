@@ -189,7 +189,6 @@ const FileTree = ({
     } else if (contextMenu.target.isFolder) {
       if (action === "rename") {
         setIsFolder(true)
-        console.log("Rename folder:", contextMenu.target.path)
         setShowRenameModalFolder(true)
         setSelectedItem(contextMenu.target.path)
         setRenameValue(contextMenu.target.path.split("/").pop())
@@ -198,19 +197,16 @@ const FileTree = ({
         setIsFolder(true)
         setShowDeleteModal(true)
         setSelectedItem(contextMenu.target.path)
-        console.log("Delete folder:", contextMenu.target.path)
       }
       if (action === "createFile") {
         setIsFolder(true)
         setShowCreateFileModal(true)
         setSelectedItem(contextMenu.target.path)
-        console.log("Create file in folder:", contextMenu.target.path)
       }
       if (action === "createFolder") {
         setIsFolder(true)
         setShowCreateFolderModal(true)
         setSelectedItem(contextMenu.target.path)
-        console.log("Create folder in folder:", contextMenu.target.path)
       }
     }
 
@@ -363,9 +359,7 @@ export default function OnlineIDE() {
     async function fetchdata() {
       if (id === undefined) return
       try {
-        console.log("sendgin", id)
         let response = await dispatch(fetchFiles({ roadmapId: id }))
-        console.log("Fetched files:", response)
       } catch (err) {
         console.error("Error fetching files:", err)
       }
@@ -401,15 +395,12 @@ export default function OnlineIDE() {
   const filesForTabs = currFiles.filter((f) => openedFileIds.has(f.id) && !f.name.endsWith("/"))
 
   async function handleCreateFile() {
-    console.log("Create file:", newFileName)
     let filePath = ""
     if (selectedItem !== null && selectedItem !== undefined) filePath = "/" + selectedItem + "/" + newFileName
     else filePath = "/" + newFileName
-    console.log("Selected path for new file:", filePath)
     try {
       let response = await dispatch(saveNode({ roadmapId: id, name: newFileName, filePath: filePath, content: "" }))
       response = response.payload
-      console.log("creatingnngngngn", response)
       if (!response.success) {
         toast.error(response.message || "Failed to create file.")
         return;
@@ -427,12 +418,10 @@ export default function OnlineIDE() {
   }
 
   async function handleCreateFolder() {
-    console.log("Create folder:", newFolderName)
 
     let folderPath = ""
     if (selectedItem !== null && selectedItem !== undefined) folderPath = "/" + selectedItem + "/" + newFolderName + "/"
     else folderPath = "/" + newFolderName + "/"
-    console.log("Selected path for new folder:", folderPath)
     try {
       let response = await dispatch(saveNode({ roadmapId: id, name: newFolderName, filePath: folderPath, content: "" }))
       response = response.payload
@@ -454,7 +443,6 @@ export default function OnlineIDE() {
   }
 
   async function handleDeleteFile() {
-    console.log("Delete file:", selectedItem)
     let filePath = selectedItem
     if (!filePath.startsWith("/")) {
       filePath = "/" + filePath
@@ -462,7 +450,6 @@ export default function OnlineIDE() {
     if (isFolder) {
       if (!filePath.endsWith("/")) filePath = filePath + "/"
     }
-    console.log("Selected path for deletion:", filePath)
     try {
       let response
       if (isFolder) {
@@ -471,7 +458,6 @@ export default function OnlineIDE() {
         response = await dispatch(deleteNode({ roadmapId: id, filePath: filePath }))
       }
       response = response.payload
-      console.log(response)
       if (!response.success) {
         toast.error("Failed to delete file.")
       }
@@ -487,17 +473,14 @@ export default function OnlineIDE() {
   }
 
   async function handleRenameFile(setTempState) {
-    console.log("Rename to:", renameValue)
 
     try {
       const newpathArray = selectedItem.split("/")
       newpathArray.pop()
       const newpath = newpathArray.join("/") + "/" + renameValue
 
-      console.log("Renaming:", selectedItem, "to", newpath)
       let response = await dispatch(renameNode({ roadmapId: id, name: renameValue, oldFilePath: selectedItem, newFilePath: newpath }))
       response = response.payload
-      console.log(response)
       if (!response.success) {
         toast.error(response.message || "Failed to rename file.")
         return;
@@ -537,7 +520,6 @@ export default function OnlineIDE() {
 
       let response = await dispatch(renameFolder({ roadmapId: id, name: renameValue, oldFilePath: oldpath, newFilePath: newpath }))
       response = response.payload
-      console.log(response)
       if (!response.success) {
         toast.error(response.message || "Failed to rename folder.")
         return;
@@ -567,7 +549,6 @@ export default function OnlineIDE() {
       if (remainingFiles.length > 0) {
         await dispatch(setCurrFile(remainingFiles[remainingFiles.length-1]))
       } else {
-        console.log(remainingFiles.length);
         await dispatch(setCurrFile({code:"", id:"", input:"", language:"", name:"", output:"", saved: false}))
       }
     }
@@ -577,8 +558,6 @@ export default function OnlineIDE() {
     const file_id = fileId.id
     const file = currFiles.find((f) => f.id === file_id)
     if (file && !file.name.endsWith("/")) {
-      console.log(fileId);
-      console.log(currFile)
       await dispatch(setCurrFile(fileId));
       setOpenedFileIds((prev) => new Set([...prev, file_id]))
       // setCurrentFileId(file_id)
@@ -587,8 +566,6 @@ export default function OnlineIDE() {
 
 
   function handleEditorChange(value) {
-    console.log(currFile.id);
-    console.log(currFiles);
     dispatch(setCurrFiles(currFiles.map(file => {
       if(file.id == currFile.id){
         return {
@@ -620,7 +597,6 @@ export default function OnlineIDE() {
   async function saveCurrentFile() {
     if (!currFile) return
     try{
-      console.log(currFile)
       let response = await dispatch(updateFileContent({roadmapId: id, filePath: currFile.name, content: currFile.code}));
       response = response.payload;
       if(!response.success){
@@ -664,8 +640,6 @@ export default function OnlineIDE() {
         {...currFile,name: currFile.name.split('/').pop()}
       ];
 
-      console.log("Files to be sent for execution:", fileToBeExecuted);
-      console.log("Executing file:", fileToBeExecuted);
       let response = await dispatch(executeCode({language: currFile.language, files: fileToBeExecuted, stdin: currFile.input || "", }));
       response = response.payload;
       // console.log(response.data.run);
@@ -909,7 +883,6 @@ export default function OnlineIDE() {
                   ref={saveRef}
                   onClick={async () => {
                     await dispatch(setCurrFile(f));
-                    console.log("clicked", currFile);
                   }}
                   className={`flex items-center gap-2 px-3 py-2 text-sm font-medium border-b-2 transition-all duration-150 ${
                     f.id === currFile.id

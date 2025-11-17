@@ -24,6 +24,7 @@ import UserProfile from "./pages/UserProfile"
 import ChangePassword from "./pages/ChangePassword"
 import About from './pages/About';
 import Contact from './pages/Contact';
+import NotFound from './pages/NotFound.jsx';
 
 
 function App() {
@@ -112,6 +113,7 @@ function App() {
                     <Route path="/change-password" element={<ChangePassword />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/contact" element={<Contact />} />
+                    <Route path="*" element={<NotFound />} />
 
                 </Routes>
             </Router>

@@ -117,7 +117,6 @@ export function ExpandableCardDemo() {
     };
 
     const handleConfirmDelete = async () => {
-        console.log('Delete roadmap with ID:', deleteConfirm.id);
         setActive(null);
         if (deleteConfirm.id) {
             try {

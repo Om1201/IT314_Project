@@ -44,7 +44,6 @@ const getLanguageFromExtension = (filename) => {
 export const loadProjectFiles = async (req, res) => {
   try {
     const { key } = req.body; 
-    console.log("Loading project files for key:", key);
     if (!key) {
       return res.status(400).json({ success: false, message: "key (project prefix) is required" });
     }
@@ -113,8 +112,6 @@ export const saveToS3 = async (req, res) => {
     } catch (err) {}
 
 
-    console.log("Saving file to S3 at:", `${key}${filePath}`);
-    console.log("path is", filePath);
 
     await s3.send(new PutObjectCommand({
       Bucket: BUCKET,

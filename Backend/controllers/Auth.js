@@ -1,7 +1,7 @@
 import UserModel from '../models/UserModel.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import transporter from '../config/mailer.js';
+import {transporter} from '../config/mailer.js';
 import crypto from 'crypto';
 import { passwordResetEmail, verificationEmail } from '../utils/emailTemplates.js';
 import { buildEmailVerifyUrl, buildResetPasswordUrl, buildVerifyAccountUrl } from '../utils/urlHelpers.js';
@@ -30,7 +30,7 @@ export const register = async (req, res) => {
 
                 const { subject, html } = verificationEmail(email, verifyUrl);
                 const mailOptions = {
-                    from: process.env.GMAIL_USER,
+                    from: process.env.SENDGRID_SENDER_EMAIL,
                     to: email,
                     subject,
                     html,
@@ -67,7 +67,7 @@ export const register = async (req, res) => {
         const { subject, html } = verificationEmail(email, verifyUrl);
 
         const mailOptions = {
-            from: process.env.SENDER_EMAIL,
+            from: process.env.SENDGRID_SENDER_EMAIL,
             to: email,
             subject,
             html,
@@ -176,7 +176,6 @@ export const signIn = async (req, res) => {
     const { email, password } = req.validatedData;
     try {
         const user = await UserModel.findOne({ email });
-        console.log(user);
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
@@ -279,7 +278,7 @@ export const sendResetToken = async (req, res) => {
         const { subject, html } = passwordResetEmail(email, resetUrl);
 
         const mailOptions = {
-            from: process.env.SENDER_EMAIL,
+            from: process.env.SENDGRID_SENDER_EMAIL,
             to: email,
             subject,
             html,

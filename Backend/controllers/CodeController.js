@@ -32,14 +32,12 @@ export const LANGUAGE_VERSIONS = {
 export const executeCode = async (req, res) => {
     try {
         const { language, files, args = [], stdin = '' } = req.validatedData;
-        console.log("asdfafas", language);
         const filesArray = files
             .filter(file => !file.name.endsWith("/")&&(file.language==language))   
             .map(file => ({
                 name: file.name.startsWith("/") ? file.name.slice(1) : file.name,
                 content: file.code
             }));
-        console.log(filesArray);
 
         const payload = {
             language,
@@ -48,12 +46,6 @@ export const executeCode = async (req, res) => {
             args: Array.isArray(args) ? args : [],
             stdin: stdin || '',
         };
-
-        console.log(`Executing code in ${language}...`);
-        console.log(`Main file: ${filesArray[0].name}`);
-        if (filesArray.length > 1) {
-            console.log(`Linked files: ${filesArray.slice(1).map(f => f.name).join(', ')}`);
-        }
 
         const response = await axios.post(process.env.PISTON_API_URL, payload, {
             headers: {

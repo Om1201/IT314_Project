@@ -92,12 +92,12 @@ export const generateRoadmap = async (req, res) => {
 
 export const generateQuiz = async (req, res) => {
     try {
-        const {roadMapId, chapterId, subtopicId=null } = req.body;
-        console.log(req.body);
-        if(!roadMapId ||  !chapterId){
-            res.status(400).json({ success: false, message: "Invalid request" });
+        const {roadmapId, chapterId, subtopicId=null } = req.body;
+        if(!roadmapId ||  !chapterId){
+            console.log(req.body);
+            return res.status(400).json({ success: false, message: "RoadmapId and ChapterId are required" });
         }
-        const roadMap = await RoadmapModel.findById(roadMapId);
+        const roadMap = await RoadmapModel.findById(roadmapId);
         if(!roadMap) {
             return res.status(404).json({ success: false, message: "Roadmap not found" });
         }
@@ -115,14 +115,13 @@ export const generateQuiz = async (req, res) => {
         try {
             quizJson = JSON.parse(cleaned);
         } catch (err) {
-            console.log("Cleaned Gemini output:", cleaned);
-            throw new Error("AI returned invalid JSON");
+            return res.status(500).json({success: false, message: "Internal server error"})
         }
 
         console.log("Quiz generated: ", quizJson);
         const newQuiz = new QuizModel({
             email: req.email,
-            roadmapIp: roadMapId,
+            roadmapId: roadmapId,
             chapterId: chapterId,
             subtopicId: subtopicId || "general",
             quiz: quizJson,

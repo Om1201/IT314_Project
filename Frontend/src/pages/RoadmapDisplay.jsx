@@ -155,7 +155,6 @@ export default function RoadmapDisplay() {
                 saveNote({ roadmapId: id, subtopicId: subtopicId, moduleId: moduleId, content })
             );
             response = response.payload;
-            console.log(response);
             if (!response.success) {
                 toast.error('Failed to save note');
                 return;
@@ -184,7 +183,6 @@ export default function RoadmapDisplay() {
                 generateSubtopicSummary({ roadmapId: id, moduleId, subtopicId, personalization })
             );
             response = response.payload;
-            console.log('Generated explanation:', response);
             if (!response.success) {
                 toast.error('Failed to generate explanation');
                 return;
@@ -201,11 +199,11 @@ export default function RoadmapDisplay() {
 
     const onRequestQuiz = async (moduleId, subtopicId) => {
         try {
+            console.log("Generating quiz for", id, moduleId, subtopicId);
             let response = await dispatch(
                 generateQuiz({ roadmapId: id, moduleId, subtopicId })
             );
             response = response.payload;
-            console.log('Generated quiz:', response);
 
             if (!response.success) {
                 toast.error('Failed to generate quiz');
@@ -262,7 +260,6 @@ export default function RoadmapDisplay() {
         try{
             let response = await dispatch(fetchQuizzes({ roadmapId: id, chapterId, subtopicId }));
             response = response.payload;
-            console.log('Fetched quiz:', response);
             if (!response.success) {
                 toast.error('Failed to fetch quiz');
                 return;
