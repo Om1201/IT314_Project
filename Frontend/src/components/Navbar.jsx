@@ -23,38 +23,38 @@ const transition = {
 };
 
 const MenuItem = ({ setActive, active, item, children }) => {
+    const isActive = active === item;
+
     return (
-        <div onMouseEnter={() => setActive(item)} className="relative">
+        <div
+            className="relative"
+            onMouseEnter={() => setActive(item)}
+            onMouseLeave={() => setActive(null)}
+        >
             <motion.p
                 transition={{ duration: 0.3 }}
                 className="cursor-pointer hover:text-blue-300 text-white font-medium px-4 py-2 rounded-lg hover:bg-slate-800/30 transition-all duration-200"
             >
                 {item}
             </motion.p>
-            {active !== null && (
+
+            {isActive && (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.85, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 5 }}
                     transition={transition}
+                    className="absolute left-1/2 top-full transform -translate-x-1/2 pt-4 z-50"
                 >
-                    {active === item && (
-                        <div className="absolute top-[calc(100%_+_1.2rem)] left-1/2 transform -translate-x-1/2 pt-4 z-50">
-                            <motion.div
-                                transition={transition}
-                                layoutId="active"
-                                className="bg-slate-900/95 backdrop-blur-xl rounded-2xl overflow-hidden border border-slate-700/50 shadow-2xl shadow-black/20"
-                            >
-                                <motion.div layout className="w-max h-full p-4">
-                                    {children}
-                                </motion.div>
-                            </motion.div>
-                        </div>
-                    )}
+                    <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl overflow-hidden border border-slate-700/50 shadow-2xl shadow-black/20 p-4">
+                        {children}
+                    </div>
                 </motion.div>
             )}
         </div>
     );
 };
+
 
 const Menu2 = ({ setActive, children }) => {
     return (
