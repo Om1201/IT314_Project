@@ -19,7 +19,7 @@ const Footer = () => {
                         </p>
                     </div>
                     <div>
-                        <h4 className="font-semibold mb-4">Product</h4>
+                        <h4 className="font-semibold mb-4 text-white">Product</h4>
                         <ul className="space-y-2 text-slate-400 text-sm">
                             <li>
                                 <Link to="/" className="hover:text-blue-400 transition-colors">
@@ -39,22 +39,22 @@ const Footer = () => {
                         </ul>
                     </div>
                     <div>
-                        <h4 className="font-semibold mb-4">Company</h4>
+                        <h4 className="font-semibold mb-4 text-white">Company</h4>
                         <ul className="space-y-2 text-slate-400 text-sm">
                             <li>
-                                <Link to="/" className="hover:text-blue-400 transition-colors">
+                                <Link to="/about" className="hover:text-blue-400 transition-colors">
                                     About
                                 </Link>
                             </li>
                             <li>
-                                <Link to="/" className="hover:text-blue-400 transition-colors">
+                                <Link to="/contact" className="hover:text-blue-400 transition-colors">
                                     Contact
                                 </Link>
                             </li>
                         </ul>
                     </div>
                     <div>
-                        <h4 className="font-semibold mb-4">Legal</h4>
+                        <h4 className="font-semibold mb-4 text-white">Legal</h4>
                         <ul className="space-y-2 text-slate-400 text-sm">
                             <li>
                                 <Link to="/" className="hover:text-blue-400 transition-colors">
