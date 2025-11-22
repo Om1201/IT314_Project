@@ -25,6 +25,7 @@ import ChangePassword from "./pages/ChangePassword"
 import About from './pages/About';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound.jsx';
+import ResendVerifyLink from './pages/ResendVerifyLink.jsx';
 
 
 function App() {
@@ -107,12 +108,17 @@ function App() {
                                 <Roadmaps />
                             </ProtectedRoute>
                         }
-                    />
-                    <Route path="/ide/:id" element={<OnlineIDE />} />
-                    <Route path="/profile" element={<UserProfile />} />
+                        />
+                    <Route path="/ide/:id" element={
+                        <ProtectedRoute>
+                            <OnlineIDE />
+                        </ProtectedRoute>
+                        } />
+                    <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
                     <Route path="/change-password" element={<ChangePassword />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/contact" element={<Contact />} />
+                    <Route path="/resend-verify-link" element={<ResendVerifyLink />} />
                     <Route path="*" element={<NotFound />} />
 
                 </Routes>

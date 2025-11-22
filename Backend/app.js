@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import 'dotenv/config';
+import "./cron/deleteUnverifiedUsers.js";
 
 import authRouter from './routes/authRoutes.js';
 import roadmapRouter from './routes/roadmapRoutes.js';

@@ -89,7 +89,6 @@ const userSchema = new mongoose.Schema({
     },
 });
 
-userSchema.index({ verifyTokenExpireAt: 1 }, { expireAfterSeconds: 0 });
 
 const UserModel = mongoose.models.user || mongoose.model('user', userSchema);
 

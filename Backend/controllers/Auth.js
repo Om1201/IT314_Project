@@ -17,34 +17,6 @@ export const register = async (req, res) => {
 
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
-            if (existingUser.isAccountVerified == false) {
-                const hashedPass = await bcrypt.hash(password, 10);
-                existingUser.name = name;
-                existingUser.password = hashedPass;
-                const verifyToken = crypto.randomUUID();
-                const expireAt = new Date(Date.now() + 1000 * 60 * 15);
-                existingUser.verifyToken = verifyToken;
-                existingUser.verifyTokenExpireAt = expireAt;
-                const verifyUrl = buildVerifyAccountUrl(verifyToken);
-                await existingUser.save();
-
-                const { subject, html } = verificationEmail(email, verifyUrl);
-                const mailOptions = {
-                    from: process.env.SENDGRID_SENDER_EMAIL,
-                    to: email,
-                    subject,
-                    html,
-                };
-                try {
-                    await transporter.sendMail(mailOptions);
-                } catch (emailError) {
-                    console.error('Error sending email:', emailError);
-                }
-                return res.status(200).json({
-                    success: true,
-                    message: 'Please check your email to verify your account.',
-                });
-            }
             return res.status(409).json({ success: false, message: 'User already exists' });
         }
 
@@ -77,6 +49,11 @@ export const register = async (req, res) => {
             await transporter.sendMail(mailOptions);
         } catch (emailError) {
             console.error('Error sending email:', emailError);
+            return res.status(201).json({
+                success: true,
+                message:
+                    'User registered successfully. But failed to send verification email to verify your account.',
+            });
         }
 
         return res.status(201).json({
@@ -189,11 +166,30 @@ export const signIn = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Incorrect password' });
         }
         if (user.isAccountVerified == false) {
+            const verifyToken = crypto.randomUUID();
+            const expireAt = new Date(Date.now() + 1000 * 60 * 15);
+            user.verifyToken = verifyToken;
+            user.verifyTokenExpireAt = expireAt;
+            const verifyUrl = buildVerifyAccountUrl(verifyToken);
+            await user.save();
+
+            const { subject, html } = verificationEmail(email, verifyUrl);
+            const mailOptions = {
+                from: process.env.SENDGRID_SENDER_EMAIL,
+                to: email,
+                subject,
+                html,
+            };
+            try {
+                await transporter.sendMail(mailOptions);
+            } catch (emailError) {
+                console.error('Error sending email:', emailError);
+            }
             return res
                 .status(401)
                 .json({
                     success: false,
-                    message: 'Account not verified. Please verify your account.',
+                    message: 'Account not verified. Verification link is sent to your email. Please verify your account.',
                 });
         }
         const token = jwt.sign({ id: user._id, email: user.email}, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -295,6 +291,49 @@ export const sendResetToken = async (req, res) => {
                 success: true,
                 message: 'Password reset token sent. Please check your email.',
             });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const ResendVerificationToken = async (req, res) => {
+    const { email } = req.validatedData;
+
+    console.log('sdfsfsdfssdfdqwe')
+    try {
+        const user = await UserModel.findOne({
+            email,
+        });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        if (user.isAccountVerified) {
+            return res.status(400).json({ success: false, message: 'Invalid link' });
+        }
+        const verifyToken = crypto.randomUUID();
+        const expireAt = new Date(Date.now() + 1000 * 60 * 15);
+        user.verifyToken = verifyToken;
+        user.verifyTokenExpireAt = expireAt;
+        const verifyUrl = buildVerifyAccountUrl(verifyToken);
+        await user.save();
+        const { subject, html } = verificationEmail(email, verifyUrl);
+
+        const mailOptions = {
+            from: process.env.SENDGRID_SENDER_EMAIL,
+            to: email,
+            subject,
+            html,
+        };
+
+        try {
+            await transporter.sendMail(mailOptions);
+            return res
+                .status(200)
+                .json({ success: true, message: 'Verification email resent. Please check your email.' });
+        } catch (emailError) {
+            console.error('Error sending email:', emailError);
+            return res.status(500).json({ success: false, message: 'Failed to resend verification email' });
+        }
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }

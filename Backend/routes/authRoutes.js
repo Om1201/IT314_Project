@@ -3,6 +3,7 @@ import {
     isAuthenticated,
     logout,
     register,
+    ResendVerificationToken,
     resetPassword,
     sendResetToken,
     signIn,
@@ -29,6 +30,7 @@ authRouter.post('/signin', validate(signinSchema), signIn);
 authRouter.post('/logout', logout);
 authRouter.get('/is-auth', userAuth, isAuthenticated);
 
+authRouter.post('/send-verify-token', validate(emailSchema), ResendVerificationToken);
 authRouter.post('/send-reset-token', validate(emailSchema), sendResetToken);
 authRouter.post('/verify-reset-token', validate(tokenSchema), verifyResetToken);
 authRouter.post('/reset-password', validate(resetPassSchema), resetPassword);

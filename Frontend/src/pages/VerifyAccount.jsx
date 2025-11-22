@@ -1,32 +1,31 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Loader2, Shield } from 'lucide-react';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-
+import { useDispatch } from 'react-redux';
+import { accountVerify } from '../features/userSlicer';
 export default function VerifyAccount() {
     const [status, setStatus] = useState('loading');
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const verifyAccount = async () => {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const token = urlParams.get('token');
-                // const email = urlParams.get("email");
 
-                const body = { token: token };
-
-                const response = await axios.post(
-                    `${import.meta.env.VITE_BACKEND_URL}/api/auth/verify-account`,
-                    body,
-                    {
-                        withCredentials: true,
-                    }
-                );
-
+                let response = await dispatch(accountVerify({ token }));
+                response = response.payload;
+                if(!response.success){
+                    toast.error(response.message || "Verification failed");
+                    setStatus('error');
+                    return;
+                }
                 setStatus('success');
+                localStorage.removeItem("verifying");
+
                 setMessage('Account verified successfully! Redirecting to home...');
                 toast.success('Account verified successfully');
 

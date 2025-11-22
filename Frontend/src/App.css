@@ -85,3 +85,52 @@ html {
     transform: translateY(0);
   }
 }
+
+/* Force dark theme for MDEditor.Markdown */
+.w-md-editor,
+.w-md-editor-content,
+.w-md-editor-preview,
+.w-md-editor-text,
+.wmde-markdown,
+.wmde-markdown-color,
+.wmde-markdown-var,
+.w-md-editor-preview .wmde-markdown,
+.w-md-editor-content .wmde-markdown {
+    background-color: #0f172a !important; /* dark bg */
+    color: #e2e8f0 !important;            /* light text */
+}
+
+.wmde-markdown table {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+.wmde-markdown th {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+    color: #f8fafc !important;
+}
+
+.wmde-markdown td {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+
+
+.wmde-markdown pre {
+    background-color: #161B22 !important;
+    border-radius: 8px !important;
+}
+
+.wmde-markdown pre code {
+    background-color: transparent !important;
+    color: #f1f5f9 !important;
+}
+
+.wmde-markdown code:not(pre code) {
+    background-color: #1e293b !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+}

@@ -3,7 +3,7 @@ import { Code, Eye, EyeOff, Check, X, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
-import { signupUser } from '../features/userSlicer';
+import { setVerifying, signupUser } from '../features/userSlicer';
 import { useNavigate } from 'react-router-dom';
 
 export default function Signup() {
@@ -58,6 +58,10 @@ export default function Signup() {
             } else {
                 toast.error(response.message || 'Registration failed. Please try again.');
             }
+            localStorage.setItem("verifying", "true");
+            sessionStorage.setItem("time", `${15*60}`);
+            await dispatch(setVerifying(true));
+            navigate(`/resend-verify-link?email=${email}`);
         } catch (err) {
             if (err.response?.message) {
                 toast.error(err.response.message);

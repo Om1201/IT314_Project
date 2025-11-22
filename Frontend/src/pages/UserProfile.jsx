@@ -340,6 +340,7 @@ export default function UserProfile() {
                         <div className="text-[10px] text-slate-500 mb-1">Module {n.moduleId} • Subtopic {n.subtopicId}</div>
                         {<MDEditor.Markdown
                                     className="px-8 py-5"
+                                    data-color-mode="dark"
                                     source={n.content || "_No notes yet — click to add._"}
                                 /> || <span className="italic text-slate-500">(empty)</span>}
                       </div>

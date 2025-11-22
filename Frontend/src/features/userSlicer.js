@@ -116,12 +116,45 @@ export const githubAuth = createAsyncThunk('user/githubAuth', async (code, { rej
     }
 });
 
+export const accountVerify = createAsyncThunk(
+    'user/accountVerify',
+    async ({ token }, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(
+                import.meta.env.VITE_BACKEND_URL + '/api/auth/verify-account',
+                { token },
+                { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }   
+    }
+);
+
+export const resendVerifyLink = createAsyncThunk(
+    'user/resendVerifyLink',
+    async ({ email }, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(
+                import.meta.env.VITE_BACKEND_URL + '/api/auth/send-verify-token',
+                { email },
+                { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }   
+    }
+)
+
 const initialState = {
     username: '',
     email: '',
     tempemail: '',
     isLoggedin: false,
     authLoading: true,
+    verifying: false
 };
 
 export const userSlice = createSlice({
@@ -135,6 +168,9 @@ export const userSlice = createSlice({
         setTempEmail: (state, action) => {
             state.tempemail = action.payload.tempemail;
         },
+        setVerifying: (state, action) => {
+            state.verifying = action.payload;
+        }
     },
     extraReducers: builder => {
         builder
@@ -175,10 +211,18 @@ export const userSlice = createSlice({
                 state.isLoggedin = true;
                 state.username = action.payload.user.name;
                 state.email = action.payload.user.email;
+            })
+            .addCase(accountVerify.fulfilled, (state, action)=>{
+                state.verifying = false;
+                // sessionStorage.removeItem("verifying");
+            })
+            .addCase(accountVerify.rejected, (state, action)=>{
+                state.verifying = false;
+                // sessionStorage.removeItem("verifying");
             });
     },
 });
 
-export const { setUserData, setTempEmail } = userSlice.actions;
+export const { setUserData, setTempEmail, setVerifying } = userSlice.actions;
 
 export const userReducer = userSlice.reducer;

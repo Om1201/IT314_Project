@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Code, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, replace } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { forgotPassword, signinUser } from '../features/userSlicer';
+import { forgotPassword, setVerifying, signinUser } from '../features/userSlicer';
 import { fetchUserRoadmaps } from '../features/roadmapSlicer';
 
 export default function Signin() {
@@ -29,6 +29,12 @@ export default function Signin() {
             if (!response.success) {
                 toast.error(response.message || 'Signin failed. Please try again.');
                 setIsLoading(false);
+                if(response.message == 'Account not verified. Verification link is sent to your email. Please verify your account.'){
+                    await dispatch(setVerifying(true));
+                    localStorage.setItem("verifying", "true");
+                    sessionStorage.setItem("time", `${15*60}`);
+                    navigate(`/resend-verify-link?email=${email}`);
+                }
                 return;
             }
             toast.success('Signin successful');
