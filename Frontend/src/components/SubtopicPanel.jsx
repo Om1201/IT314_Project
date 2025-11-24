@@ -3,7 +3,8 @@ import {
     X,
     Maximize2,
     Minimize2,
-    Loader2
+    Loader2,
+    Upload
 } from 'lucide-react';
 
 import { useEffect, useState, useRef } from 'react';
@@ -12,6 +13,7 @@ import { useSelector } from 'react-redux';
 import YoutubeThumbnail from './youtube';
 import ReactDOM from 'react-dom';
 import { fetchQuizzes } from '../features/roadmapSlicer';
+import toast from 'react-hot-toast';
 
 const tabs = [
     { id: 'explanation', label: 'Explanation' },
@@ -49,10 +51,12 @@ export default function SubtopicPanel({
     const [isFullscreen, setIsFullscreen] = useState(false);
     const editorRef = useRef(null);
     const modalRef = useRef(null);
+    const fileInputRef = useRef(null);
     const [userAnswers, setUserAnswers] = useState({});
     const [personalizationInput, setPersonalizationInput] = useState("");
     const [activeTab, setActiveTab] = useState('generate');
     const [activePastQuizTab, setActivePastQuizTab] = useState(0);
+    const [isImporting, setIsImporting] = useState(false);
 
     /** Update note content when parent changes it */
     useEffect(() => {
@@ -100,15 +104,71 @@ export default function SubtopicPanel({
         };
     }, [isModalOpen]);
 
-    /** Save note */
-    const handleSaveNote = async () => {
+    const persistNote = async (value, {
+        successMessage = 'Notes saved',
+        errorMessage = 'Failed to save notes',
+    } = {}) => {
         setIsSaving(true);
         try {
-            await onSaveNote(editingNote);
+            await Promise.resolve(onSaveNote(value));
+            toast.success(successMessage);
         } catch (err) {
-            console.error("Save note failed", err);
+            console.error('Note persistence failed', err);
+            toast.error(errorMessage);
+            throw err;
+        } finally {
+            setIsSaving(false);
         }
-        setIsSaving(false);
+    };
+
+    /** Save note */
+    const handleSaveNote = async () => {
+        await persistNote(editingNote);
+    };
+
+    const triggerImportDialog = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleImportFile = event => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const MAX_SIZE_BYTES = 1 * 1024 * 1024; // 1 MB
+        if (file.size > MAX_SIZE_BYTES) {
+            toast.error('Please select a file smaller than 1MB.');
+            event.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        setIsImporting(true);
+
+        reader.onload = async () => {
+            const text = typeof reader.result === 'string' ? reader.result : '';
+            setEditingNote(text);
+            setIsFocused(true);
+            try {
+                await persistNote(text, {
+                    successMessage: `Imported ${file.name}`,
+                    errorMessage: 'Failed to import notes',
+                });
+            } catch {
+                // persistNote already handled toast/logging
+            } finally {
+                setIsImporting(false);
+            }
+        };
+
+        reader.onerror = () => {
+            setIsImporting(false);
+            toast.error('Unable to read the selected file.');
+        };
+
+        reader.readAsText(file);
     };
 
     /** quiz loading helper */
@@ -536,6 +596,32 @@ return (
             case "notes":
                 return (
                     <div className="space-y-4" data-color-mode="dark">
+                        <div className="flex justify-end">
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".md,.markdown,.txt,.json"
+                                className="hidden"
+                                onChange={handleImportFile}
+                            />
+                            <button
+                                onClick={triggerImportDialog}
+                                disabled={isSaving || isImporting}
+                                className="flex items-center gap-2 px-4 py-2 border border-slate-600 text-slate-200 rounded-lg hover:bg-slate-800/60 transition disabled:opacity-50"
+                            >
+                                {isImporting ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Importing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Upload className="h-4 w-4" />
+                                        Import Notes
+                                    </>
+                                )}
+                            </button>
+                        </div>
                         {isFocused ? (
                             <div>
                                 <MDEditor

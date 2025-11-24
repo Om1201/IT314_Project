@@ -224,6 +224,31 @@ export const fetchQuizzes = createAsyncThunk(
     }
 );
 
+export const downloadNotesByRoadmapId = createAsyncThunk(
+    'roadmap/downloadNotesByRoadmapId',
+    async (roadmapId, { rejectWithValue }) => {
+        try {
+            const encoded = encodeURIComponent(roadmapId || '');
+            const url = `${import.meta.env.VITE_BACKEND_URL}/api/roadmap/notes/download/${encoded}`;
+            const response = await axios.get(url, { withCredentials: true, responseType: 'blob' });
+            const disposition = response.headers['content-disposition'] || '';
+            let filename = 'notes.md';
+            const match = disposition.match(/filename="?([^";]+)"?/i);
+            if (match) filename = match[1];
+            const blob = new Blob([response.data], { type: response.headers['content-type'] || 'text/markdown' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            return { success: true, filename };
+        } catch (error) {
+            return rejectWithValue(error.response?.data || { message: 'Unknown error' });
+        }
+    }
+);
+
 export const togglePinRoadmap = createAsyncThunk(
     'roadmap/togglePinRoadmap',
     async (roadmapId, { rejectWithValue }) => {

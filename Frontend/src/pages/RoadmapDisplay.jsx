@@ -21,6 +21,7 @@ import Navbar from '../components/Navbar.jsx';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { downloadNotesByRoadmapId } from '../features/roadmapSlicer.js';
 
 export default function RoadmapDisplay() {
     const dispatch = useDispatch();
@@ -327,7 +328,17 @@ export default function RoadmapDisplay() {
                                 {currRoadmap.title}
                             </span>
                         </h1>
-                        <p className="text-xl text-slate-300 mb-4">{currRoadmap.description}</p>
+                                        <p className="text-xl text-slate-300 mb-4">{currRoadmap.description}</p>
+                                        <div className="mt-4">
+                                            <button onClick={async () => {
+                                                try {
+                                                    const resp = await dispatch(downloadNotesByRoadmapId(id)).unwrap();
+                                                    if (resp && resp.success) toast.success(`Downloaded ${resp.filename}`);
+                                                } catch (err) {
+                                                    toast.error(err?.message || 'Failed to download notes');
+                                                }
+                                            }} className="px-3 py-2 rounded bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-900">Download Notes</button>
+                                        </div>
                     </div>
 
                     <div className="space-y-4">
