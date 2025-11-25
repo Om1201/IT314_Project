@@ -122,43 +122,36 @@ export default function Generator() {
                                         <p className="text-sm text-slate-400 ml-7">
                                             Select your experience level to get a tailored roadmap
                                         </p>
-                                        <div className="grid grid-cols-3 gap-3 ml-7">
-                                            {[
-                                                {
-                                                    value: 'beginner',
-                                                    label: 'Beginner',
-                                                    desc: 'Just starting',
-                                                },
-                                                {
-                                                    value: 'intermediate',
-                                                    label: 'Intermediate',
-                                                    desc: 'Some experience',
-                                                },
-                                                {
-                                                    value: 'advanced',
-                                                    label: 'Advanced',
-                                                    desc: 'Experienced',
-                                                },
-                                            ].map(level => (
-                                                <button
-                                                    key={level.value}
-                                                    type="button"
-                                                    onClick={() => setSkillLevel(level.value)}
-                                                    className={`p-4 rounded-xl border-2 transition-all duration-300 text-center ${
-                                                        skillLevel === level.value
-                                                            ? 'border-blue-400 bg-blue-500/20 shadow-lg shadow-blue-500/25'
-                                                            : 'border-blue-500/30 bg-slate-800/30 hover:border-blue-400/50'
-                                                    }`}
-                                                >
-                                                    <div className="font-bold text-white">
-                                                        {level.label}
-                                                    </div>
-                                                    <div className="text-xs text-slate-400">
-                                                        {level.desc}
-                                                    </div>
-                                                </button>
-                                            ))}
+                                        <div className="grid grid-cols-3 gap-3 ml-7 max-sm:grid-cols-1 max-sm:ml-0">
+                                        {[
+                                            { value: 'beginner', label: 'Beginner', desc: 'Just starting' },
+                                            { value: 'intermediate', label: 'Intermediate', desc: 'Some experience' },
+                                            { value: 'advanced', label: 'Advanced', desc: 'Experienced' },
+                                        ].map(level => (
+                                            <button
+                                            key={level.value}
+                                            type="button"
+                                            onClick={() => setSkillLevel(level.value)}
+                                            className={`
+                                                p-4 rounded-xl border-2 transition-all duration-300 text-center
+                                                max-sm:p-3
+                                                ${
+                                                skillLevel === level.value
+                                                    ? 'border-blue-400 bg-blue-500/20 shadow-lg shadow-blue-500/25'
+                                                    : 'border-blue-500/30 bg-slate-800/30 hover:border-blue-400/50'
+                                                }
+                                            `}
+                                            >
+                                            <div className="font-bold text-white text-base max-sm:text-sm">
+                                                {level.label}
+                                            </div>
+                                            <div className="text-xs text-slate-400 max-sm:text-[10px]">
+                                                {level.desc}
+                                            </div>
+                                            </button>
+                                        ))}
                                         </div>
+
                                     </div>
 
                                     <button
@@ -208,8 +201,8 @@ export default function Generator() {
 
                             <div className="bg-gradient-to-br from-blue-500/10 to-slate-500/10 border border-blue-500/30 rounded-xl p-6 backdrop-blur-sm hover:border-blue-400/50 transition-all duration-300">
                                 <div className="text-2xl font-bold text-blue-300 mb-2">🚀</div>
-                                <h3 className="font-bold text-white mb-2">Flexible</h3>
-                                <p className="text-sm text-slate-400">Adjust your path anytime</p>
+                                <h3 className="font-bold text-white mb-2">Learn with quizzes</h3>
+                                <p className="text-sm text-slate-400">Generate quizzes for any subtopic anytime</p>
                             </div>
                         </div>
                     </div>

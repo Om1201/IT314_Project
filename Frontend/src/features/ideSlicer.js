@@ -129,6 +129,25 @@ export const executeCode = createAsyncThunk(
     }
 );
 
+export const analyseCode = createAsyncThunk(
+    'ide/analyseCode',
+    async ({ code, name }, { rejectWithValue }) => { 
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/code/analyse`,
+                { 
+                    content: code, 
+                    fileName: name
+                }, 
+                { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || { message: "Analysis failed" });
+        }
+    }
+);
+
 const initialState = {
     loading_fetch: false,
     currFiles: [],
@@ -244,6 +263,18 @@ const ideSlice = createSlice({
             .addCase(updateFileContent.rejected, (state, action) => {
                 state.is_saving = false;
             })
+            
+            .addCase(analyseCode.pending, (state) => {
+                state.is_analyzing = true;
+                state.analysisData = null; 
+            })
+            .addCase(analyseCode.fulfilled, (state, action) => {
+                state.is_analyzing = false;
+                state.analysisData = action.payload.data; 
+            })
+            .addCase(analyseCode.rejected, (state) => {
+                state.is_analyzing = false;
+            });
     },
 });
 

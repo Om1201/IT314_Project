@@ -71,6 +71,7 @@ export default function PasswordReset() {
 
         if (formData.password !== formData.confirmPassword) {
             toast.error('Password do not match');
+            setIsLoading(false);
             return;
         }
 
@@ -81,6 +82,7 @@ export default function PasswordReset() {
             response = response.payload;
             if (!response.success) {
                 toast.error(response.message || 'Password reset failed');
+                setIsLoading(false);
                 return;
             }
             toast.success('Password reset successfully');

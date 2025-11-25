@@ -55,13 +55,13 @@ export default function Signup() {
                 setEmail('');
                 setPassword('');
                 setConfirmPassword('');
+                localStorage.setItem("verifying", "true");
+                sessionStorage.setItem("time", `${15*60}`);
+                await dispatch(setVerifying(true));
+                navigate(`/resend-verify-link?email=${email}`);
             } else {
                 toast.error(response.message || 'Registration failed. Please try again.');
             }
-            localStorage.setItem("verifying", "true");
-            sessionStorage.setItem("time", `${15*60}`);
-            await dispatch(setVerifying(true));
-            navigate(`/resend-verify-link?email=${email}`);
         } catch (err) {
             if (err.response?.message) {
                 toast.error(err.response.message);

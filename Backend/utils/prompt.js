@@ -141,6 +141,7 @@ Your task:
 1. If the code contains syntax errors or an infinite loop, explicitly mention it in the "compilationError" section.
 2. Analyze the time and space complexity of the given code carefully.
 3. Provide clear and detailed explanations for both.
+4. Suggest optimizations if possible.
 
 
  Important Instructions:
@@ -156,6 +157,8 @@ Your task:
   
   "spaceComplexity": "<Big O notation, e.g., O(1)>",
   "spaceExplanation": "<Explain the reasoning behind the space complexity with reasonable details.>",
+
+  "suggestions": "<Provide suggestions to optimize the code if possible. If no optimizations are possible, state 'No optimizations possible. (no suggestions)'>"
 }`
 };
 

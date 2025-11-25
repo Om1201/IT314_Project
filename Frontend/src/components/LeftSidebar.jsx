@@ -1,7 +1,11 @@
 import { Clock, Zap, CheckCircle2, Play, Pause, RotateCcw } from 'lucide-react';
 import { useRef } from 'react';
+import { toast } from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
+import { downloadNotesByRoadmapId } from '../features/roadmapSlicer';
 
 export default function LeftSidebar({
+    roadmapId: id,
     roadmapTitle,
     difficulty,
     estimatedDuration,
@@ -11,6 +15,7 @@ export default function LeftSidebar({
     moduleProgress,
 }) {
     const resetBtn = useRef();
+    const dispatch = useDispatch();
     return (
         <aside className="w-80 bg-slate-900/40 backdrop-blur-xl border-blue-500/30 overflow-y-auto p-6">
             <div className="mb-8">
@@ -193,6 +198,16 @@ export default function LeftSidebar({
                         </div>
                     ))}
                 </div>
+            </div>
+            <div className="mt-4 flex justify-center itecms-center px-auto w-full">
+                <button onClick={async () => {
+                    try {
+                        const resp = await dispatch(downloadNotesByRoadmapId(id)).unwrap();
+                        if (resp && resp.success) toast.success(`Downloaded ${resp.filename}`);
+                    } catch (err) {
+                        toast.error(err?.message || 'Failed to download notes');
+                    }
+                }} className="px-3 py-2 rounded cursor-pointer bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-900">Download Notes</button>
             </div>
         </aside>
     );

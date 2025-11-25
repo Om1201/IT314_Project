@@ -18,10 +18,14 @@ import {
   Loader2,
   FilePlus,
   FolderPlus,
+  Sparkles, 
+  Bot,
+  CheckCircle,
+  AlertTriangle
 } from "lucide-react"
 import { useParams } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
-import { deleteFolder, deleteNode, fetchFiles, renameFolder, renameNode, saveNode, setCurrFile, setCurrFiles, updateFileContent, executeCode, setIsRunning } from "../features/ideSlicer"
+import { deleteFolder, deleteNode, fetchFiles, renameFolder, renameNode, saveNode, setCurrFile, setCurrFiles, updateFileContent, executeCode, setIsRunning, analyseCode} from "../features/ideSlicer"
 import Loader from "../components/Loader"
 import { createPortal } from "react-dom"
 import toast from "react-hot-toast"
@@ -348,12 +352,126 @@ const FileTree = ({
   )
 }
 
+const AnalysisModal = ({ isOpen, onClose, data, loading }) => {
+  if (!isOpen) return null;
+  
+  const formatKey = (key) => {
+    return key
+      .replace(/([A-Z])/g, " $1") 
+      .replace(/^./, (str) => str.toUpperCase()); 
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 rounded-xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl border border-gray-700 animate-in fade-in zoom-in duration-200">
+        
+        
+        <div className="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/50 rounded-t-xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-500/10 rounded-lg">
+              <Bot className="text-purple-400" size={24} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white tracking-tight">AI Code Analysis</h2>
+              <p className="text-xs text-gray-400">Powered by Gemini</p>
+            </div>
+          </div>
+          <button 
+            onClick={onClose} 
+            className="p-2 hover:bg-gray-800 rounded-full transition-colors group"
+          >
+            <X className="text-gray-400 group-hover:text-white" size={20} />
+          </button>
+        </div>
+
+        
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-gray-900">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-64 gap-4">
+              <Loader2 className="h-10 w-10 text-purple-500 animate-spin" />
+              <p className="text-gray-400 animate-pulse font-medium">Analyzing your code structure...</p>
+            </div>
+          ) : data ? (
+            <div className="grid gap-4">
+              {Object.entries(data).map(([key, value], index) => {
+                
+                const isMetric = key.toLowerCase().includes('complexity');
+                
+                return (
+                  <div 
+                    key={index} 
+                    className={`
+                      rounded-lg border p-4 transition-all hover:border-gray-600
+                      ${isMetric ? 'bg-blue-900/10 border-blue-500/20' : 'bg-gray-800/50 border-gray-700'}
+                    `}
+                  >
+                    <h3 className={`text-sm font-semibold uppercase tracking-wider mb-2 ${isMetric ? 'text-blue-400' : 'text-gray-400'}`}>
+                      {formatKey(key)}
+                    </h3>
+                    
+                    <div className="text-gray-200 text-sm leading-relaxed font-sans">
+                      
+                      {typeof value === 'object' && value !== null ? (
+                        <pre className="font-mono text-xs text-blue-300 bg-black/50 p-3 rounded-md overflow-x-auto">
+                          {JSON.stringify(value, null, 2)}
+                        </pre>
+                      ) 
+                      
+                      : typeof value === 'boolean' ? (
+                         <div className="flex items-center gap-2">
+                           {value ? (
+                             <>
+                               <AlertTriangle className="text-red-500" size={18} />
+                               <span className="text-red-400 font-bold">Yes</span>
+                             </>
+                           ) : (
+                             <>
+                               <CheckCircle className="text-green-500" size={18} />
+                               <span className="text-green-400 font-bold">No</span>
+                             </>
+                           )}
+                         </div>
+                      ) 
+                      : (
+                        <span className={isMetric ? "font-mono text-lg font-bold text-blue-100" : "whitespace-pre-wrap"}>
+                          {value}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-48 text-gray-500">
+              <Bot size={48} className="mb-2 opacity-20" />
+              <p>No analysis data available.</p>
+            </div>
+          )}
+        </div>
+
+        
+        <div className="p-4 border-t border-gray-800 bg-gray-900/50 rounded-b-xl flex justify-end">
+          <button 
+            onClick={onClose}
+            disabled={loading}
+            className="px-6 py-2 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:shadow-none cursor-pointer bg-white text-black hover:bg-gray-200 font-medium rounded-lg transition-colors shadow-lg shadow-purple-900/20"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function OnlineIDE() {
   const { id } = useParams()
-  const { loading_fetch, currFiles, loading_general, currFile, is_saving, is_running } = useSelector((state) => state.ide)
+  const { loading_fetch, currFiles, loading_general, currFile, is_saving, is_running, is_analyzing, analysisData } = useSelector((state) => state.ide)
   const dispatch = useDispatch()
 
   const [openedFileIds, setOpenedFileIds] = useState(new Set())
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
 
   useEffect(() => {
     async function fetchdata() {
@@ -394,6 +512,34 @@ export default function OnlineIDE() {
   const filesForSidebar = currFiles.filter((f) => f.name.toLowerCase().includes(filter.toLowerCase()))
   const filesForTabs = currFiles.filter((f) => openedFileIds.has(f.id) && !f.name.endsWith("/"))
 
+  async function handleAnalyse() {
+    if (!currFile || !currFile.code.trim()) {
+      toast.error("File is empty. Write some code to analyze.");
+      return;
+    }
+    
+    setShowAnalysisModal(true); 
+    
+    try {
+      
+      let response = await dispatch(analyseCode({ 
+          code: currFile.code, 
+          name: currFile.name 
+      }));
+
+      response = response.payload;
+      console.log("Anaasdfasdfdslysis response:", response);
+      if(!response.success){
+        toast.error(response.message || "Failed to analyze code.");
+        setShowAnalysisModal(false);
+        return;
+      }
+      
+    } catch (error) {
+      console.error(error);
+      setShowAnalysisModal(false);
+    }
+  }
   async function handleCreateFile() {
     let filePath = ""
     if (selectedItem !== null && selectedItem !== undefined) filePath = "/" + selectedItem + "/" + newFileName
@@ -670,7 +816,6 @@ export default function OnlineIDE() {
 
   //   await dispatch(setIsRunning(true));
   //   try{
-  //     // --- START OF FIX ---
 
   //     // 1. Get the current file, ensuring its name is just the base name.
   //     // This will be the main entry point for execution.
@@ -691,7 +836,6 @@ export default function OnlineIDE() {
   //     // 3. Combine them, with the mainFile *first* in the array.
   //     const filesToSend = [mainFile, ...otherFiles];
       
-  //     // --- END OF FIX ---
 
   //     console.log("Files to be sent for execution:", filesToSend.map(f => f.name)); // Better logging
       
@@ -765,13 +909,10 @@ export default function OnlineIDE() {
 
   return (
     <div
-      /* CHANGE 1: changed min-h-screen to h-screen and added w-full overflow-hidden */
       className={`h-screen w-full overflow-hidden ${
         isDark ? "bg-gray-950 text-white" : "bg-gray-50 text-gray-900"
       } p-4 grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 transition-colors duration-300`}
     >
-      {/* Sidebar Wrapper */}
-      {/* CHANGE 2: Added h-full to ensure it respects parent grid height */}
       <div
         className={`h-full transition-all duration-300 ${
           sidebarOpen ? "w-64" : "w-0"
@@ -780,7 +921,7 @@ export default function OnlineIDE() {
         <aside
           className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-3 flex flex-col gap-3 h-full transition-all duration-300`}
         >
-          {/* ... Sidebar Header ... */}
+    
           <div className="flex items-center justify-between pb-2 border-b border-gray-700 shrink-0">
             <div className="flex items-center gap-2">
               <Code2 size={20} className="text-blue-500" />
@@ -794,7 +935,7 @@ export default function OnlineIDE() {
             </button>
           </div>
 
-          {/* ... File Actions ... */}
+          
           <div className="flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <FileText size={18} />
@@ -949,6 +1090,27 @@ export default function OnlineIDE() {
                 {is_running ? "Running..." : "Run"}
               </button>
 
+              <div className="flex items-center gap-2 flex-shrink-0">
+  
+              <button
+                onClick={handleAnalyse}
+                disabled={is_analyzing || is_running}
+                className={`${bgPanel} ${borderColor} border flex items-center gap-2 px-3 py-2 rounded-lg 
+                hover:bg-purple-500/10 cursor-pointer hover:border-purple-500/50 hover:text-purple-400 transition-all duration-300 group`}
+                title="Analyse Code with AI"
+              >
+                {is_analyzing ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-purple-500" />
+                ) : (
+                    <Sparkles size={16} className="text-purple-500 group-hover:scale-110 transition-transform" />
+                )}
+                <span className={is_analyzing ? "text-purple-500" : ""}>
+                    {is_analyzing ? "Thinking..." : "Analyse"}
+                </span>
+              </button>
+
+</div>
+
               <button
                 onClick={() => downloadFile(currFile)}
                 title="Download file"
@@ -960,7 +1122,6 @@ export default function OnlineIDE() {
           </div>
 
           {/* Editor & Console Grid */}
-          {/* CHANGE 6: Added flex-1, min-h-0 to ensure grid doesn't overflow main */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0 overflow-hidden">
             <div
               className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-4 flex flex-col h-full overflow-hidden transition-all duration-300`}
@@ -988,7 +1149,7 @@ export default function OnlineIDE() {
               </div>
             </div>
 
-            {/* Console Section */}
+        
             <div
               className={`${bgPanel} ${borderColor} border rounded-xl shadow-md p-4 flex flex-col h-full overflow-hidden transition-all duration-300`}
             >
@@ -1158,7 +1319,15 @@ export default function OnlineIDE() {
           </span>
           ?
         </p>
+        
       </Modal>
+
+      <AnalysisModal 
+        isOpen={showAnalysisModal} 
+        onClose={() => setShowAnalysisModal(false)}
+        data={analysisData}
+        loading={is_analyzing}
+      />
     </div>
   )
 }

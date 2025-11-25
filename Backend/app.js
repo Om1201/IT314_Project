@@ -28,4 +28,8 @@ app.get('/', (req, res) => {
     res.send('Server is healthy');
 });
 
+app.get('/health', (req, res)=>{
+    res.send("Server is Healthy.")
+})
+
 export default app;

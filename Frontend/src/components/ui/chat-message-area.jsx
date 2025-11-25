@@ -143,7 +143,7 @@ export function ChatMessageAreaContent({ className, messages = [], needsNewChat 
     <StickToBottom className={cn("mx-auto w-[70%] h-full py-4 px-4 space-y-4", className)} {...props}>
      
       {messages
-        .filter(msg => msg.content && msg.content.trim() !== '') // Skip empty messages
+        .filter(msg => msg.content && msg.content.trim() !== '')
         .map((msg, index) => {
           const messageKey = `${index}`
           const isLastAiMessage = index === messages.length - 1 && msg.role === 'ai'
@@ -181,7 +181,7 @@ export function ChatMessageAreaContent({ className, messages = [], needsNewChat 
         className={cn(
           "rounded-lg transition-all prose-invert prose-sm max-w-none",
           msg.role === "user"
-            ? "bg-primary bg-[#333C4D] text-primary-foreground rounded-br-none"
+            ? "bg-primary text-primary-foreground rounded-br-none"
             : "bg-card text-card-foreground rounded-bl-none"
         )}
       >
@@ -253,7 +253,7 @@ export function ChatMessageAreaContent({ className, messages = [], needsNewChat 
     >
       <div
         className={cn(
-          "rounded-lg transition-all prose-invert prose-sm max-w-none bg-primary bg-[#333C4D] text-primary-foreground rounded-br-none",
+          "rounded-lg transition-all prose-invert prose-sm max-w-none bg-primary text-primary-foreground rounded-br-none",
         )}
       >
         <div className="rounded-2xl overflow-hidden">

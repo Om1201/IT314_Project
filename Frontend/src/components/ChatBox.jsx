@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react"
-import { Plus, MessageSquare, Trash2, Pencil, ArrowUp ,Loader2} from "lucide-react"
+import { Plus, MessageSquare, Trash2, Pencil, ArrowUp, Menu, X } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux"
 import {
   createChat,
@@ -19,6 +19,7 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
   const [isSending, setIsSending] = useState(false)
   const [shouldStream, setShouldStream] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, chatId: null })
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const isFullscreen = externalFullscreen || false
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
@@ -49,6 +50,7 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
 
   const handleSelectChat = (chatId) => {
     dispatch(setActiveChat({ chapterId, chatId }))
+    setSidebarOpen(false)
   }
 
   const handleDeleteChat = async () => {
@@ -147,19 +149,34 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
   return (
     <>
       <div
-        className={`${isFullscreen ? "fixed inset-0 w-full h-full" : "fixed right-0 top-16 bottom-0 w-[400px]"} bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 ${isFullscreen ? "" : "border-l border-blue-500/30"} flex flex-col shadow-2xl z-50`}
+        className={`${isFullscreen ? "fixed inset-0 w-full h-full" : "fixed right-0 top-16 bottom-0 md:w-[400px] w-full"} bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 ${isFullscreen ? "" : "md:border-l border-blue-500/30"} flex flex-col shadow-2xl z-50`}
       >
-        <div className="flex flex-1 overflow-hidden">
-          <div className="w-54 border-r border-blue-500/20 bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col shadow-lg">
-            <div className="p-3 border-b border-blue-500/20 bg-slate-800/50">
+        <div className="flex flex-1 overflow-hidden relative">
+          {sidebarOpen && (
+            <div
+              className="absolute inset-0 bg-black/50 md:hidden z-40 rounded-l-lg"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+
+          <div
+            className={`${
+              sidebarOpen ? "absolute left-0 top-0 bottom-0 w-54 z-50" : "hidden md:flex md:relative"
+            } md:w-54 border-r border-blue-500/20 bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col shadow-lg transition-all duration-300`}
+          >
+            <div className="p-3 border-b border-blue-500/20 bg-slate-800/50 flex items-center justify-between">
               <button
                 onClick={handleNewChat}
-                className="w-full px-3 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/50 hover:shadow-md active:scale-95 transform"
+                className="flex-1 px-3 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/50 hover:shadow-md active:scale-95 transform"
               >
                 <Plus className="h-4 w-4" />
-                <p className="text-center">
-                  New Chat
-                </p>
+                <p className="hidden sm:inline">New Chat</p>
+              </button>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="md:hidden ml-2 p-2 hover:bg-slate-700 rounded-lg transition-all"
+              >
+                <X className="h-4 w-4 text-slate-300" />
               </button>
             </div>
 
@@ -226,7 +243,13 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
           </div>
 
           {/* Chat Content Area */}
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col overflow-hidden w-full">
+            <div className="md:hidden px-3 py-2 border-b border-blue-500/20 bg-slate-800/50 flex items-center">
+              <button onClick={() => setSidebarOpen(true)} className="p-2 hover:bg-slate-700 rounded-lg transition-all">
+                <Menu className="h-5 w-5 text-slate-300" />
+              </button>
+            </div>
+
             {!activeChat && !isSending ? (
               <div className="flex-1 flex items-center justify-center p-4">
                 <div className="text-center">
@@ -246,14 +269,16 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
                   </div>
                 ) : (
                   <>
-                  <div>
-                  </div>
-                  <ChatMessageArea>
-                   <ChatMessageAreaContent needsNewChat={!chapterChats.activeChatId || !activeChat || !activeChat.chatId} messages={activeChat?.messages || []} isSending={isSending} shouldStream={shouldStream} setShouldStream={setShouldStream}/>
-                    
-                    {/* Add animated loading indicator for AI response */}
-                    
-                  </ChatMessageArea>
+                    <div></div>
+                    <ChatMessageArea>
+                      <ChatMessageAreaContent
+                        needsNewChat={!chapterChats.activeChatId || !activeChat || !activeChat.chatId}
+                        messages={activeChat?.messages || []}
+                        isSending={isSending}
+                        shouldStream={shouldStream}
+                        setShouldStream={setShouldStream}
+                      />
+                    </ChatMessageArea>
                   </>
                 )}
 
@@ -261,16 +286,16 @@ export default function ChatBox({ roadmapId, chapterId, onClose, isFullscreen: e
               </div>
             )}
 
-            <div className="px-4 py-2 border-t border-blue-500/30 bg-slate-800/50">
+            <div className="px-3 md:px-4 py-2 border-t border-blue-500/30 bg-slate-800/50">
               <form onSubmit={handleSend} className="flex gap-2">
                 <div className="w-full flex justify-center items-center">
-                  <div className="relative bg-gray-800 w-[60%] flex justify-center items-center rounded-xl shadow-2xl transition-all duration-300 border border-gray-700/50 hover:border-blue-500 focus-within:border-blue-500 focus-within:shadow-blue-500/20 focus-within:shadow-lg">
+                  <div className="relative bg-gray-800 w-full md:w-[60%] flex justify-center items-center rounded-xl shadow-2xl transition-all duration-300 border border-gray-700/50 hover:border-blue-500 focus-within:border-blue-500 focus-within:shadow-blue-500/20 focus-within:shadow-lg">
                     <textarea
                       ref={textareaRef}
                       className="w-full bg-transparent text-gray-100 placeholder-gray-400 p-3 
                        pr-12 resize-none focus:outline-none text-base leading-snug 
                        max-h-[100px] overflow-y-auto hide-scrollbar"
-                      placeholder="Type @ for agents, / for files..."
+                      placeholder="Type Your Message..."
                       value={message}
                       onChange={(e) => {
                         setMessage(e.target.value)

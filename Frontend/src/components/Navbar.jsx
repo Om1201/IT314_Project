@@ -11,6 +11,7 @@ const navLinks = [
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
     { name: 'Roadmaps', href: '/roadmaps' },
+    { name: 'Generator', href: '/roadmap/generate' }
 ];
 
 const transition = {
@@ -98,7 +99,6 @@ const Navbar = () => {
             response = response.payload;
             if (response.success) {
                 toast.success('Logout successful');
-                navigate('/', { replace: true });
             }
         } catch (error) {
             console.error('Logout failed:', error);
