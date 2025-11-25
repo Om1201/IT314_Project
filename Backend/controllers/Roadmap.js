@@ -493,3 +493,52 @@ export const togglePinRoadmap = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const downloadNotesByRoadmapId = async (req, res) => {
+    try {
+        const { roadmapId } = req.params;
+        const { userId } = req;
+
+        if (!roadmapId) {
+            return res.status(400).json({ success: false, message: 'roadmapId is required' });
+        }
+
+        const roadmap = await RoadmapModel.findById(roadmapId);
+        if (!roadmap) {
+            return res.status(404).json({ success: false, message: 'Roadmap not found' });
+        }
+
+        const notes = await NoteModel.find({ userId, roadmapId }).lean();
+
+        const notesMap = {};
+        for (const n of notes) {
+            notesMap[`${n.moduleId}:${n.subtopicId}`] = n.content || '';
+        }
+
+        // Build markdown content
+        let md = `# Notes for: ${roadmap.roadmapData.title}\n\n`;
+        const chapters = Array.isArray(roadmap.roadmapData.chapters) ? roadmap.roadmapData.chapters : [];
+        for (const ch of chapters) {
+            md += `## Chapter ${ch.id}: ${ch.title}\n\n`;
+            const subs = Array.isArray(ch.subtopics) ? ch.subtopics : [];
+            for (const st of subs) {
+                md += `### ${ch.id}:${st.id} - ${st.title}\n\n`;
+                const content = notesMap[`${st.moduleId || ch.id}:${st.id}`] || notesMap[`${ch.id}:${st.id}`] || '';
+                if (content && content.trim().length > 0) {
+                    md += `${content.replace(/\r\n/g, '\n')}\n\n`;
+                } else {
+                    md += `_No notes for this subtopic_\n\n`;
+                }
+            }
+        }
+
+        const fileName = `${roadmap.roadmapData.title.replace(/[^a-z0-9-_ ]/gi, '')}_notes.md`;
+
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+        return res.status(200).send(md);
+    } catch (error) {
+        console.error('Error in downloadNotesByRoadmapId:', error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};

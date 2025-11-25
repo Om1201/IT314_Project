@@ -13,6 +13,7 @@ import {
     fetchSubtopicExplanation,
     searchRoadmaps,
     togglePinRoadmap,
+    downloadNotesByRoadmapId,
     getQuizzes,  // Add this import
 } from '../controllers/Roadmap.js';
 import userAuth from '../middlewares/userAuth.js';
@@ -37,5 +38,6 @@ router.post('/generate-subtopic-summary', userAuth, generateSubtopicSummary);
 router.post('/fetch-subtopic-summary', userAuth, fetchSubtopicExplanation);
 router.get('/search', userAuth, searchRoadmaps);
 router.post('/toggle-pin', userAuth, togglePinRoadmap);
+router.get('/notes/download/:roadmapId', userAuth, downloadNotesByRoadmapId);
 
 export default router;

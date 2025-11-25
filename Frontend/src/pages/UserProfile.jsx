@@ -8,6 +8,7 @@ import ChangePassword from "./ChangePassword";
 import Loader from "../components/Loader"
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios"
+import { downloadNotesByRoadmapId } from "../features/roadmapSlicer";
 import { ConfirmationDialog } from "../components/confirmation-dialog"
 import MDEditor from "@uiw/react-md-editor";
 import { loadProfileData, purgeAllData, setUser as setUserAction } from "../features/profileSlicer";
@@ -43,6 +44,16 @@ export default function UserProfile() {
       return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
     } catch {
       return null;
+    }
+  }
+  const handleDownloadNotes = async (roadmapId) => {
+    try {
+      const res = await dispatch(downloadNotesByRoadmapId(roadmapId)).unwrap();
+      if (res && res.success) {
+        toast.success(`Download initialised!`);
+      }
+    } catch (err) {
+      toast.error(err?.message || 'Failed to download notes');
     }
   }
 
@@ -151,6 +162,8 @@ export default function UserProfile() {
     }
   }
 
+  const downloadButtonClasses = "px-3 py-1 text-xs rounded bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md hover:opacity-95 transition";
+
   if(loading) return <Loader/>
   return (
     <div className="w-full min-h-screen bg-linear-to-br from-cyan-950 via-slate-800 to-slate-950">
@@ -247,12 +260,12 @@ export default function UserProfile() {
 
                 <div className="flex flex-col items-stretch gap-2 w-full sm:w-auto">
                   {/* <button onClick={() => setIsEditOpen(true)} className="bg-linear-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-lg px-4 py-2 font-medium transition"> */}
-                  <button onClick={() => setIsEditOpen(true)} className="bg-linear-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 cursor-pointer hover:to-cyan-700 text-white rounded-lg px-4 py-2 font-medium transition">
+                  <button onClick={() => setIsEditOpen(true)} className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium shadow-md hover:opacity-95 transition">
                     Edit Profile
                   </button>
                   <button
                     onClick={() => setIsPasswordOpen(true)}
-                    className="flex items-center cursor-pointer justify-center gap-2 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg px-3 py-2 text-sm transition"
+                    className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-900 transition"
                   >
                     <Lock className="h-4 w-4" />
                     Change Password
@@ -284,7 +297,8 @@ export default function UserProfile() {
               const id = roadmap?._id || roadmap?.id;
               const title = roadmap?.roadmapData?.title || roadmap?.title || 'Roadmap';
               return (
-                <Link to={`/roadmap/${id}`} key={id} className="block group bg-linear-to-br from-slate-800/40 to-slate-900/40 border border-cyan-600/40 hover:border-cyan-500 rounded-lg p-4 transition">
+                <div key={id} className="group bg-linear-to-br from-slate-800/40 to-slate-900/40 border border-cyan-600/40 hover:border-cyan-500 rounded-lg p-4 transition">
+                  <Link to={`/roadmap/${id}`} className="block">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Route className="h-5 w-5 text-cyan-400" />
@@ -294,7 +308,13 @@ export default function UserProfile() {
                       <span className="text-xs text-cyan-300">{roadmap.progress}%</span>
                     )}
                   </div>
-                </Link>
+                  </Link>
+                  <div className="mt-3 flex justify-end">
+                    <button onClick={() => handleDownloadNotes(id)} className={downloadButtonClasses}>
+                      Download Notes
+                    </button>
+                  </div>
+                </div>
               );
             })}
             {pinned.length === 0 && <div className="text-slate-500 text-sm">No pinned roadmaps.</div>}
@@ -306,7 +326,8 @@ export default function UserProfile() {
               const id = roadmap?._id || roadmap?.id;
               const title = roadmap?.roadmapData?.title || roadmap?.title || 'Roadmap';
               return (
-                <Link to={`/roadmap/${id}`} key={id} className="block group bg-linear-to-br from-slate-800/40 to-slate-900/40 border border-slate-700 hover:border-cyan-500/50 rounded-lg p-4 transition">
+                <div key={id} className="group bg-linear-to-br from-slate-800/40 to-slate-900/40 border border-slate-700 hover:border-cyan-500/50 rounded-lg p-4 transition">
+                  <Link to={`/roadmap/${id}`} className="block">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Route className="h-5 w-5 text-cyan-400" />
@@ -316,7 +337,13 @@ export default function UserProfile() {
                       <span className="text-xs text-slate-400">{roadmap.progress}%</span>
                     )}
                   </div>
-                </Link>
+                  </Link>
+                  <div className="mt-3 flex justify-end">
+                    <button onClick={() => handleDownloadNotes(id)} className={downloadButtonClasses}>
+                      Download Notes
+                    </button>
+                  </div>
+                </div>
               );
             })}
             {unpinned.length === 0 && <div className="text-slate-500 text-sm">No other roadmaps.</div>}
@@ -430,7 +457,7 @@ export default function UserProfile() {
             <p className="text-sm text-red-200/80 mb-4">Deleting your data will permanently erase all roadmaps, notes, chats, and reset profile fields & streaks. This cannot be undone.</p>
             <button
               onClick={() => setIsPurgeOpen(true)}
-              className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition"
+              className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm font-medium shadow-md transition"
             >
               Erase All My Data
             </button>
