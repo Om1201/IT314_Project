@@ -94,7 +94,6 @@ export const generateQuiz = async (req, res) => {
     try {
         const {roadmapId, chapterId, subtopicId=null } = req.body;
         if(!roadmapId ||  !chapterId){
-            console.log(req.body);
             return res.status(400).json({ success: false, message: "RoadmapId and ChapterId are required" });
         }
         const roadMap = await RoadmapModel.findById(roadmapId);

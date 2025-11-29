@@ -299,7 +299,6 @@ export const sendResetToken = async (req, res) => {
 export const ResendVerificationToken = async (req, res) => {
     const { email } = req.validatedData;
 
-    console.log('sdfsfsdfssdfdqwe')
     try {
         const user = await UserModel.findOne({
             email,

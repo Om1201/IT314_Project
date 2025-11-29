@@ -191,7 +191,6 @@ export const deleteS3Folder = async (req, res) => {
   try {
     const { key, filePath } = req.body;
     const prefix = `${key}/${filePath.replace(/^\/+/, "")}`; 
-    console.log("Deleting folder:", prefix);
 
     const listedObjects = await s3.send(new ListObjectsV2Command({
       Bucket: BUCKET,
@@ -260,7 +259,6 @@ export const renameS3Folder = async (req, res) => {
   try {
     const { key, oldFilePath, newFilePath } = req.validatedData;
     const prefix = `${key}${oldFilePath}`;
-    console.log("Renaming folder from", prefix, "to", `${key}${newFilePath}`);
 
     const listedObjects = await s3.send(new ListObjectsV2Command({
       Bucket: BUCKET,

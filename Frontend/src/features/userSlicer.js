@@ -188,7 +188,6 @@ export const userSlice = createSlice({
                 state.authLoading = true;
             })
             .addCase(checkAuth.fulfilled, (state, action) => {
-                console.log(action.payload);
                 if (action.payload.success) {
                     state.authLoading = false;
                     state.isLoggedin = true;

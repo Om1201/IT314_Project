@@ -47,7 +47,6 @@ export const getStats = async (req, res) => {
       }
       if(valid) return rm;
     })
-    console.log(user.streakCount)
     const stats = {
       totalRoadmaps: roadmapCount,
       coursesCompleted: filteredRoadmaps.length,
@@ -81,7 +80,7 @@ export const getUserRoadmaps = async (req, res) => {
 export const changePassword = async (req, res) => {
   try {
     const {userId} = req;
-    const { oldPassword, newPassword } = req.body;
+    const { oldPassword, newPassword } = req.validatedData;
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
