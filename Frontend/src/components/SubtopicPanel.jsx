@@ -19,8 +19,8 @@ const tabs = [
     { id: 'explanation', label: 'Explanation' },
     { id: 'videos', label: 'Videos' },
     { id: 'articles', label: 'Articles' },
-    { id: 'notes', label: 'Notes' },
     { id: 'quiz', label: 'Quiz' },
+    { id: 'notes', label: 'Notes' },
 ];
 
 export default function SubtopicPanel({

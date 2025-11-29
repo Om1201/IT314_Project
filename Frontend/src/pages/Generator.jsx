@@ -40,7 +40,7 @@ export default function Generator() {
     };
 
     return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-slate-900 to-black text-white overflow-hidden relative">
+    <div className="min-h-screen bg-gradient-to-tr from-slate-800 via-cyan-900 to-slate-600 text-white overflow-hidden relative">
         <Navbar />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl animate-pulse"></div>
@@ -75,10 +75,10 @@ export default function Generator() {
 
           <div className="grid lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2">
-              <div className="bg-slate-900/40 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-8 sm:p-10 hover:border-blue-400/50 transition-all duration-300 shadow-2xl">
+              <div className="bg-slate-950/50 border border-slate-800/50 backdrop-blur-sm rounded-2xl p-8 sm:p-10 hover:border-blue-400/50 transition-all duration-300 shadow-2xl">
                 <form onSubmit={handleSubmit} className="space-y-8">
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2">
+                    <div className=" flex items-center gap-2">
                       <Zap className="h-5 w-5 text-blue-400" />
                       <label htmlFor="description" className="block text-lg font-bold text-white">
                         What do you want to learn?
@@ -165,19 +165,19 @@ export default function Generator() {
             </div>
 
             <div className="lg:col-span-1 space-y-4">
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6 backdrop-blur-sm hover:border-blue-400/50 transition-all duration-300">
+              <div className="bg-slate-950/50 border border-slate-800/50 rounded-xl p-6 backdrop-blur-sm hover:border-blue-400/50 transition-all duration-300">
                 <div className="text-2xl font-bold text-blue-300 mb-2">🎯</div>
                 <h3 className="font-bold text-white mb-2">Personalized</h3>
                 <p className="text-sm text-slate-400">Tailored to skill level</p>
               </div>
 
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6 backdrop-blur-sm hover:border-blue-400/50 transition-all duration-300">
+              <div className="bg-slate-950/50 border border-slate-800/50 rounded-xl p-6 backdrop-blur-sm hover:border-blue-400/50 transition-all duration-300">
                 <div className="text-2xl font-bold text-blue-300 mb-2">⚡</div>
                 <h3 className="font-bold text-white mb-2">Structured</h3>
                 <p className="text-sm text-slate-400">Clear milestones and learning steps</p>
               </div>
 
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6 backdrop-blur-sm hover:border-blue-400/50 transition-all duration-300">
+              <div className="bg-slate-950/50 border border-slate-800/50 rounded-xl p-6 backdrop-blur-sm hover:border-blue-400/50 transition-all duration-300">
                 <div className="text-2xl font-bold text-blue-300 mb-2">🚀</div>
                 <h3 className="font-bold text-white mb-2">Learn with quizzes</h3>
                 <p className="text-sm text-slate-400">Generate quizzes for any subtopic anytime</p>

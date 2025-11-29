@@ -10,10 +10,10 @@ export const register = async (req, res) => {
     try {
         const { name, email, password } = req.validatedData;
 
-        // const response = await fetch(buildEmailVerifyUrl(email));
-        // if(response.reason != "valid_mailbox" || response.smtp_check != true || response.state != "deliverable"){
-        //     return res.status(400).json({ success: false, message: 'Email is not valid' });
-        // }
+        const response = await fetch(buildEmailVerifyUrl(email));
+        if(response.reason != "valid_mailbox" || response.smtp_check != true || response.state != "deliverable"){
+            return res.status(400).json({ success: false, message: 'Email is not valid' });
+        }
 
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
@@ -216,8 +216,8 @@ export const logout = async (req, res) => {
     try {
         res.clearCookie('token', {
             httpOnly: true,
-            secure: true,
-            sameSite: "None",
+            // secure: true,
+            // sameSite: "None",
         });
         return res.status(200).json({ success: true, message: 'Logged out' });
     } catch (error) {
