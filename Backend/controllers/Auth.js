@@ -10,10 +10,10 @@ export const register = async (req, res) => {
     try {
         const { name, email, password } = req.validatedData;
 
-        // const response = await fetch(buildEmailVerifyUrl(email));
-        // if(response.reason != "valid_mailbox" || response.smtp_check != true || response.state != "deliverable"){
-        //     return res.status(400).json({ success: false, message: 'Email is not valid' });
-        // }
+        const response = await fetch(buildEmailVerifyUrl(email));
+        if(response.reason != "valid_mailbox" || response.smtp_check != true || response.state != "deliverable"){
+            return res.status(400).json({ success: false, message: 'Email is not valid' });
+        }
 
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
@@ -195,8 +195,8 @@ export const signIn = async (req, res) => {
         const token = jwt.sign({ id: user._id, email: user.email}, process.env.JWT_SECRET, { expiresIn: '7d' });
         res.cookie('token', token, {
             httpOnly: true,
-            secure: true,
-            sameSite: "None",
+            // secure: true,
+            // sameSite: "None",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
@@ -299,7 +299,6 @@ export const sendResetToken = async (req, res) => {
 export const ResendVerificationToken = async (req, res) => {
     const { email } = req.validatedData;
 
-    console.log('sdfsfsdfssdfdqwe')
     try {
         const user = await UserModel.findOne({
             email,

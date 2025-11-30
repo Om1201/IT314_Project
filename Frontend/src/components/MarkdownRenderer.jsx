@@ -5,7 +5,6 @@ import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css'; // choose your theme
 
 const MarkdownRenderer = ({ content }) => {
-    console.log('Rendering markdown content:', content);
     return (
         <div className="prose prose-slate prose-invert max-w-none bg-slate-900/50 border border-slate-700/50 rounded-2xl p-8 overflow-x-auto">
             <ReactMarkdown

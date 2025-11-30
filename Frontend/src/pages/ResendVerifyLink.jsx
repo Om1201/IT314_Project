@@ -35,7 +35,6 @@ export default function VerifyEmail() {
     try {
       let res = await dispatch(resendVerifyLink({email}));
       res = res.payload
-      console.log(res);
       if(res.success === false) {
           setError(true);
           setMessage(res.message);
@@ -45,7 +44,6 @@ export default function VerifyEmail() {
         sessionStorage.setItem("time", 15*60);
         setTimer(15*60); 
     } catch (err) {
-    console.log(err);
       setMessage(err.response?.data?.message || "Something went wrong.");
     }finally{
       setLoading(false);

@@ -528,7 +528,6 @@ export default function OnlineIDE() {
       }));
 
       response = response.payload;
-      console.log("Anaasdfasdfdslysis response:", response);
       if(!response.success){
         toast.error(response.message || "Failed to analyze code.");
         setShowAnalysisModal(false);

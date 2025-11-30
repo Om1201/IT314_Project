@@ -19,8 +19,8 @@ const tabs = [
     { id: 'explanation', label: 'Explanation' },
     { id: 'videos', label: 'Videos' },
     { id: 'articles', label: 'Articles' },
-    { id: 'notes', label: 'Notes' },
     { id: 'quiz', label: 'Quiz' },
+    { id: 'notes', label: 'Notes' },
 ];
 
 export default function SubtopicPanel({
@@ -423,7 +423,7 @@ return (
               })}
               <button
               className="cursor-pointer disabled:cursor-not-allowed px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-              onClick={() => onRequestQuiz()}
+              onClick={async() => {await onRequestQuiz();setUserAnswers({});}}
               disabled={isQuizGenerating()}
             >
               {isQuizGenerating() ? (

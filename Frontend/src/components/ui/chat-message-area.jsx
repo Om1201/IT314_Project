@@ -73,54 +73,54 @@ export function ChatMessageAreaContent({ className, messages = [], needsNewChat 
   //     return () => clearInterval(streamInterval)
   //   }
   // }, [messages])
-  useEffect(() => {
-  if (messages.length === 0) return;
-  if (!shouldStream) return;
+//   useEffect(() => {
+//   if (messages.length === 0) return;
+//   if (!shouldStream) return;
 
-  const lastMessage = messages[messages.length - 1];
-  const messageKey = `${messages.length - 1}`;
+//   const lastMessage = messages[messages.length - 1];
+//   const messageKey = `${messages.length - 1}`;
 
-  if (lastMessage.role === "ai" && lastMessage.content && !streamedContent[messageKey]) {
-    setIsStreaming(true);
-    const fullContent = lastMessage.content;
-    let currentIndex = 0;
+//   if (lastMessage.role === "ai" && lastMessage.content && !streamedContent[messageKey]) {
+//     setIsStreaming(true);
+//     const fullContent = lastMessage.content;
+//     let currentIndex = 0;
 
-    const streamInterval = setInterval(() => {
-      if (currentIndex < fullContent.length) {
-        const charsToAdd =
-          Math.min(10, fullContent.length - currentIndex);
-        currentIndex += charsToAdd;
+//     const streamInterval = setInterval(() => {
+//       if (currentIndex < fullContent.length) {
+//         const charsToAdd =
+//           Math.min(10, fullContent.length - currentIndex);
+//         currentIndex += charsToAdd;
 
-        setStreamedContent((prev) => ({
-          ...prev,
-          [messageKey]: fullContent.slice(0, currentIndex),
-        }));
+//         setStreamedContent((prev) => ({
+//           ...prev,
+//           [messageKey]: fullContent.slice(0, currentIndex),
+//         }));
 
-        const scrollContainer =
-          contentRef.current?.closest(".overflow-y-auto");
+//         const scrollContainer =
+//           contentRef.current?.closest(".overflow-y-auto");
 
-        if (scrollContainer) {
-          const threshold = 80; // px from bottom to allow autoscroll
-          const distanceFromBottom =
-            scrollContainer.scrollHeight -
-            (scrollContainer.scrollTop + scrollContainer.clientHeight);
+//         if (scrollContainer) {
+//           const threshold = 80; // px from bottom to allow autoscroll
+//           const distanceFromBottom =
+//             scrollContainer.scrollHeight -
+//             (scrollContainer.scrollTop + scrollContainer.clientHeight);
 
-          const shouldAutoScroll = distanceFromBottom < threshold;
+//           const shouldAutoScroll = distanceFromBottom < threshold;
 
-          if (shouldAutoScroll) {
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
-          }
-        }
-      } else {
-        clearInterval(streamInterval);
-        setIsStreaming(false);
-      }
-    }, 100);
+//           if (shouldAutoScroll) {
+//             scrollContainer.scrollTop = scrollContainer.scrollHeight;
+//           }
+//         }
+//       } else {
+//         clearInterval(streamInterval);
+//         setIsStreaming(false);
+//       }
+//     }, 100);
 
-    setShouldStream(false);
-    return () => clearInterval(streamInterval);
-  }
-}, [messages]);
+//     setShouldStream(false);
+//     return () => clearInterval(streamInterval);
+//   }
+// }, [messages]);
 
 
 

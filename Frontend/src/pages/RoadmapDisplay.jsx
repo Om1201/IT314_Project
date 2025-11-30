@@ -188,7 +188,6 @@ export default function RoadmapDisplay() {
 
   const onRequestQuiz = async (moduleId, subtopicId) => {
     try {
-      console.log("Generating quiz for", id, moduleId, subtopicId)
       let response = await dispatch(generateQuiz({ roadmapId: id, moduleId, subtopicId }))
       response = response.payload
 

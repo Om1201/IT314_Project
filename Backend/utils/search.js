@@ -37,7 +37,7 @@ const SERPER_URL = "https://google.serper.dev/search";
 /**
  Fetching articles using SERPER*/ 
 export const getArticleLinks = async (mainTopic, subtopic) => {
-  const query = `${mainTopic} ${subtopic.title}`;
+  const query = `${subtopic.title}`;
   const sites = subtopic.recommendedArticleSites || [];
 
   const siteFilter = sites.length
@@ -67,7 +67,7 @@ export const getArticleLinks = async (mainTopic, subtopic) => {
       try {
         //check the domain name
         const domain = new URL(r.link).hostname.replace("www.", "");
-        if (!sites.includes(domain)) continue;
+
 
         siteCount[domain] = (siteCount[domain] || 0) + 1;
         if (siteCount[domain] <= 3) {
@@ -101,7 +101,7 @@ export const getArticleLinks = async (mainTopic, subtopic) => {
 
 /* Fetching video using serper api */
 const getVideoLinks = async (mainTopic, subtopic) => {
-  const query = `${subtopic.title}  ${mainTopic} tutorial site:youtube.com`;
+  const query = `${subtopic.title} tutorial site:youtube.com`;
   const { data } = await axios.post(
     SERPER_URL,
     { q: query, num: 10 },
@@ -124,7 +124,7 @@ export const getArticles = async (roadmapText) => {
 
   for (const chapter of roadmapText.chapters) {
     for (const subtopic of chapter.subtopics) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 500));
       promises.push(
         getArticleLinks(mainTopic, subtopic).then(articleLinks => ({
           chapterId: chapter.id,
@@ -145,7 +145,7 @@ export const getVideos = async (roadmapText) => {
 
   for (const chapter of roadmapText.chapters) {
     for (const subtopic of chapter.subtopics) {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Adding delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500)); // Adding delay to avoid rate limiting
       promises.push(
         getVideoLinks(mainTopic, subtopic).then(videoLinks => ({
           chapterId: chapter.id,
