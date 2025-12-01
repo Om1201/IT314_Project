@@ -102,32 +102,78 @@ export const changePassword = async (req, res) => {
 };
 
 const sanitize = (str = "") => str.replace(/[<>]/g, "").trim();
+const normalizeWhitespace = (str = "") => str.replace(/\s+/g, " ").trim();
 
 export const updateProfile = async (req, res) => {
   try {
     const { userId } = req;
-    const allowed = ["title", "bio", "location", "github", "linkedin", "twitter"];
+    const allowed = ["name", "title", "bio", "location", "github", "linkedin", "twitter"];
     const updates = {};
     for (const key of allowed) {
       if (key in req.body && typeof req.body[key] === 'string') {
-        updates[key] = key === 'bio' ? sanitize(req.body[key]) : req.body[key].trim();
+        if (key === 'bio') {
+          updates[key] = sanitize(req.body[key]);
+        } else if (key === 'name') {
+          updates[key] = normalizeWhitespace(sanitize(req.body[key]));
+        } else if (key === 'location') {
+          updates[key] = normalizeWhitespace(sanitize(req.body[key]));
+        } else {
+          updates[key] = req.body[key].trim();
+        }
       }
     }
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ success: false, message: "No profile fields provided." });
+    }
+    if (updates.name !== undefined) {
+      const nameRegex = /^[\p{L}][\p{L}\s'.-]*$/u;
+      if (!updates.name) {
+        return res.status(400).json({ success: false, message: "Name is required." });
+      }
+      if (updates.name.length < 2 || updates.name.length > 25) {
+        return res.status(400).json({ success: false, message: "Name must be between 2 and 25 characters." });
+      }
+      if (!nameRegex.test(updates.name)) {
+        return res.status(400).json({ success: false, message: "Name contains invalid characters." });
+      }
+    }
+    const locationRegex = /^[a-zA-Z\s,.-]+$/;
+    if (updates.location && !locationRegex.test(updates.location)) {
+        return res.status(400).json({ 
+             success: false, 
+              message: "Location cannot contain numbers or special characters." 
+          });
+     }
 
+     const urlRegex = /^(https?:\/\/)?([\w\d]+\.)?[\w\d]+\.[\w\d]+(\/.*)?$/; 
+    const handleRegex = /^@?[a-zA-Z0-9_.-]+$/; 
+
+    const socialFields = ["github", "linkedin", "twitter"];
+    for (const field of socialFields) {
+        if (updates[field]) {
+            const val = updates[field];
+            if (!urlRegex.test(val) && !handleRegex.test(val)) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `Invalid format for ${field}. Please enter a valid URL or username.` 
+                });
+            }
+            if (val.length > 200) {
+                return res.status(400).json({ success: false, message: `${field} link too long (max 200).` });
+            }
+        }
+    }
     if (updates.title && updates.title.length > 100) {
       return res.status(400).json({ success: false, message: "Title too long (max 100)." });
+    }
+    if (updates.title && !/^[\w\s',.&-]+$/.test(updates.title)) {
+      return res.status(400).json({ success: false, message: "Title contains invalid characters." });
     }
     if (updates.bio && updates.bio.length > 1000) {
       return res.status(400).json({ success: false, message: "Bio too long (max 1000)." });
     }
     if (updates.location && updates.location.length > 100) {
       return res.status(400).json({ success: false, message: "Location too long (max 100)." });
-    }
-    const linkFields = ["github", "linkedin", "twitter"];
-    for (const lf of linkFields) {
-      if (updates[lf] && updates[lf].length > 200) {
-        return res.status(400).json({ success: false, message: `${lf} link too long (max 200).` });
-      }
     }
 
     const user = await User.findById(userId);

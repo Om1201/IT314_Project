@@ -1,17 +1,17 @@
-"use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { X, User, Globe, BookText } from "lucide-react";
 
 export default function EditProfileModal({ open, onClose, user, onUpdated }) {
-  const [form, setForm] = useState({ title: "", bio: "", location: "", github: "", linkedin: "", twitter: "" });
+  const [form, setForm] = useState({ name: "", title: "", bio: "", location: "", github: "", linkedin: "", twitter: "" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (open && user) {
       setForm({
+        name: user.name || "",
         title: user.title || "",
         bio: user.bio || "",
         location: user.location || "",
@@ -31,11 +31,71 @@ export default function EditProfileModal({ open, onClose, user, onUpdated }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    const trimmedName = form.name.replace(/\s+/g, " ").trim();
+    const nameRegex = /^[\p{L}][\p{L}\s'.-]*$/u;
+    if (!trimmedName) {
+      setError("Name is required.");
+      return;
+    }
+    if (trimmedName.length < 2 || trimmedName.length > 25) {
+      setError("Name must be between 2 and 25 characters.");
+      return;
+    }
+    if (!nameRegex.test(trimmedName)) {
+      setError("Name contains invalid characters.");
+      return;
+    }
+    const titleTrimmed = form.title.trim();
+    if (/\d/.test(form.location)) {
+        setError("Location should not contain numbers.");
+        return; 
+    }
+    if (form.location && !/^[a-zA-Z\s,.-]+$/.test(form.location)) {
+        setError("Location contains invalid characters.");
+        return;
+    }
+    if (titleTrimmed && !/^[\w\s',.&-]+$/.test(titleTrimmed)) {
+        setError("Title contains invalid characters.");
+        return;
+    }
+    if (form.title && titleTrimmed.length === 0) {
+        setError("Title cannot be empty.");
+        return;
+    }
+    const socials = [
+      { key: "github", label: "GitHub" },
+      { key: "linkedin", label: "LinkedIn" },
+      { key: "twitter", label: "Twitter" },
+    ];
+    const urlRegex = /^(https?:\/\/)?([\w\d]+\.)?[\w\d]+\.[\w\d]+(\/.*)?$/;
+    const handleRegex = /^@?[a-zA-Z0-9_.-]+$/;
+    for (const { key, label } of socials) {
+      const value = form[key].trim();
+      if (!value) continue;
+      if (value.length > 200) {
+        setError(`${label} must be 200 characters or fewer.`);
+        return;
+      }
+      if (!urlRegex.test(value) && !handleRegex.test(value)) {
+        setError(`${label} must be a valid URL or handle.`);
+        return;
+      }
+    }
+    const payload = {
+      ...form,
+      name: trimmedName,
+      title: titleTrimmed,
+      bio: form.bio,
+      location: form.location.replace(/\s+/g, " ").trim(),
+      github: form.github.trim(),
+      linkedin: form.linkedin.trim(),
+      twitter: form.twitter.trim(),
+    };
     setSaving(true);
     try {
       const res = await axios.put(
         `${import.meta.env.VITE_BACKEND_URL}/api/user/profile`,
-        form,
+        payload,
         { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
       );
       if (res.data?.success) {
@@ -68,6 +128,11 @@ export default function EditProfileModal({ open, onClose, user, onUpdated }) {
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+            <label className="block text-sm mb-1 text-slate-300">Name</label>
+            <input name="name" value={form.name} onChange={handleChange} maxLength={80}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Your display name" required />
+          </div>
+          <div>
             <label className="block text-sm mb-1 text-slate-300">Title / Headline</label>
             <input name="title" value={form.title} onChange={handleChange} maxLength={100}
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-cyan-500" placeholder="e.g. Full Stack Developer" />
@@ -86,17 +151,17 @@ export default function EditProfileModal({ open, onClose, user, onUpdated }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm mb-1 text-slate-300">GitHub</label>
-              <input name="github" value={form.github} onChange={handleChange} maxLength={200}
+              <input type="url" name="github" value={form.github} onChange={handleChange} maxLength={200}
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-cyan-500" placeholder="username or full URL" />
             </div>
             <div>
               <label className="block text-sm mb-1 text-slate-300">LinkedIn</label>
-              <input name="linkedin" value={form.linkedin} onChange={handleChange} maxLength={200}
+              <input type="url" name="linkedin" value={form.linkedin} onChange={handleChange} maxLength={200}
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-cyan-500" placeholder="profile path or URL" />
             </div>
             <div>
               <label className="block text-sm mb-1 text-slate-300">Twitter</label>
-              <input name="twitter" value={form.twitter} onChange={handleChange} maxLength={200}
+              <input type="url" name="twitter" value={form.twitter} onChange={handleChange} maxLength={200}
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-cyan-500" placeholder="handle or URL" />
             </div>
           </div>
